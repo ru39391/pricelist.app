@@ -48,10 +48,6 @@ import {
   TYPES
 } from '../utils/constants';
 
-/*
-// TODO: проверить после загрузки нового документа:
-// настроить установку значения для параметра "Входит в комплекс" (сейчас везде 0, см. услуги для комлекса id = 19829)
-*/
 const DataForm: FC = () => {
   const dispatch = useDispatch();
   const { formData, formValues, isParserData } = useSelector(state => state.form);
