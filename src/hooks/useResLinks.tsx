@@ -74,6 +74,22 @@ const useResLinks = (): IResLinks => {
     (acc, item, index) => ({ ...acc, [Object.keys(TYPES)[index]]: item }), {}
   );
 
+  const handleSortedArr = (
+    arr: TItemsArr,
+    childrenArr: TItemsArr,
+    categoryKey: TPricelistKeys
+  ): TItemsArr => childrenArr.map(
+    (item) => {
+      const category = arr.find(data => item[categoryKey] === data[ID_KEY]);
+
+      return {
+        ...item,
+        [LABEL_KEY]: item[NAME_KEY],
+        [CATEGORY_KEY]: category ? category[NAME_KEY] : ''
+      };
+    }
+  );
+
   const existableData: TCustomData<TItemsArr> = setResData([existableDepts, existableSubdepts, existableGroups, existableItems]);
 
   const resLinkData: TCustomData<TItemsArr> = setResData([linkedDepts, linkedSubdepts, linkedGroups, linkedItems]);
@@ -85,7 +101,16 @@ const useResLinks = (): IResLinks => {
     setExistableItems
   ].reduce((acc, handler, index) => ({
     ...acc,
-    [Object.keys(TYPES)[index]]: (arr: TItemsArr) => handler(sortStrArray(arr, CATEGORY_KEY))
+    [Object.keys(TYPES)[index]]: (arr: TItemsArr) => handler(
+      sortStrArray(
+        handleSortedArr(
+          pricelist[Object.values(TYPES)[index]],
+          arr,
+          Object.keys(TYPES)[index] as TPricelistKeys
+        ),
+        CATEGORY_KEY
+      )
+    )
   }), {} as Record<TPricelistKeys, (arr: TItemsArr) => void>);
 
   const resLinkHandlers = [
@@ -206,16 +231,6 @@ const useResLinks = (): IResLinks => {
         categoryKey
       ),
       NAME_KEY
-    ).map(
-      (item) => {
-        const category = arr.find(data => item[categoryKey] === data[ID_KEY]);
-
-        return {
-          ...item,
-          [LABEL_KEY]: item[NAME_KEY],
-          [CATEGORY_KEY]: category ? category[NAME_KEY] : ''
-        };
-      }
     );
 
     resLinkHandlers[currentKey]({
@@ -224,8 +239,8 @@ const useResLinks = (): IResLinks => {
 
     return sortStrArray(
       extendedKey
-        ? subCategoryItems.filter(item => item[extendedKey] === 0)
-        : subCategoryItems,
+        ? handleSortedArr(arr, subCategoryItems, categoryKey).filter(item => item[extendedKey] === 0)
+        : handleSortedArr(arr, subCategoryItems, categoryKey),
       CATEGORY_KEY
     );
   };
