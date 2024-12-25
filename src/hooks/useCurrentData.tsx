@@ -93,9 +93,6 @@ const useCurrentData = (): ICurrentData => {
       return {} as TItemData;
     }
 
-    // TODO: проверить после загрузки нового документа:
-    // решить проблему с undefined (пробрасыванием из другого хука) - или для отслеживания обновления не нужно?
-    // вероятно, проблема решена - отследить на финальном тестировании
     return {
       ...formFields[type].reduce((acc, item) => ({ ...acc, [item]: '' }), {}),
       ...selecterFields[type].reduce(

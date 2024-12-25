@@ -86,20 +86,18 @@ const useFilter = (): IFilter => {
         (acc, key: TFilterKeys) => ({
           ...acc,
           ...(
-            key === NAME_KEY && filterData !== null && filterData[NAME_KEY] !== undefined
-              && { [NAME_KEY]: item[NAME_KEY].toLowerCase().includes(filterData[NAME_KEY].toString().toLowerCase()) }
+            key === NAME_KEY && filterData[NAME_KEY] !== undefined
+              && { [key]: item[key].toLowerCase().includes((filterData[key] as string).toString().toLowerCase()) }
           ),
           ...(
-            [PARENT_KEY, TEMPLATE_KEY].includes(key)
-              && {
-                [PARENT_KEY]: item[PARENT_KEY][`${PARENT_KEY}_${RES_ID_KEY}`] === filterData[PARENT_KEY],
-                [TEMPLATE_KEY]: item[TEMPLATE_KEY][`${TEMPLATE_KEY}_${RES_ID_KEY}`] === filterData[TEMPLATE_KEY]
-              }
+            key === PARENT_KEY && item[PARENT_KEY] !== undefined
+            && { [key]: item[key][`${key}_${RES_ID_KEY}`] === filterData[key] }
           ),
           ...(
-            key === IS_PARENT_KEY
-              && { [IS_PARENT_KEY]: item[IS_PARENT_KEY] === Boolean(filterData[IS_PARENT_KEY]) }
+            key === TEMPLATE_KEY && item[TEMPLATE_KEY] !== undefined
+            && { [key]: item[key][`${key}_${RES_ID_KEY}`] === filterData[key] }
           ),
+          ...( key === IS_PARENT_KEY && { [key]: item[key] === Boolean(filterData[key]) }),
         }), {} as Record<TFilterKeys, boolean>
       );
 
@@ -109,7 +107,6 @@ const useFilter = (): IFilter => {
 
   useEffect(() => {
     filterList();
-    // console.log(filterData);
   }, [
     filterData
   ]);
