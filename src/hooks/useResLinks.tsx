@@ -308,6 +308,8 @@ const useResLinks = (): IResLinks => {
     setExistableSubdepts(
       filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)
     );
+    // TODO: "Комплексный выбор" не устанавливается при получении данных с сервера из-за этого сброса
+    // возможно, следует перенести в обработку клика по кнопке удаления специализации из списка
     setLinkedDataConfig(null);
     // console.log({linkedDepts, subdepts: filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)});
   }, [
