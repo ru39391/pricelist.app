@@ -287,9 +287,19 @@ const useResLinks = (): IResLinks => {
   }
 
   useEffect(() => {
-    updateLinkedDataConfig();
+    setExistableDepts(pricelist[TYPES[DEPT_KEY]]);
   }, [
-    linkedDataConfig
+    pricelist[TYPES[DEPT_KEY]]
+  ]);
+
+  useEffect(() => {
+    setExistableSubdepts(
+      filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)
+    );
+    setLinkedDataConfig(null);
+    // console.log({linkedDepts, subdepts: filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)});
+  }, [
+    linkedDepts
   ]);
 
   useEffect(() => {
@@ -305,19 +315,9 @@ const useResLinks = (): IResLinks => {
   ]);
 
   useEffect(() => {
-    setExistableSubdepts(
-      filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)
-    );
-    setLinkedDataConfig(null);
-    // console.log({linkedDepts, subdepts: filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)});
+    updateLinkedDataConfig();
   }, [
-    linkedDepts
-  ]);
-
-  useEffect(() => {
-    setExistableDepts(pricelist[TYPES[DEPT_KEY]]);
-  }, [
-    pricelist[TYPES[DEPT_KEY]]
+    linkedDataConfig
   ]);
 
   useEffect(() => {
