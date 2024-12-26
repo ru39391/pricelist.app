@@ -115,12 +115,6 @@ const ResItem: FC = () => {
     existableItems
   ]);
 
-  useEffect(() => {
-    console.log({linkedDataConfig});
-  }, [
-    linkedDataConfig
-  ]);
-
   if(resLinkedItems.length > 0) {
     return (
       <>
