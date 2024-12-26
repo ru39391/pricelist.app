@@ -20,7 +20,8 @@ import {
   DEPT_KEY,
   SUBDEPT_KEY,
   GROUP_KEY,
-  ITEM_KEY
+  ITEM_KEY,
+  RESLINKS_KEY
 } from '../../utils/constants';
 
 export type TPricelistAction = {
@@ -119,7 +120,10 @@ const pricelistSlice = createSlice({
 
       return {
         ...state,
-        ...(type && Array.isArray(items) && { [type]: handleFetchedArr([...state[type], ...items]) }),
+        ...(
+          type && Array.isArray(items)
+            && { [type]: type === RESLINKS_KEY ? [...state[type], ...items] : handleFetchedArr([...state[type], ...items]) }
+        ),
         isPricelistLoading: false,
         isPricelistSucceed: true,
         isPricelistFailed: false,
@@ -142,7 +146,10 @@ const pricelistSlice = createSlice({
 
       return {
         ...state,
-        ...(type && Array.isArray(items) && { [type]: handleFetchedArr([...currItems, ...items]) }),
+        ...(
+          type && Array.isArray(items)
+            && { [type]: type === RESLINKS_KEY ? [...currItems, ...items] : handleFetchedArr([...currItems, ...items]) }
+        ),
         isPricelistLoading: false,
         isPricelistSucceed: true,
         isPricelistFailed: false,
