@@ -15,6 +15,7 @@ const NOT_EMPTY_CATEGORY = 'Категория содержит следующи
 const EMPTY_CATEGORY = 'Выбранные категории не содержат услуг';
 
 const PARSER_TITLE = 'Парсер';
+const CMS_TITLE = 'К управлению сайтом';
 const ADD_TITLE = 'Добавить';
 const EDIT_TITLE = 'Редактировать';
 const REMOVE_TITLE = 'Удалить';
@@ -143,6 +144,7 @@ const LINKED_RES_PARAMS: TCustomData<string> = {
 const ROOT_PATH = import.meta.env.VITE_ROOT_PATH;
 const SITE_URL = import.meta.env.VITE_SITE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
+const CMS_URL = 'manager';
 
 const PAGE_COUNTER = 15;
 
@@ -163,6 +165,7 @@ export {
   ACTION_ERROR_MSG,
   DATA_ERROR_MSG,
   PARSER_TITLE,
+  CMS_TITLE,
   ADD_TITLE,
   EDIT_TITLE,
   REMOVE_TITLE,
@@ -220,6 +223,7 @@ export {
   TYPES,
   SITE_URL,
   API_URL,
+  CMS_URL,
   ROOT_PATH,
   PAGE_COUNTER,
   IS_COMPLEX_DATA_KEY,

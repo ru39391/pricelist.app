@@ -190,7 +190,7 @@ const handlePricelistData = ({ action, type, items }: { action: string; type: TP
     }
   } catch(error) {
     const { response } = error as TErrorResponse;
-    const { errors } = response.data;
+    const { errors } = response ? response.data : { errors: { message: errorMsg } };
 
     dispatch(getPricelistFailed({ alertMsg: errors ? errors.message as string : errorMsg }));
   }
@@ -249,7 +249,7 @@ const handleResLinkedData = (payload: { action: string; data: TItemData; }): TAp
     }
   } catch(error) {
     const { response } = error as TErrorResponse;
-    const { errors } = response.data;
+    const { errors } = response ? response.data : { errors: { message: errorMsg } };
 
     dispatch(getPricelistFailed({ alertMsg: errors ? errors.message as string : errorMsg }));
   }
