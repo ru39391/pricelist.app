@@ -119,6 +119,8 @@ export type TResourceData = {
   editedon: TResDate;
 };
 
+export type TLinkedResourceData = TResourceData & { isLinked: boolean; };
+
 export type TResourceKeys = keyof TResourceData;
 
 export type TLinkedData = {

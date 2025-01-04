@@ -5,10 +5,13 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
+  FormLabel,
   Grid,
   InputLabel,
   IconButton,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
   TextField,
   Tooltip,
@@ -30,7 +33,7 @@ import {
 } from '../utils/constants';
 
 import type {
-  TResourceData,
+  TLinkedResourceData,
   TResParent,
   TResTemplate,
   TResTemplateKeys,
@@ -41,7 +44,7 @@ import type {
 interface IResFilter {
   currentPage: number;
   currentItemsMess: string;
-  handlePageItems: (filterResultList: TResourceData[], currentPage: number) => void;
+  handlePageItems: (filterResultList: TLinkedResourceData[], currentPage: number) => void;
   setCurrentPage: (currentPage: number) => void;
 }
 
@@ -167,15 +170,36 @@ const ResFilter: FC<IResFilter> = ({
             alignItems: 'center'
           }}
         >
-          <FormControlLabel
-            label={TITLES[IS_PARENT_KEY]}
-            control={
-              <Checkbox
-                checked={Boolean(filterData && filterData[IS_PARENT_KEY])}
-                onChange={({ target }) => handleFilterData({ [IS_PARENT_KEY]: Number(target.checked) })}
+          <FormControl>
+            <FormLabel
+              id={`${IS_PARENT_KEY}-label`}
+              focused={false}
+            >
+              {TITLES[IS_PARENT_KEY]}
+            </FormLabel>
+            <RadioGroup
+              row
+              aria-labelledby={`${IS_PARENT_KEY}-label`}
+              name={IS_PARENT_KEY}
+              value={
+                filterData && filterData[IS_PARENT_KEY] !== undefined
+                  ? Number(filterData && filterData[IS_PARENT_KEY])
+                  : null
+              }
+              onChange={({ target }) => handleFilterData({ [IS_PARENT_KEY]: Number(target.value) })}
+            >
+              <FormControlLabel
+                value={1}
+                control={<Radio />}
+                label="Да"
               />
-            }
-          />
+              <FormControlLabel
+                value={0}
+                control={<Radio />}
+                label="Нет"
+              />
+            </RadioGroup>
+          </FormControl>
         </Grid>
         <Grid
           item
