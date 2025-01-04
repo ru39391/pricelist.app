@@ -2,7 +2,6 @@ import { FC, useEffect } from 'react';
 import {
   Box,
   Button,
-  Checkbox,
   FormControl,
   FormControlLabel,
   FormLabel,
