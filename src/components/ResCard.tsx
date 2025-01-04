@@ -26,15 +26,20 @@ import {
   SITE_URL
 } from '../utils/constants';
 
-import type { TResourceData } from '../types';
+import type { TLinkedResourceData } from '../types';
 
 interface IResCard {
-  item: TResourceData;
+  item: TLinkedResourceData;
 }
 
 const ResCard: FC<IResCard> = ({ item }) => {
   return (
-    <Card variant="outlined">
+    <Card
+      variant="outlined"
+      {...(
+        item.isLinked && { sx: { borderColor: '#fff', boxShadow: '0 15px 15px 0 rgba(0,0,0,0.19)' } }
+      )}
+    >
       <CardContent>
         <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>{item[PARENT_KEY][NAME_KEY]}, id: {item[PARENT_KEY][`${PARENT_KEY}_${RES_ID_KEY}`].toString()}</Typography>
         <Typography variant="h5" component="div">{item[NAME_KEY]}</Typography>

@@ -7,12 +7,14 @@ import type {
   TResParent,
   TResTemplate,
   TResourceData,
+  TLinkedResourceData,
   TFilterData,
   TFilterKeys
 } from '../types';
 
 import { fetchArray, sortStrArray } from '../utils';
 import {
+  ID_KEY,
   NAME_KEY,
   RES_ID_KEY,
   PARENT_KEY,
@@ -26,7 +28,7 @@ type THandleParamsList = typeof PARENT_KEY | typeof TEMPLATE_KEY;
 interface IFilter {
   filterData: TItemData | null;
   isFilterVisible: boolean;
-  filterResultList: TResourceData[];
+  filterResultList: TLinkedResourceData[];
   parentsList: TResParent[];
   templatesList: TResTemplate[];
   handleFilterData: (data: TFilterData | null) => void;
@@ -39,11 +41,11 @@ interface IFilter {
 const useFilter = (): IFilter => {
   const [filterData, setFilterData] = useState<TFilterData | null>(null);
   const [isFilterVisible, setFilterVisibility] = useState<boolean>(false);
-  const [filterResultList, setFilterResultList] = useState<TResourceData[]>([]);
+  const [filterResultList, setFilterResultList] = useState<TLinkedResourceData[]>([]);
   const [parentsList, setParentsList] = useState<TResParent[]>([]);
   const [templatesList, setTemplatesList] = useState<TResTemplate[]>([]);
 
-  const { res } = useSelector(state => state.pricelist);
+  const { res, reslinks } = useSelector(state => state.pricelist);
 
   const handleParamsList = (key: THandleParamsList): void => {
     const paramKey = `${key}_${RES_ID_KEY}`;
@@ -73,15 +75,23 @@ const useFilter = (): IFilter => {
     }
   }
 
+  const setLinkedValue = (arr: TResourceData[]): TLinkedResourceData[] => {
+    const resIds = reslinks.map(item => item[ID_KEY]);
+
+    return arr.map(item => ({ ...item, isLinked: resIds.includes(item[RES_ID_KEY]) }));
+  }
+
   const filterList = (): void => {
+    const array = setLinkedValue(res);
+
     if(!filterData) {
-      setFilterResultList(res);
+      setFilterResultList(array);
       return;
     }
 
     const keys = Object.keys(filterData) as TFilterKeys[];
 
-    setFilterResultList(res.filter((item) => {
+    setFilterResultList(array.filter((item) => {
       const filterKeysData = keys.reduce(
         (acc, key: TFilterKeys) => ({
           ...acc,
@@ -114,7 +124,9 @@ const useFilter = (): IFilter => {
   useEffect(() => {
     handleParamsList(TEMPLATE_KEY);
     handleParamsList(PARENT_KEY);
-    setFilterResultList(res);
+    setFilterResultList(
+      setLinkedValue(res)
+    );
   }, [
     res
   ]);

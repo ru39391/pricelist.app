@@ -1,4 +1,4 @@
-import { FC } from 'react'; //, ChangeEvent
+import { FC } from 'react';
 import { Box, Breadcrumbs, Grid, Pagination, Typography } from '@mui/material';
 
 import ResCard from './ResCard';
@@ -53,7 +53,6 @@ const ResList: FC = () => {
               count={currentPageCounter}
               onChange={(_, value: number) => setCurrentPage(value)}
             />
-            {/* event: ChangeEvent<unknown> */}
           </Box>
       }
     </>
