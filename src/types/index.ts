@@ -2,6 +2,7 @@ import {
   ID_KEY,
   NAME_KEY,
   PRICE_KEY,
+  INDEX_KEY,
   DEPT_KEY,
   SUBDEPT_KEY,
   GROUP_KEY,
@@ -17,6 +18,7 @@ import {
   IS_COMPLEX_DATA_KEY,
   IS_GROUP_USED_KEY,
   IS_GROUP_IGNORED_KEY,
+  IS_VISIBLE_KEY,
   ITEM_KEY
 } from '../utils/constants';
 
@@ -135,7 +137,9 @@ export type TLinkedItemData = {
 
 export type TLinkedItem = TLinkedData & TLinkedItemData & {
   [PRICE_KEY]: number;
+  [INDEX_KEY]: number;
   [GROUP_KEY]: number;
+  [IS_VISIBLE_KEY]: number;
 };
 
 export type TLinkedItemKeys = keyof TLinkedItem;

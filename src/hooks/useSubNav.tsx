@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchArray, sortStrArray } from '../utils';
+import { fetchArray, sortArrValues } from '../utils';
 import { NAME_KEY, DEPT_KEY } from '../utils/constants';
 
 import type { TItemsArr } from '../types';
@@ -28,7 +28,7 @@ const useSubNav = (arr: TItemsArr): ISubNav => {
     setCategoryData(
       parentId === currCategory
         ? []
-        : sortStrArray([...arr.filter(({ dept }) => dept === parentId)], NAME_KEY)
+        : sortArrValues([...arr.filter(({ dept }) => dept === parentId)], NAME_KEY)
     );
   };
 

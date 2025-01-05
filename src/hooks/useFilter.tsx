@@ -12,7 +12,7 @@ import type {
   TFilterKeys
 } from '../types';
 
-import { fetchArray, sortStrArray } from '../utils';
+import { fetchArray, sortArrValues } from '../utils';
 import {
   ID_KEY,
   NAME_KEY,
@@ -53,9 +53,9 @@ const useFilter = (): IFilter => {
     const paramsArr = fetchArray(resParamsArr, paramKey);
 
     if(key === TEMPLATE_KEY) {
-      setTemplatesList(sortStrArray(paramsArr, NAME_KEY) as TResTemplate[]);
+      setTemplatesList(sortArrValues(paramsArr, NAME_KEY) as TResTemplate[]);
     } else{
-      setParentsList(sortStrArray(paramsArr, NAME_KEY) as TResParent[]);
+      setParentsList(sortArrValues(paramsArr, NAME_KEY) as TResParent[]);
     }
   }
 

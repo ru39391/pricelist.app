@@ -26,7 +26,7 @@ import type {
   TPricelistKeys
 } from '../types';
 
-import { sortStrArray, fetchArray, getMatchedItems } from '../utils';
+import { sortArrValues, fetchArray, getMatchedItems } from '../utils';
 
 type TLinkedResData = {
   action?: string;
@@ -102,7 +102,7 @@ const useResLinks = (): IResLinks => {
   ].reduce((acc, handler, index) => ({
     ...acc,
     [Object.keys(TYPES)[index]]: (arr: TItemsArr) => handler(
-      sortStrArray(
+      sortArrValues(
         handleSortedArr(
           pricelist[Object.values(TYPES)[index]],
           arr,
@@ -163,7 +163,7 @@ const useResLinks = (): IResLinks => {
     }
 
     existableDataHandlers[key as TPricelistKeys](
-      sortStrArray(
+      sortArrValues(
         fetchArray(
           [
             ...existableData[key as TPricelistKeys],
@@ -220,7 +220,7 @@ const useResLinks = (): IResLinks => {
       return [];
     }
 
-    const subCategoryItems: TItemsArr = sortStrArray(
+    const subCategoryItems: TItemsArr = sortArrValues(
       getMatchedItems(
         arr,
         [ITEM_KEY, GROUP_KEY].includes(currentKey)
@@ -237,7 +237,7 @@ const useResLinks = (): IResLinks => {
       items: getMatchedItems(arr, resLinkData[currentKey], categoryKey)
     });
 
-    return sortStrArray(
+    return sortArrValues(
       extendedKey
         ? handleSortedArr(arr, subCategoryItems, categoryKey).filter(item => item[extendedKey] === 0)
         : handleSortedArr(arr, subCategoryItems, categoryKey),

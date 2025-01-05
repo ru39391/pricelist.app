@@ -26,7 +26,7 @@ import {
   ITEM_KEY,
   GROUP_KEY
 } from '../utils/constants';
-import { sortStrArray } from '../utils';
+import { sortArrValues } from '../utils';
 
 interface ICurrentData {
   pageTitle: string;
@@ -98,7 +98,7 @@ const useCurrentData = (): ICurrentData => {
       ...selecterFields[type].reduce(
         (acc, item) => {
           const groupsArr = item === GROUP_KEY && !currentCategory[item]
-            ? sortStrArray(pricelist[TYPES[GROUP_KEY]].filter((item: TItemData) => item[SUBDEPT_KEY] === currentCategory[ID_KEY]), NAME_KEY)
+            ? sortArrValues(pricelist[TYPES[GROUP_KEY]].filter((item: TItemData) => item[SUBDEPT_KEY] === currentCategory[ID_KEY]), NAME_KEY)
             : [{ [ID_KEY] : 0 }];
 
           if(currentCategory[DEPT_KEY]) {

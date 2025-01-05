@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { sortStrArray } from '../utils';
+import { sortArrValues } from '../utils';
 import { GridValidRowModel, GridColDef } from '@mui/x-data-grid';
 import {
   ID_KEY,
@@ -87,7 +87,7 @@ const useTableData = (): ITableData => {
       IS_VISIBLE_KEY
     ];
     const items = fileData || data;
-    const rows: GridValidRowModel[] = sortStrArray([...arr], NAME_KEY)
+    const rows: GridValidRowModel[] = sortArrValues([...arr], NAME_KEY)
       .reduce((acc: GridValidRowModel[], item: GridValidRowModel, index) => !item ? [] : [...acc, {
         [ROW_INDEX_KEY]: index + 1,
         ...Object.keys(item).reduce((acc, key, index) => ({ ...acc, [key]: Object.values(item)[index] }), {}),

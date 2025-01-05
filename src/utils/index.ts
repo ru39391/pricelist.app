@@ -18,22 +18,28 @@ const fetchArray = (arr: TItemsArr, param: string): TItemsArr => {
   }, []);
 };
 
-const sortStrArray = (arr: TItemsArr, key: string): TItemsArr => {
-  const handleValue = (value: string): string => value !== null ? value.toString().toLowerCase() : '';
+const sortArrValues = (arr: TItemsArr, key: string): TItemsArr => {
+  const handleStrValue = (value: string): string => value !== null ? value.toString().toLowerCase() : '';
+
+  const handleNumValue = (value: number): number => value !== null ? Number(value) : 0;
+
+  const handleValue = (value: string | number): string | number => typeof value === 'string'
+    ? handleStrValue(value as string)
+    : handleNumValue(value as number);
 
   return arr.sort((a, b) => {
-    const nameA = handleValue(a[key] as string);
-    const nameB = handleValue(b[key] as string);
+    const valueA = handleValue(a[key]);
+    const valueB = handleValue(b[key]);
 
-    if(nameA < nameB) {
+    if(valueA < valueB) {
       return -1;
     }
-    if(nameA > nameB) {
+    if(valueA > valueB) {
       return 1;
     }
     return 0;
   });
-};
+}
 
 const handleRespData = (data: TItemsArr | undefined): TItemsArr => {
   if(!data) {
@@ -73,7 +79,7 @@ const fetchItemsArr = (arr: TItemsArr | undefined): TItemsArr => arr?.map(
   })
 ) || [];
 
-const handleFetchedArr = (arr: TItemsArr): TItemsArr => sortStrArray(fetchItemsArr(arr), NAME_KEY);
+const handleFetchedArr = (arr: TItemsArr): TItemsArr => sortArrValues(fetchItemsArr(arr), NAME_KEY);
 
 /**
  * Возвращает выборку дочерних элементов установленных категорий
@@ -90,7 +96,7 @@ const getMatchedItems = (
 
 export {
   fetchArray,
-  sortStrArray,
+  sortArrValues,
   handleRespData,
   setRespMessage,
   fetchItemsArr,

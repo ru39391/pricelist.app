@@ -10,12 +10,14 @@ import {
   TYPES,
   NAME_KEY,
   PRICE_KEY,
+  INDEX_KEY,
   RESLINKS_KEY,
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   IS_GROUP_IGNORED_KEY,
   IS_GROUP_USED_KEY,
-  IS_COMPLEX_DATA_KEY
+  IS_COMPLEX_DATA_KEY,
+  IS_VISIBLE_KEY
 } from '../utils/constants';
 
 import { useSelector } from '../services/hooks';
@@ -37,7 +39,7 @@ import type {
   TLinkedGroupKeys
 } from '../types';
 
-import { fetchArray, getMatchedItems } from '../utils';
+import { fetchArray, getMatchedItems, sortArrValues } from '../utils';
 
 type TResLinkedData = {
   arr: TLinkedSubdept[];
@@ -141,7 +143,7 @@ const useResLinkedItems = (): IResLinkedItems => {
           ...groups.reduce(
               (acc: TLinkedItem[], item: TLinkedGroup) => [...acc, ...item[TYPES[ITEM_KEY] as TLinkedGroupKeys] as TLinkedItem[]], [] as TLinkedItem[]
             )
-        ]
+        ].filter(item => item[IS_VISIBLE_KEY])
       ),
       config: JSON.stringify(params)
     }
@@ -160,15 +162,19 @@ const useResLinkedItems = (): IResLinkedItems => {
     payload: TPricelistData,
     config: TCustomData<boolean> | null
   ) => {
-    // console.log(payload);
-    const updatItemsArr = (arr: TItemsArr): TLinkedItem[] => arr.map((item: TItemData) => ({
-      [ID_KEY]: item[ID_KEY] as number,
-      [NAME_KEY]: item[NAME_KEY] as string,
-      [PRICE_KEY]: item[PRICE_KEY] as number,
-      [DEPT_KEY]: item[DEPT_KEY] as number,
-      [SUBDEPT_KEY]: item[SUBDEPT_KEY] as number,
-      [GROUP_KEY]: item[GROUP_KEY] as number
-    }));
+    const updatItemsArr = (arr: TItemsArr): TLinkedItem[] => sortArrValues(
+      arr.map((item: TItemData) => ({
+        [ID_KEY]: item[ID_KEY] as number,
+        [NAME_KEY]: item[NAME_KEY] as string,
+        [PRICE_KEY]: item[PRICE_KEY] as number,
+        [INDEX_KEY]: item[INDEX_KEY] as number,
+        [DEPT_KEY]: item[DEPT_KEY] as number,
+        [SUBDEPT_KEY]: item[SUBDEPT_KEY] as number,
+        [GROUP_KEY]: item[GROUP_KEY] as number,
+        [IS_VISIBLE_KEY]: item[IS_VISIBLE_KEY] as number,
+      })),
+      INDEX_KEY
+    ) as TLinkedItem[];
 
     const updatGroupsArr = (arr: TItemsArr, items: TLinkedItem[]): TLinkedGroup[] => arr.map((item: TItemData) => ({
       [ID_KEY]: item[ID_KEY] as number,
