@@ -22,18 +22,12 @@ import type {
   TCustomData,
   TItemsArr,
   TItemData,
+  TLinkedResData,
   TPricelistExtTypes,
   TPricelistKeys
 } from '../types';
 
 import { sortArrValues, fetchArray, getMatchedItems } from '../utils';
-
-type TLinkedResData = {
-  action?: string;
-  data?: TItemData;
-  items?: TItemsArr;
-  key?: string;
-};
 
 interface IResLinks {
   existableDepts: TItemsArr;

@@ -1,4 +1,4 @@
-import { FC, Fragment, useCallback, useEffect } from 'react';
+import { FC, Fragment, useCallback, useContext, useEffect } from 'react';
 import {
   Autocomplete,
   Box,
@@ -21,6 +21,8 @@ import ResCategorySelector from './ResCategorySelector';
 
 import useResLinks from '../hooks/useResLinks';
 import useResLinkedItems from '../hooks/useResLinkedItems';
+
+import ResItemContext from '../contexts/ResItemContext';
 
 import { useSelector, useDispatch } from '../services/hooks';
 import { handleResLinkedData } from '../services/actions/pricelist';
@@ -60,9 +62,11 @@ const GroupHeader = styled('div')(({ theme }) => ({
 const GroupList = styled('ul')({ padding: 0, zIndex: 1 });
 
 const ResItem: FC = () => {
+  const resItemData = useContext(ResItemContext);
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
   const dispatch = useDispatch();
+  // TODO: перенести хранение данных в контекст
   const {
     linkedDepts,
     linkedSubdepts,
@@ -127,17 +131,9 @@ const ResItem: FC = () => {
   ]);
 
   useEffect(() => {
-    console.log(linkedDepts.length);
-    /*
-    console.log({
-      resLinkedItems,
-      resLinkedData,
-      isLinkedListExist,
-      isLinkedListCurrent,
-    });
-    */
+    console.log({resItemData});
   }, [
-    linkedDepts
+    resItemData
   ]);
 
   if(resLinkedItems.length > 0) {
@@ -170,17 +166,18 @@ const ResItem: FC = () => {
 
   return (
     <>
-      {existableDepts.length}
       {[{
         category: DEPT_KEY,
         sx: { mb: 3, backgroundColor: '#fff' },
-        arr: existableDepts
+        linkedList: resItemData.linkedDepts,
+        existableList: resItemData.existableDepts
       }, {
         category: SUBDEPT_KEY,
         sx: { mb: 2.5, backgroundColor: '#fff' },
-        arr: existableSubdepts
-      }].map((props) => props.arr.length > 0 && <ResCategorySelector key={props.category} {...props} />)}
-      {existableSubdepts.length}
+        linkedList: resItemData.linkedSubdepts,
+        existableList: resItemData.existableSubdepts
+        // TODO: поправить баг сброса категорий специализации
+      }].map((props) => <ResCategorySelector key={props.category} handler={resItemData.resLinkHandlers} {...props} />)}
       {/*
       {(existableDepts.length + linkedDepts.length) > 0 && <Autocomplete
         multiple

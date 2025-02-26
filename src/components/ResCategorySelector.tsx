@@ -5,9 +5,7 @@ import {
   TextField,
 } from '@mui/material';
 
-import useResLinks from '../hooks/useResLinks';
-
-import type { TItemsArr } from '../types';
+import type { TCustomData, TItemsArr, TLinkedResData } from '../types';
 
 import {
   ID_KEY,
@@ -23,30 +21,21 @@ import {
 interface IResCategorySelector {
   category: string;
   sx: Record<string, string | number>;
+  linkedList: TItemsArr;
+  existableList: TItemsArr;
+  handler: TCustomData<(payload: TLinkedResData) => void>;
 }
 
 const ResCategorySelector: FC<IResCategorySelector> = ({
   category,
-  sx
+  sx,
+  linkedList,
+  existableList,
+  handler
 }) => {
-  const {
-    linkedDepts,
-    existableDepts,
-    linkedSubdepts,
-    existableSubdepts,
-    resLinkHandlers
-  } = useResLinks();
-
-  const { linkedList, existableList } = {
-    linkedList: category === SUBDEPT_KEY ? linkedSubdepts : linkedDepts,
-    existableList: category === SUBDEPT_KEY ? existableSubdepts : existableDepts
-  }
-
   const handleOptionData = <T, >(data: T, key: string, isNumber = false): number | string => isNumber ? data[key] as number : data[key] as string;
 
-  // (existableList.length + linkedList.length) > 0 &&
-
-  return <Autocomplete
+  return (existableList.length + linkedList.length) > 0 && <Autocomplete
     multiple
     filterSelectedOptions
     id={`${category}-selecter`}
@@ -60,7 +49,7 @@ const ResCategorySelector: FC<IResCategorySelector> = ({
     renderInput={(props) => <TextField {...props} label={[TITLES[category]]} />}
     renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
     getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}
-    onChange={(_, value, reason ) => resLinkHandlers[category]({
+    onChange={(_, value, reason ) => handler[category]({
       action: reason,
       items: reason === 'clear' ? [] : value as TItemsArr
     })}

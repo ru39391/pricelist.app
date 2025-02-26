@@ -169,6 +169,13 @@ export type TResLinkedAction = {
   data: TItemData;
 };
 
+export type TLinkedResData = {
+  action?: string;
+  data?: TItemData;
+  items?: TItemsArr;
+  key?: string;
+};
+
 export type TUrlData = {
   type: TPricelistTypes | string;
   id: number | null;
