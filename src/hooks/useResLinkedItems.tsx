@@ -162,6 +162,7 @@ const useResLinkedItems = (): IResLinkedItems => {
     payload: TPricelistData,
     config: TCustomData<boolean> | null
   ) => {
+    console.log({payload, config});
     const updatItemsArr = (arr: TItemsArr): TLinkedItem[] => sortArrValues(
       arr.map((item: TItemData) => ({
         [ID_KEY]: item[ID_KEY] as number,

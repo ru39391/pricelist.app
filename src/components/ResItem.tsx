@@ -17,6 +17,7 @@ import { styled, lighten, darken } from '@mui/system';
 import { ArrowBack, Check, Done, RemoveRedEye } from '@mui/icons-material';
 
 import ResLinkedItems from './ResLinkedItems';
+import ResCategorySelector from './ResCategorySelector';
 
 import useResLinks from '../hooks/useResLinks';
 import useResLinkedItems from '../hooks/useResLinkedItems';
@@ -88,6 +89,7 @@ const ResItem: FC = () => {
   const isLinkedDataExist = (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]);
 
   const setLinkedData = () => {
+    console.log({linkedDataConfig});
     if(isLinkedDataExist(IS_COMPLEX_DATA_KEY) && isLinkedDataExist(IS_GROUP_IGNORED_KEY)) {
       return;
     }
@@ -109,10 +111,33 @@ const ResItem: FC = () => {
 
   useEffect(() => {
     setLinkedData();
+    /*
+    console.log({
+      linkedDepts,
+      linkedSubdepts,
+      linkedGroups,
+      linkedItems,
+      linkedDataConfig
+    });
+    */
   }, [
     linkedSubdepts,
     existableGroups,
     existableItems
+  ]);
+
+  useEffect(() => {
+    console.log(linkedDepts.length);
+    /*
+    console.log({
+      resLinkedItems,
+      resLinkedData,
+      isLinkedListExist,
+      isLinkedListCurrent,
+    });
+    */
+  }, [
+    linkedDepts
   ]);
 
   if(resLinkedItems.length > 0) {
@@ -145,6 +170,18 @@ const ResItem: FC = () => {
 
   return (
     <>
+      {existableDepts.length}
+      {[{
+        category: DEPT_KEY,
+        sx: { mb: 3, backgroundColor: '#fff' },
+        arr: existableDepts
+      }, {
+        category: SUBDEPT_KEY,
+        sx: { mb: 2.5, backgroundColor: '#fff' },
+        arr: existableSubdepts
+      }].map((props) => props.arr.length > 0 && <ResCategorySelector key={props.category} {...props} />)}
+      {existableSubdepts.length}
+      {/*
       {(existableDepts.length + linkedDepts.length) > 0 && <Autocomplete
         multiple
         filterSelectedOptions
@@ -188,6 +225,7 @@ const ResItem: FC = () => {
         getOptionKey={(option) => option[ID_KEY]}
         onChange={(_, value, reason ) => resLinkHandlers[SUBDEPT_KEY]({ action: reason, items: reason === 'clear' ? [] : value })}
       />}
+       */}
 
       {existableGroups.length > 0
         ? (<Box
