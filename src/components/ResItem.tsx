@@ -1,4 +1,4 @@
-import { FC, Fragment, useCallback, useContext, useEffect } from 'react';
+import { FC, Fragment, useCallback, useContext, useEffect, useMemo } from 'react';
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { ArrowBack, Check, RemoveRedEye } from '@mui/icons-material';
@@ -58,6 +58,11 @@ const ResItem: FC = () => {
     renderLinkedItems,
     resetLinkedItems
   } = useResLinkedItems();
+
+  const isDeptTogglerVisible = useMemo(
+    () => linkedDepts.length === 1 && linkedSubdepts.length === 0,
+    [linkedDepts, linkedSubdepts]
+  );
 
   const isLinkedDataExist = useCallback(
     (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]),
@@ -137,86 +142,101 @@ const ResItem: FC = () => {
         existableList: existableSubdepts
       }].map((props) => <ResItemCategoryList key={props.category} handler={resLinkHandlers} {...props} />)}
 
-      <ResItemControllers
-        linkedList={linkedGroups}
-        existableList={existableGroups}
-        itemsHandler={resLinkHandlers}
-        configHandler={handleDataConfig}
-        paramsHandler={isLinkedDataExist}
-      />
+      {isDeptTogglerVisible
+        ? <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <LoadingButton
+              color='success'
+              variant="outlined"
+              loadingPosition="start"
+              loading={isPricelistLoading}
+              disabled={isLinkedListCurrent}
+              startIcon={<Check />}
+              onClick={dispatchResLinkedData}
+            >
+              {SAVE_TITLE}
+            </LoadingButton>
+          </Box>
+        : <>
+          <ResItemControllers
+            linkedList={linkedGroups}
+            existableList={existableGroups}
+            itemsHandler={resLinkHandlers}
+            configHandler={handleDataConfig}
+            paramsHandler={isLinkedDataExist}
+          />
+          {linkedSubdepts.map(
+            (subdept) => <Box key={subdept[ID_KEY].toString()} sx={{ mb: 1.5, gap: 1, display: 'flex', flexDirection: 'column' }}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="h6" component="div" sx={{ mb: 1.5 }}>{subdept[NAME_KEY]}</Typography>
+                  {isLinkedDataExist(IS_GROUP_IGNORED_KEY)
+                    ? (filterList(existableGroups, subdept, SUBDEPT_KEY).map(
+                        (options) => <ResItemTogglersList
+                          key={options[ID_KEY].toString()}
+                          handler={resLinkHandlers}
+                          paramsHandler={isLinkedItemActive}
+                          arr={filterList(existableItems, options, GROUP_KEY)}
+                          linkedList={linkedItems}
+                          category={ITEM_KEY}
+                          styles={{ mb: 2 }}
+                          warningStyles={{ mb: 2 }}
+                          warningMess="Группа не содержит услуг"
+                          caption={<Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>{options[NAME_KEY]}</Typography>}
+                        />)
+                      )
+                    : <ResItemTogglersList
+                        handler={resLinkHandlers}
+                        paramsHandler={isLinkedItemActive}
+                        arr={filterList(existableGroups, subdept, SUBDEPT_KEY)}
+                        linkedList={linkedGroups}
+                        category={GROUP_KEY}
+                        styles={{ mb: 0 }}
+                        sx={{ backgroundColor: '#fff' }}
+                        warningMess="Специализация не содержит групп"
+                        variant="outlined"
+                      />
+                  }
 
-      {linkedSubdepts.map(
-        (subdept) => <Box key={subdept[ID_KEY].toString()} sx={{ mb: 1.5, gap: 1, display: 'flex', flexDirection: 'column' }}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="h6" component="div" sx={{ mb: 1.5 }}>{subdept[NAME_KEY]}</Typography>
-              {isLinkedDataExist(IS_GROUP_IGNORED_KEY)
-                ? (filterList(existableGroups, subdept, SUBDEPT_KEY).map(
-                    (options) => <ResItemTogglersList
-                      key={options[ID_KEY].toString()}
-                      handler={resLinkHandlers}
-                      paramsHandler={isLinkedItemActive}
-                      arr={filterList(existableItems, options, GROUP_KEY)}
-                      linkedList={linkedItems}
-                      category={ITEM_KEY}
-                      styles={{ mb: 2 }}
-                      warningStyles={{ mb: 2 }}
-                      warningMess="Группа не содержит услуг"
-                      caption={<Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>{options[NAME_KEY]}</Typography>}
-                    />)
-                  )
-                : <ResItemTogglersList
-                    handler={resLinkHandlers}
-                    paramsHandler={isLinkedItemActive}
-                    arr={filterList(existableGroups, subdept, SUBDEPT_KEY)}
-                    linkedList={linkedGroups}
-                    category={GROUP_KEY}
-                    styles={{ mb: 0 }}
-                    sx={{ backgroundColor: '#fff' }}
-                    warningMess="Специализация не содержит групп"
-                    variant="outlined"
-                  />
-              }
-
-              {(isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY))
-                && filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0).length > 0
-                && <ResItemTogglersList
-                    handler={resLinkHandlers}
-                    paramsHandler={isLinkedItemActive}
-                    arr={filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0)}
-                    linkedList={linkedItems}
-                    category={ITEM_KEY}
-                    styles={{ mb: 0, ...(!isLinkedDataExist(IS_GROUP_IGNORED_KEY) && { mt: 2 }) }}
-                    caption={
-                      isLinkedDataExist(IS_GROUP_IGNORED_KEY)
-                        ? <Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>Без группы</Typography>
-                        : <Fragment />
-                    }
-                  />
-              }
-            </CardContent>
-          </Card>
-        </Box>
-      )}
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
-        <Button
-          variant="outlined"
-          disabled={[...linkedGroups, ...linkedItems].length === 0}
-          startIcon={<RemoveRedEye />}
-          onClick={() => renderLinkedItems(
-            {
-              [TYPES[DEPT_KEY]]: linkedDepts,
-              [TYPES[SUBDEPT_KEY]]: linkedSubdepts,
-              [TYPES[GROUP_KEY]]: linkedGroups,
-              [TYPES[ITEM_KEY]]: linkedItems,
-            },
-            linkedDataConfig
-        )}
-        >
-          Предпросмотр
-        </Button>
-      </Box>
+                  {(isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY))
+                    && filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0).length > 0
+                    && <ResItemTogglersList
+                        handler={resLinkHandlers}
+                        paramsHandler={isLinkedItemActive}
+                        arr={filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0)}
+                        linkedList={linkedItems}
+                        category={ITEM_KEY}
+                        styles={{ mb: 0, ...(!isLinkedDataExist(IS_GROUP_IGNORED_KEY) && { mt: 2 }) }}
+                        caption={
+                          isLinkedDataExist(IS_GROUP_IGNORED_KEY)
+                            ? <Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>Без группы</Typography>
+                            : <Fragment />
+                        }
+                      />
+                  }
+                </CardContent>
+              </Card>
+            </Box>
+          )}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
+            <Button
+              variant="outlined"
+              disabled={[...linkedGroups, ...linkedItems].length === 0}
+              startIcon={<RemoveRedEye />}
+              onClick={() => renderLinkedItems(
+                {
+                  [TYPES[DEPT_KEY]]: linkedDepts,
+                  [TYPES[SUBDEPT_KEY]]: linkedSubdepts,
+                  [TYPES[GROUP_KEY]]: linkedGroups,
+                  [TYPES[ITEM_KEY]]: linkedItems,
+                },
+                linkedDataConfig
+              )}
+            >
+              Предпросмотр
+            </Button>
+          </Box>
+        </>
+      }
     </>
   )
 };

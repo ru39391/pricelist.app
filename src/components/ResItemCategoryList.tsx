@@ -60,10 +60,16 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
       renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
       getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}
       groupBy={(option) => groupByOption(option)}
-      onChange={(_, value, reason ) => handler[category]({
-        action: reason,
-        items: reason === 'clear' ? [] : value as TItemsArr
-      })}
+      onChange={(_, value, reason ) => {
+        // TODO: вызвать модальное окно с подтверждением действия
+        if(reason === 'clear' || reason === 'removeOption') {
+          console.log('Вызвать модальное окно с подтверждением действия');
+        }
+        handler[category]({
+          action: reason,
+          items: reason === 'clear' ? [] : value as TItemsArr
+        })
+      }}
     />
   )
 };
