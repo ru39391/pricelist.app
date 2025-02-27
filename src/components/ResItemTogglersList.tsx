@@ -48,17 +48,11 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
   caption
 }) => {
   return (
-    arr.length > 0
-      ? <>
-          {caption}
-          <Box
-            sx={{
-              gap: 1,
-              display: 'flex',
-              flexWrap: 'wrap',
-              ...(styles && {...styles})
-            }}
-          >
+    <>
+      {caption}
+      {arr.length > 0
+        ?
+          <Box sx={{ gap: 1, display: 'flex',flexWrap: 'wrap', ...(styles && {...styles}) }}>
             {arr.map(
               (data) => <Chip
                 key={data[ID_KEY].toString()}
@@ -69,8 +63,9 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
               />
             )}
           </Box>
-      </>
-      : (warningMess ? <Typography variant="body2" color="textSecondary" component="div" {...(warningStyles && {...warningStyles})}>{warningMess}</Typography> : '')
+        : (warningMess ? <Typography variant="body2" color="textSecondary" component="div" {...(warningStyles && {...warningStyles})}>{warningMess}</Typography> : '')
+      }
+    </>
   )
 };
 

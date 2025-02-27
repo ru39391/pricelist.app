@@ -1,14 +1,7 @@
 import { FC, Fragment, useCallback, useContext, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { ArrowBack, Check, Done, RemoveRedEye } from '@mui/icons-material';
+import { ArrowBack, Check, RemoveRedEye } from '@mui/icons-material';
 
 import ResItemControllers from './ResItemControllers';
 import ResItemCategoryList from './ResItemCategoryList';
@@ -35,7 +28,7 @@ import {
   IS_GROUP_IGNORED_KEY,
   SAVE_TITLE,
 } from '../utils/constants';
-import { TItemsArr } from '../types';
+import { TItemData, TItemsArr, TPricelistKeys } from '../types';
 
 const ResItem: FC = () => {
   const {
@@ -66,10 +59,15 @@ const ResItem: FC = () => {
     resetLinkedItems
   } = useResLinkedItems();
 
-  const isLinkedDataExist = (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]);
+  const isLinkedDataExist = useCallback(
+    (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]),
+    [linkedDataConfig]
+  );
+
+  const filterList = (arr: TItemsArr, data: TItemData, key: TPricelistKeys): TItemsArr => arr.filter((item) => item[key] === data[ID_KEY]);
 
   const setLinkedData = () => {
-    console.log({linkedDataConfig});
+    // console.log({linkedDataConfig});
     if(isLinkedDataExist(IS_COMPLEX_DATA_KEY) && isLinkedDataExist(IS_GROUP_IGNORED_KEY)) {
       return;
     }
@@ -148,21 +146,17 @@ const ResItem: FC = () => {
       />
 
       {linkedSubdepts.map(
-        (subdept) => <Box
-          key={subdept[ID_KEY].toString()}
-          sx={{ mb: 1.5, gap: 1, display: 'flex', flexDirection: 'column' }}
-        >
+        (subdept) => <Box key={subdept[ID_KEY].toString()} sx={{ mb: 1.5, gap: 1, display: 'flex', flexDirection: 'column' }}>
           <Card variant="outlined">
             <CardContent>
               <Typography variant="h6" component="div" sx={{ mb: 1.5 }}>{subdept[NAME_KEY]}</Typography>
               {isLinkedDataExist(IS_GROUP_IGNORED_KEY)
-                ? (existableGroups.filter((group) => group[SUBDEPT_KEY] === subdept[ID_KEY])
-                    && existableGroups.filter((group) => group[SUBDEPT_KEY] === subdept[ID_KEY]).map(
+                ? (filterList(existableGroups, subdept, SUBDEPT_KEY).map(
                     (options) => <ResItemTogglersList
                       key={options[ID_KEY].toString()}
                       handler={resLinkHandlers}
                       paramsHandler={isLinkedItemActive}
-                      arr={existableItems.filter((item) => item[GROUP_KEY] === options[ID_KEY])}
+                      arr={filterList(existableItems, options, GROUP_KEY)}
                       linkedList={linkedItems}
                       category={ITEM_KEY}
                       styles={{ mb: 2 }}
@@ -174,7 +168,7 @@ const ResItem: FC = () => {
                 : <ResItemTogglersList
                     handler={resLinkHandlers}
                     paramsHandler={isLinkedItemActive}
-                    arr={existableGroups.filter((group) => group[SUBDEPT_KEY] === subdept[ID_KEY])}
+                    arr={filterList(existableGroups, subdept, SUBDEPT_KEY)}
                     linkedList={linkedGroups}
                     category={GROUP_KEY}
                     styles={{ mb: 0 }}
@@ -185,11 +179,11 @@ const ResItem: FC = () => {
               }
 
               {(isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY))
-                && existableItems.filter((item) => item[SUBDEPT_KEY] === subdept[ID_KEY] && item[GROUP_KEY] === 0).length > 0
+                && filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0).length > 0
                 && <ResItemTogglersList
                     handler={resLinkHandlers}
                     paramsHandler={isLinkedItemActive}
-                    arr={existableItems.filter((item) => item[SUBDEPT_KEY] === subdept[ID_KEY] && item[GROUP_KEY] === 0)}
+                    arr={filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0)}
                     linkedList={linkedItems}
                     category={ITEM_KEY}
                     styles={{ mb: 0, ...(!isLinkedDataExist(IS_GROUP_IGNORED_KEY) && { mt: 2 }) }}
