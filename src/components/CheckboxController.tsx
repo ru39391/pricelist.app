@@ -1,7 +1,7 @@
 import { FC, ChangeEvent } from 'react';
 import { Checkbox, FormControlLabel } from '@mui/material';
 
-interface IResItemToggler {
+interface ICheckboxController {
   id: string;
   label: string;
   isChecked: boolean;
@@ -9,7 +9,7 @@ interface IResItemToggler {
   handler: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const ResItemToggler: FC<IResItemToggler> = ({
+const CheckboxController: FC<ICheckboxController> = ({
   id,
   label,
   isChecked,
@@ -23,4 +23,4 @@ const ResItemToggler: FC<IResItemToggler> = ({
   />
 };
 
-export default ResItemToggler;
+export default CheckboxController;

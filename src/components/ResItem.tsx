@@ -12,6 +12,7 @@ import { ArrowBack, Check, Done, RemoveRedEye } from '@mui/icons-material';
 
 import ResItemControllers from './ResItemControllers';
 import ResItemCategoryList from './ResItemCategoryList';
+import ResItemTogglersList from './ResItemTogglersList';
 import ResLinkedItems from './ResLinkedItems';
 
 import useResLinks from '../hooks/useResLinks';
@@ -164,7 +165,15 @@ const ResItem: FC = () => {
                     (options) => <Fragment key={options[ID_KEY].toString()}>
                       <Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>{options[NAME_KEY]}</Typography>
                       {existableItems.filter((item) => item[GROUP_KEY] === options[ID_KEY]).length > 0
-                        ? <Box
+                        ? <ResItemTogglersList
+                            styles={{ mb: 2 }}
+                            arr={existableItems.filter((item) => item[GROUP_KEY] === options[ID_KEY])}
+                            linkedList={linkedItems}
+                            category={ITEM_KEY}
+                            handler={resLinkHandlers}
+                            paramsHandler={isLinkedItemActive}
+                          />
+                          /*<Box
                           sx={{
                             mb: 2,
                             gap: 1,
@@ -180,13 +189,24 @@ const ResItem: FC = () => {
                               {...( isLinkedItemActive(linkedItems, data) && { color: 'primary', icon: <Done /> } )}
                             />
                           )}
-                        </Box>
+                        </Box>*/
                         : <Typography variant="body2" color="textSecondary" component="div" sx={{ mb: 2 }}>Группа не содержит услуг</Typography>
                       }
                     </Fragment>)
                   )
                 : (existableGroups.filter((group) => group[SUBDEPT_KEY] === subdept[ID_KEY]).length > 0
-                    ? <Box
+                    ? <ResItemTogglersList
+                        styles={{ mb: 0 }}
+                        sx={{ backgroundColor: '#fff' }}
+                        variant='outlined'
+                        arr={existableGroups.filter((group) => group[SUBDEPT_KEY] === subdept[ID_KEY])}
+                        linkedList={linkedGroups}
+                        category={GROUP_KEY}
+                        handler={resLinkHandlers}
+                        paramsHandler={isLinkedItemActive}
+                      />
+                      /*
+                    <Box
                         sx={{
                           mb: 0,
                           gap: 1,
@@ -204,6 +224,7 @@ const ResItem: FC = () => {
                           />
                         )}
                       </Box>
+                      */
                     : <Typography variant="body2" color="textSecondary" component="div">Специализация не содержит групп</Typography>
                   )
               }
@@ -213,6 +234,15 @@ const ResItem: FC = () => {
                 && <>
                   {isLinkedDataExist(IS_GROUP_IGNORED_KEY)
                     && <Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>Без группы</Typography>}
+                  <ResItemTogglersList
+                    styles={{ mb: 0, ...(!isLinkedDataExist(IS_GROUP_IGNORED_KEY) && { mt: 2 }) }}
+                    arr={existableItems.filter((item) => item[SUBDEPT_KEY] === subdept[ID_KEY] && item[GROUP_KEY] === 0)}
+                    linkedList={linkedItems}
+                    category={ITEM_KEY}
+                    handler={resLinkHandlers}
+                    paramsHandler={isLinkedItemActive}
+                  />
+                  {/*
                   <Box
                     sx={{
                       ...( !isLinkedDataExist(IS_GROUP_IGNORED_KEY) && { mt: 2 } ),
@@ -231,6 +261,7 @@ const ResItem: FC = () => {
                       />
                     )}
                   </Box>
+                  */}
                 </>
               }
             </CardContent>
