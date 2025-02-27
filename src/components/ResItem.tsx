@@ -86,6 +86,7 @@ const ResItem: FC = () => {
   };
 
   const dispatchResLinkedData = useCallback(() => {
+    console.log({resLinkedData, isLinkedListExist});
     if(resLinkedData) dispatch(handleResLinkedData(resLinkedData));
   }, [
     dispatch,
@@ -227,7 +228,14 @@ const ResItem: FC = () => {
                   [TYPES[DEPT_KEY]]: linkedDepts,
                   [TYPES[SUBDEPT_KEY]]: linkedSubdepts,
                   [TYPES[GROUP_KEY]]: linkedGroups,
-                  [TYPES[ITEM_KEY]]: linkedItems,
+                  [TYPES[ITEM_KEY]]: isLinkedDataExist(IS_COMPLEX_DATA_KEY)
+                    // TODO: поправить присоединение услуг при установленном чекбоксе "Игнорировать группы", когда для существующей привязки сняли выбор групп
+                    // предусмотреть случай выбора позиций без групп при комплексном выборе, когда linkedGroups.length === 0
+                    // проверить приведённые ниже условия и создать корректный метод в компоненте ResItemControllers
+                    ? linkedGroups.length > 0
+                      ? linkedItems
+                      : isLinkedDataExist(IS_GROUP_IGNORED_KEY) ? linkedItems : linkedItems.filter((item) => item[GROUP_KEY] === 0)
+                    : linkedItems.filter((item) => item[GROUP_KEY] !== 0),
                 },
                 linkedDataConfig
               )}
@@ -242,3 +250,10 @@ const ResItem: FC = () => {
 };
 
 export default ResItem;
+
+/*
+// TODO: создать переменные с useMemo в компоненте ResItemControllers на случай:
+"Комплексный выбор" - true и disabled, когда устанавливаем "Игнорировать группы" или "Сохранить группировку"
+"Игнорировать группы" - true и disabled, когда устанавливаем "Сохранить группировку"
+"Сохранить группировку" - проверить, чтобы при его изменении не изменялись "Комплексный выбор" и "Игнорировать группы"
+*/

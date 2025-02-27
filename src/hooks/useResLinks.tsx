@@ -289,9 +289,13 @@ const useResLinks = (): IResLinks => {
   const setResLinks = () => {
     const data = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
 
+    console.log({data});
+
     if(!data) {
       return;
     }
+
+    const itemsArr: number[] = JSON.parse(data[TYPES[ITEM_KEY]] as string);
 
     setLinkedDataConfig(JSON.parse(data.config as string));
 
@@ -301,6 +305,10 @@ const useResLinks = (): IResLinks => {
         items: pricelist[key].filter(item => JSON.parse(data[key] as string).includes(item[ID_KEY]))
       })
     });
+
+    if(itemsArr.length > 0) {
+      setLinkedDataConfig({ [IS_COMPLEX_DATA_KEY]: true });
+    }
   }
 
   useEffect(() => {

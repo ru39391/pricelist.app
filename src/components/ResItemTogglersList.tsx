@@ -59,7 +59,7 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
                 label={data[NAME_KEY]}
                 onClick={() => handler[category]({ data })}
                 {...(variant && {variant})}
-                {...( paramsHandler(linkedList, data) && { color: 'primary', icon: <Done />, ...(sx && {...sx}) } )}
+                {...( paramsHandler(linkedList, data) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
               />
             )}
           </Box>

@@ -238,8 +238,10 @@ const useResLinkedItems = (): IResLinkedItems => {
       subdepts: subdepts.filter(data => data[DEPT_KEY] === item[ID_KEY])
     }));
 
+    console.log({items, groupedItems}, [...groupedItems, ...items].length);
     setResLinkedItems(depts);
     setLinkedListExist([...groupedItems, ...items].length > 0);
+    // TODO: поправить для случая сохранения всех данных одного отделения
     updateLinkedItems({
       arr: depts.reduce((acc: TLinkedSubdept[], item) => [...acc, ...item[TYPES[SUBDEPT_KEY] as TLinkedDeptKeys] as TLinkedSubdept[]], []),
       config
