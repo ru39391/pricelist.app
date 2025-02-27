@@ -1,5 +1,12 @@
-import { FC } from 'react';
-import { Box, BoxOwnProps, Chip, ChipOwnProps } from '@mui/material';
+import { FC, ReactNode } from 'react';
+import {
+  Box,
+  BoxProps,
+  Chip,
+  ChipOwnProps,
+  Typography,
+  TypographyOwnProps
+} from '@mui/material';
 import { Done } from '@mui/icons-material';
 
 import type {
@@ -14,45 +21,56 @@ import {
 } from '../utils/constants';
 
 interface IResItemTogglersList {
-  styles?: BoxOwnProps['sx'];
-  sx?: ChipOwnProps['sx'];
-  variant?: ChipOwnProps['variant'];
+  handler: TCategorySelectorHandler;
+  paramsHandler: (arr: TItemsArr, data: TItemData) => boolean;
   arr: TItemsArr;
   linkedList: TItemsArr;
   category: string;
-  handler: TCategorySelectorHandler;
-  paramsHandler: (arr: TItemsArr, data: TItemData) => boolean;
+  styles?: BoxProps['sx'];
+  sx?: ChipOwnProps['sx'];
+  warningStyles?: TypographyOwnProps['sx'];
+  warningMess?: string;
+  variant?: ChipOwnProps['variant'];
+  caption?: ReactNode;
 }
 
 const ResItemTogglersList: FC<IResItemTogglersList> = ({
-  styles,
-  sx,
-  variant,
+  handler,
+  paramsHandler,
   arr,
   linkedList,
   category,
-  handler,
-  paramsHandler
+  styles,
+  sx,
+  warningStyles,
+  warningMess,
+  variant,
+  caption
 }) => {
   return (
-    <Box
-      sx={{
-        gap: 1,
-        display: 'flex',
-        flexWrap: 'wrap',
-        ...(styles && {...styles})
-      }}
-    >
-      {arr.map(
-        (data) => <Chip
-          key={data[ID_KEY].toString()}
-          label={data[NAME_KEY]}
-          onClick={() => handler[category]({ data })}
-          {...(variant && {variant})}
-          {...( paramsHandler(linkedList, data) && { color: 'primary', icon: <Done />, ...(sx && {...sx}) } )}
-        />
-      )}
-    </Box>
+    arr.length > 0
+      ? <>
+          {caption}
+          <Box
+            sx={{
+              gap: 1,
+              display: 'flex',
+              flexWrap: 'wrap',
+              ...(styles && {...styles})
+            }}
+          >
+            {arr.map(
+              (data) => <Chip
+                key={data[ID_KEY].toString()}
+                label={data[NAME_KEY]}
+                onClick={() => handler[category]({ data })}
+                {...(variant && {variant})}
+                {...( paramsHandler(linkedList, data) && { color: 'primary', icon: <Done />, ...(sx && {...sx}) } )}
+              />
+            )}
+          </Box>
+      </>
+      : (warningMess ? <Typography variant="body2" color="textSecondary" component="div" {...(warningStyles && {...warningStyles})}>{warningMess}</Typography> : '')
   )
 };
 
