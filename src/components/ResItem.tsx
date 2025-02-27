@@ -1,6 +1,5 @@
 import { FC, Fragment, useCallback, useContext, useEffect } from 'react';
 import {
-  Autocomplete,
   Box,
   Button,
   Card,
@@ -8,16 +7,15 @@ import {
   Checkbox,
   Chip,
   FormControlLabel,
-  ListItem,
-  TextField,
   Typography,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { styled, lighten, darken } from '@mui/system';
+//import { styled, lighten, darken } from '@mui/system';
 import { ArrowBack, Check, Done, RemoveRedEye } from '@mui/icons-material';
 
+import ResItemToggler from './ResItemToggler';
+import ResItemCategoryList from './ResItemCategoryList';
 import ResLinkedItems from './ResLinkedItems';
-import ResCategorySelector from './ResCategorySelector';
 
 import useResLinks from '../hooks/useResLinks';
 import useResLinkedItems from '../hooks/useResLinkedItems';
@@ -44,6 +42,7 @@ import {
   SAVE_TITLE,
 } from '../utils/constants';
 
+/*
 const GroupHeader = styled('div')(({ theme }) => ({
   zIndex: 1,
   position: 'sticky',
@@ -55,6 +54,7 @@ const GroupHeader = styled('div')(({ theme }) => ({
 }));
 
 const GroupList = styled('ul')({ padding: 0, zIndex: 1 });
+*/
 
 const ResItem: FC = () => {
   const {
@@ -69,15 +69,13 @@ const ResItem: FC = () => {
       existableItems,
     },
     linkedDataConfig,
-    resLinkHandlers
+    resLinkHandlers,
+    handleDataConfig
   } = useContext(ResItemContext);
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
   const dispatch = useDispatch();
-  const {
-    isLinkedItemActive,
-    handleDataConfig
-  } = useResLinks();
+  const { isLinkedItemActive } = useResLinks();
   const {
     resLinkedItems,
     resLinkedData,
@@ -158,66 +156,48 @@ const ResItem: FC = () => {
         sx: { mb: 2.5, backgroundColor: '#fff' },
         linkedList: linkedSubdepts,
         existableList: existableSubdepts
-      }].map((props) => <ResCategorySelector key={props.category} handler={resLinkHandlers} {...props} />)}
+      }].map((props) => <ResItemCategoryList key={props.category} handler={resLinkHandlers} {...props} />)}
 
       {existableGroups.length > 0
-        ? (<Box
+        && (<Box
           sx={{
             mb: .5,
             gap: 1,
             display: 'flex',
             flexWrap: 'wrap',
           }}>
-            <FormControlLabel
+            <ResItemToggler
+              id={''}
               label={existableGroups.length === linkedGroups.length ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY]}
-              sx={{ mb: .25 }}
-              control={
-                <Checkbox
-                  checked={existableGroups.length === linkedGroups.length}
-                  disabled={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-                  onChange={() => resLinkHandlers[GROUP_KEY]({ items: existableGroups.length === linkedGroups.length ? [] : existableGroups })}
-                />
-              }
+              isChecked={existableGroups.length === linkedGroups.length}
+              isDisabled={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
+              handler={() => resLinkHandlers[GROUP_KEY]({ items: existableGroups.length === linkedGroups.length ? [] : existableGroups })}
             />
-            <FormControlLabel
+            <ResItemToggler
+              id={IS_COMPLEX_DATA_KEY}
               label={LINKED_RES_PARAMS[IS_COMPLEX_DATA_KEY]}
-              sx={{ mb: .25 }}
-              control={
-                <Checkbox
-                  id={IS_COMPLEX_DATA_KEY}
-                  checked={isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-                  disabled={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-                  onChange={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_COMPLEX_DATA_KEY) })}
-                />
-              }
+              isChecked={isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
+              isDisabled={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
+              handler={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_COMPLEX_DATA_KEY) })}
             />
-            <FormControlLabel
+            <ResItemToggler
+              id={IS_GROUP_IGNORED_KEY}
               label={LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
-              sx={{ mb: .25 }}
-              control={
-                <Checkbox
-                  id={IS_GROUP_IGNORED_KEY}
-                  checked={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-                  disabled={linkedGroups.length !== 0}
-                  onChange={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_GROUP_IGNORED_KEY) })}
-                />
-              }
+              isChecked={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
+              isDisabled={linkedGroups.length !== 0}
+              handler={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_GROUP_IGNORED_KEY) })}
             />
             {isLinkedDataExist(IS_GROUP_IGNORED_KEY)
-              && <FormControlLabel
+              && <ResItemToggler
+                id={IS_GROUP_USED_KEY}
                 label={LINKED_RES_PARAMS[IS_GROUP_USED_KEY]}
-                sx={{ mb: .25 }}
-                control={
-                  <Checkbox
-                    id={IS_GROUP_USED_KEY}
-                    checked={isLinkedDataExist(IS_GROUP_USED_KEY)}
-                    disabled={!isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-                    onChange={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_GROUP_USED_KEY) })}
-                  />
-                }
+                isChecked={isLinkedDataExist(IS_GROUP_USED_KEY)}
+                isDisabled={!isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
+                handler={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_GROUP_USED_KEY) })}
               />
             }
           </Box>)
+          /*
         : (existableItems.length > 0
             && <Box
               sx={{
@@ -251,7 +231,7 @@ const ResItem: FC = () => {
                 }
               />
             </Box>
-          )
+          )*/
       }
 
       {linkedSubdepts.map(

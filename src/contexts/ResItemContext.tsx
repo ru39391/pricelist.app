@@ -22,7 +22,8 @@ const contextData = {
   linkedDataConfig: null,
   resLinkHandlers: Object.keys(TYPES).reduce(
     (acc, key) => ({...acc, [key]: () => console.log(ACTION_ERROR_MSG)}), {} as TCategorySelectorHandler
-  )
+  ),
+  handleDataConfig: () => console.log(ACTION_ERROR_MSG)
 } as TResItemData;
 
 const ResItemContext = createContext<TResItemData>(contextData);

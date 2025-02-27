@@ -178,10 +178,13 @@ export type TLinkedResData = {
 
 export type TCategorySelectorHandler = TCustomData<(payload: TLinkedResData) => void>;
 
+export type TLinkedDataConfigHandler = (data: Record<string, boolean>) => void;
+
 export type TResItemData = {
   linkedItemsData: Record<string, TItemsArr>;
   linkedDataConfig: Record<string, boolean> | null;
   resLinkHandlers: TCategorySelectorHandler;
+  handleDataConfig: TLinkedDataConfigHandler;
 };
 
 export type TUrlData = {

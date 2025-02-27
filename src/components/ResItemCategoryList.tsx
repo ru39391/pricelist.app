@@ -21,7 +21,7 @@ import {
   NO_ITEMS_TITLE
 } from '../utils/constants';
 
-interface IResCategorySelector {
+interface IResItemCategoryList {
   category: string;
   sx: Record<string, string | number>;
   linkedList: TItemsArr;
@@ -29,7 +29,7 @@ interface IResCategorySelector {
   handler: TCategorySelectorHandler;
 }
 
-const ResCategorySelector: FC<IResCategorySelector> = ({
+const ResItemCategoryList: FC<IResItemCategoryList> = ({
   category,
   sx,
   linkedList,
@@ -66,4 +66,4 @@ const ResCategorySelector: FC<IResCategorySelector> = ({
   />;
 };
 
-export default ResCategorySelector;
+export default ResItemCategoryList;

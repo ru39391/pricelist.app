@@ -23,6 +23,7 @@ import type {
   TCustomData,
   TItemsArr,
   TItemData,
+  TLinkedDataConfigHandler,
   TLinkedResData,
   TPricelistExtTypes,
   TPricelistKeys
@@ -42,7 +43,7 @@ interface IResLinks {
   linkedDataConfig: Record<string, boolean> | null;
   resLinkHandlers: TCategorySelectorHandler;
   isLinkedItemActive: (arr: TItemsArr, data: TItemData) => boolean;
-  handleDataConfig: (data: Record<string, boolean>) => void;
+  handleDataConfig: TLinkedDataConfigHandler;
 }
 
 // TODO: отыскать вероятные места применения useCallback и useMemo
