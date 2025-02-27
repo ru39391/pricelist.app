@@ -75,7 +75,26 @@ const useResLinks = (): IResLinks => {
     categoryKey: TPricelistKeys
   ): TItemsArr => childrenArr.map(
     (item) => {
-      const category = arr.find(data => item[categoryKey] === data[ID_KEY]);
+      // TODO: проверить корректность решения проблемы с { [NAME_KEY]: item[CATEGORY_KEY] }
+      const category = arr.find(data => item[categoryKey] === data[ID_KEY]) || { [NAME_KEY]: item[CATEGORY_KEY] };
+      if(!category) {
+        console.log({arr, item, category: item[categoryKey]});
+        /*
+          arr - массив родительских категорий (при удалении специализации приходит массив специализаций - некорректно)
+          item - обрабатываемый элемент (приходит элемент массив специализаций)
+          item: {
+            "id": 25,
+            "item_id": 10013059,
+            "name": "Аллергология-иммунология",
+            "dept": 4,
+            "createdon": "2024-12-13 19:02:18",
+            "updatedon": null,
+            "label": "Аллергология-иммунология",
+            "category": "Медицина"
+          }
+          "categoryKey": "subdept",
+        */
+      }
 
       return {
         ...item,

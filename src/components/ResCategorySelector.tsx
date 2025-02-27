@@ -7,15 +7,13 @@ import {
 
 import type {
   TCategorySelectorHandler,
-  TCustomData,
-  TItemsArr,
-  TLinkedResData
+  TItemData,
+  TItemsArr
 } from '../types';
 
 import {
   ID_KEY,
   NAME_KEY,
-  SUBDEPT_KEY,
   CATEGORY_KEY,
   TITLES,
   CLEAR_TITLE,
@@ -39,7 +37,12 @@ const ResCategorySelector: FC<IResCategorySelector> = ({
   handler
 }) => {
   const handleOptionData = <T, >(data: T, key: string, isNumber = false): number | string => isNumber ? data[key] as number : data[key] as string;
-  console.log({category});
+
+  const groupByOption = (option: TItemData): string => {
+    const category = handleOptionData(option, CATEGORY_KEY);
+
+    return category ? category.toString() : '';
+  }
 
   return (existableList.length + linkedList.length) > 0 && <Autocomplete
     multiple
@@ -55,11 +58,11 @@ const ResCategorySelector: FC<IResCategorySelector> = ({
     renderInput={(props) => <TextField {...props} label={[TITLES[category]]} />}
     renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
     getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}
+    groupBy={(option) => groupByOption(option)}
     onChange={(_, value, reason ) => handler[category]({
       action: reason,
       items: reason === 'clear' ? [] : value as TItemsArr
     })}
-    {...( category === SUBDEPT_KEY && { groupBy: (option) => handleOptionData(option, CATEGORY_KEY) } )}
   />;
 };
 

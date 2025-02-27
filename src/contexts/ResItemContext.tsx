@@ -20,10 +20,10 @@ const contextData = {
     'existableItems'
   ].reduce((acc, key) => ({...acc, [key]: [] as TItemsArr}), {} as Record<string, TItemsArr>),
   linkedDataConfig: null,
-  resLinkHandlers: Object.keys(TYPES).reduce((acc, key) => ({...acc, [key]: () => console.log(ACTION_ERROR_MSG)}), {} as TCategorySelectorHandler)
+  resLinkHandlers: Object.keys(TYPES).reduce(
+    (acc, key) => ({...acc, [key]: () => console.log(ACTION_ERROR_MSG)}), {} as TCategorySelectorHandler
+  )
 } as TResItemData;
-
-console.log(contextData);
 
 const ResItemContext = createContext<TResItemData>(contextData);
 

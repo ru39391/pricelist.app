@@ -27,8 +27,6 @@ import ResItemContext from '../contexts/ResItemContext';
 import { useSelector, useDispatch } from '../services/hooks';
 import { handleResLinkedData } from '../services/actions/pricelist';
 
-import type { TResItemData } from '../utils/types';
-
 import {
   ID_KEY,
   NAME_KEY,
@@ -37,8 +35,6 @@ import {
   GROUP_KEY,
   ITEM_KEY,
   TYPES,
-  TITLES,
-  CATEGORY_KEY,
   ADD_ACTION_KEY,
   REMOVE_ACTION_KEY,
   IS_COMPLEX_DATA_KEY,
@@ -46,9 +42,6 @@ import {
   IS_GROUP_USED_KEY,
   LINKED_RES_PARAMS,
   SAVE_TITLE,
-  CLEAR_TITLE,
-  REMOVE_TITLE,
-  NO_ITEMS_TITLE
 } from '../utils/constants';
 
 const GroupHeader = styled('div')(({ theme }) => ({
@@ -165,7 +158,6 @@ const ResItem: FC = () => {
         sx: { mb: 2.5, backgroundColor: '#fff' },
         linkedList: linkedSubdepts,
         existableList: existableSubdepts
-        // TODO: поправить баг сброса категорий специализации
       }].map((props) => <ResCategorySelector key={props.category} handler={resLinkHandlers} {...props} />)}
 
       {existableGroups.length > 0
