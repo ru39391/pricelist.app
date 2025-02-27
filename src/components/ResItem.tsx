@@ -4,16 +4,13 @@ import {
   Button,
   Card,
   CardContent,
-  Checkbox,
   Chip,
-  FormControlLabel,
   Typography,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-//import { styled, lighten, darken } from '@mui/system';
 import { ArrowBack, Check, Done, RemoveRedEye } from '@mui/icons-material';
 
-import ResItemToggler from './ResItemToggler';
+import ResItemControllers from './ResItemControllers';
 import ResItemCategoryList from './ResItemCategoryList';
 import ResLinkedItems from './ResLinkedItems';
 
@@ -33,28 +30,10 @@ import {
   GROUP_KEY,
   ITEM_KEY,
   TYPES,
-  ADD_ACTION_KEY,
-  REMOVE_ACTION_KEY,
   IS_COMPLEX_DATA_KEY,
   IS_GROUP_IGNORED_KEY,
-  IS_GROUP_USED_KEY,
-  LINKED_RES_PARAMS,
   SAVE_TITLE,
 } from '../utils/constants';
-
-/*
-const GroupHeader = styled('div')(({ theme }) => ({
-  zIndex: 1,
-  position: 'sticky',
-  top: '-8px',
-  padding: '4px 10px',
-  color: theme.palette.primary.main,
-  backgroundColor: lighten(theme.palette.primary.light, 0.85),
-  ...theme.applyStyles('dark', { backgroundColor: darken(theme.palette.primary.main, 0.8) }),
-}));
-
-const GroupList = styled('ul')({ padding: 0, zIndex: 1 });
-*/
 
 const ResItem: FC = () => {
   const {
@@ -158,81 +137,13 @@ const ResItem: FC = () => {
         existableList: existableSubdepts
       }].map((props) => <ResItemCategoryList key={props.category} handler={resLinkHandlers} {...props} />)}
 
-      {existableGroups.length > 0
-        && (<Box
-          sx={{
-            mb: .5,
-            gap: 1,
-            display: 'flex',
-            flexWrap: 'wrap',
-          }}>
-            <ResItemToggler
-              id={''}
-              label={existableGroups.length === linkedGroups.length ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY]}
-              isChecked={existableGroups.length === linkedGroups.length}
-              isDisabled={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-              handler={() => resLinkHandlers[GROUP_KEY]({ items: existableGroups.length === linkedGroups.length ? [] : existableGroups })}
-            />
-            <ResItemToggler
-              id={IS_COMPLEX_DATA_KEY}
-              label={LINKED_RES_PARAMS[IS_COMPLEX_DATA_KEY]}
-              isChecked={isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-              isDisabled={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-              handler={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_COMPLEX_DATA_KEY) })}
-            />
-            <ResItemToggler
-              id={IS_GROUP_IGNORED_KEY}
-              label={LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
-              isChecked={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-              isDisabled={linkedGroups.length !== 0}
-              handler={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_GROUP_IGNORED_KEY) })}
-            />
-            {isLinkedDataExist(IS_GROUP_IGNORED_KEY)
-              && <ResItemToggler
-                id={IS_GROUP_USED_KEY}
-                label={LINKED_RES_PARAMS[IS_GROUP_USED_KEY]}
-                isChecked={isLinkedDataExist(IS_GROUP_USED_KEY)}
-                isDisabled={!isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-                handler={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_GROUP_USED_KEY) })}
-              />
-            }
-          </Box>)
-          /*
-        : (existableItems.length > 0
-            && <Box
-              sx={{
-                mb: .5,
-                gap: 1,
-                display: 'flex',
-                flexWrap: 'wrap',
-              }}>
-              <FormControlLabel
-                label={LINKED_RES_PARAMS[IS_COMPLEX_DATA_KEY]}
-                sx={{ mb: .25 }}
-                control={
-                  <Checkbox
-                    id={IS_COMPLEX_DATA_KEY}
-                    checked={isLinkedDataExist(IS_COMPLEX_DATA_KEY)}
-                    disabled={existableGroups.length === 0 && existableItems.length > 0}
-                    onChange={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_COMPLEX_DATA_KEY) })}
-                  />
-                }
-              />
-              <FormControlLabel
-                label={LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
-                sx={{ mb: .25 }}
-                control={
-                  <Checkbox
-                    id={IS_GROUP_IGNORED_KEY}
-                    checked={isLinkedDataExist(IS_GROUP_IGNORED_KEY)}
-                    disabled={linkedGroups.length !== 0 || (existableGroups.length === 0 && existableItems.length > 0)}
-                    onChange={({ target }) => handleDataConfig({ [target.id]: !isLinkedDataExist(IS_GROUP_IGNORED_KEY) })}
-                  />
-                }
-              />
-            </Box>
-          )*/
-      }
+      <ResItemControllers
+        linkedList={linkedGroups}
+        existableList={existableGroups}
+        itemsHandler={resLinkHandlers}
+        configHandler={handleDataConfig}
+        paramsHandler={isLinkedDataExist}
+      />
 
       {linkedSubdepts.map(
         (subdept) => <Box

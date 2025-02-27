@@ -44,26 +44,28 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
     return category ? category.toString() : '';
   }
 
-  return (existableList.length + linkedList.length) > 0 && <Autocomplete
-    multiple
-    filterSelectedOptions
-    id={`${category}-selecter`}
-    sx={sx}
-    value={linkedList}
-    options={existableList}
-    clearText={CLEAR_TITLE}
-    closeText={REMOVE_TITLE}
-    noOptionsText={NO_ITEMS_TITLE}
-    getOptionLabel={(option) => handleOptionData(option, NAME_KEY).toString()}
-    renderInput={(props) => <TextField {...props} label={[TITLES[category]]} />}
-    renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
-    getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}
-    groupBy={(option) => groupByOption(option)}
-    onChange={(_, value, reason ) => handler[category]({
-      action: reason,
-      items: reason === 'clear' ? [] : value as TItemsArr
-    })}
-  />;
+  return (
+    (existableList.length + linkedList.length) > 0 && <Autocomplete
+      multiple
+      filterSelectedOptions
+      id={`${category}-selecter`}
+      sx={sx}
+      value={linkedList}
+      options={existableList}
+      clearText={CLEAR_TITLE}
+      closeText={REMOVE_TITLE}
+      noOptionsText={NO_ITEMS_TITLE}
+      getOptionLabel={(option) => handleOptionData(option, NAME_KEY).toString()}
+      renderInput={(props) => <TextField {...props} label={[TITLES[category]]} />}
+      renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
+      getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}
+      groupBy={(option) => groupByOption(option)}
+      onChange={(_, value, reason ) => handler[category]({
+        action: reason,
+        items: reason === 'clear' ? [] : value as TItemsArr
+      })}
+    />
+  )
 };
 
 export default ResItemCategoryList;

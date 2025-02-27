@@ -77,6 +77,7 @@ const useResLinks = (): IResLinks => {
   ): TItemsArr => childrenArr.map(
     (item) => {
       // TODO: проверить корректность решения проблемы с { [NAME_KEY]: item[CATEGORY_KEY] }
+      // после удаления одной категории список делтся надвое
       const category = arr.find(data => item[categoryKey] === data[ID_KEY]) || { [NAME_KEY]: item[CATEGORY_KEY] };
       if(!category) {
         console.log({arr, item, category: item[categoryKey]});
