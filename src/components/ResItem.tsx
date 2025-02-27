@@ -27,6 +27,8 @@ import ResItemContext from '../contexts/ResItemContext';
 import { useSelector, useDispatch } from '../services/hooks';
 import { handleResLinkedData } from '../services/actions/pricelist';
 
+import type { TResItemData } from '../utils/types';
+
 import {
   ID_KEY,
   NAME_KEY,
@@ -62,22 +64,24 @@ const GroupHeader = styled('div')(({ theme }) => ({
 const GroupList = styled('ul')({ padding: 0, zIndex: 1 });
 
 const ResItem: FC = () => {
-  const resItemData = useContext(ResItemContext);
+  const {
+    linkedItemsData: {
+      linkedDepts,
+      linkedSubdepts,
+      linkedGroups,
+      linkedItems,
+      existableDepts,
+      existableSubdepts,
+      existableGroups,
+      existableItems,
+    },
+    linkedDataConfig,
+    resLinkHandlers
+  } = useContext(ResItemContext);
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
   const dispatch = useDispatch();
-  // TODO: перенести хранение данных в контекст
   const {
-    linkedDepts,
-    linkedSubdepts,
-    linkedGroups,
-    linkedItems,
-    existableDepts,
-    existableSubdepts,
-    existableGroups,
-    existableItems,
-    linkedDataConfig,
-    resLinkHandlers,
     isLinkedItemActive,
     handleDataConfig
   } = useResLinks();
@@ -115,25 +119,10 @@ const ResItem: FC = () => {
 
   useEffect(() => {
     setLinkedData();
-    /*
-    console.log({
-      linkedDepts,
-      linkedSubdepts,
-      linkedGroups,
-      linkedItems,
-      linkedDataConfig
-    });
-    */
   }, [
     linkedSubdepts,
     existableGroups,
     existableItems
-  ]);
-
-  useEffect(() => {
-    console.log({resItemData});
-  }, [
-    resItemData
   ]);
 
   if(resLinkedItems.length > 0) {
@@ -169,60 +158,15 @@ const ResItem: FC = () => {
       {[{
         category: DEPT_KEY,
         sx: { mb: 3, backgroundColor: '#fff' },
-        linkedList: resItemData.linkedDepts,
-        existableList: resItemData.existableDepts
+        linkedList: linkedDepts,
+        existableList: existableDepts
       }, {
         category: SUBDEPT_KEY,
         sx: { mb: 2.5, backgroundColor: '#fff' },
-        linkedList: resItemData.linkedSubdepts,
-        existableList: resItemData.existableSubdepts
+        linkedList: linkedSubdepts,
+        existableList: existableSubdepts
         // TODO: поправить баг сброса категорий специализации
-      }].map((props) => <ResCategorySelector key={props.category} handler={resItemData.resLinkHandlers} {...props} />)}
-      {/*
-      {(existableDepts.length + linkedDepts.length) > 0 && <Autocomplete
-        multiple
-        filterSelectedOptions
-        id={`${DEPT_KEY}-selecter`}
-        sx={{ mb: 3, backgroundColor: '#fff' }}
-        value={linkedDepts}
-        options={existableDepts}
-        clearText={CLEAR_TITLE}
-        closeText={REMOVE_TITLE}
-        noOptionsText={NO_ITEMS_TITLE}
-        getOptionLabel={(option) => option[NAME_KEY] as string}
-        renderInput={(props) => <TextField {...props} label={[TITLES[DEPT_KEY]]} />}
-        renderOption={(props, option) => <ListItem {...props}>{option[NAME_KEY]}</ListItem>}
-        getOptionKey={(option) => option[ID_KEY]}
-        onChange={(_, value, reason ) => resLinkHandlers[DEPT_KEY]({
-          action: reason,
-          items: reason === 'clear' ? [] : value
-        })}
-      />}
-
-      {(existableSubdepts.length + linkedSubdepts.length) > 0 && <Autocomplete
-        multiple
-        filterSelectedOptions
-        id={`${SUBDEPT_KEY}-selecter`}
-        sx={{ mb: 2.5, backgroundColor: '#fff' }}
-        value={linkedSubdepts}
-        options={existableSubdepts}
-        clearText={CLEAR_TITLE}
-        closeText={REMOVE_TITLE}
-        noOptionsText={NO_ITEMS_TITLE}
-        getOptionLabel={(option) => option[NAME_KEY] as string}
-        groupBy={(option) => option[CATEGORY_KEY] as string}
-        renderInput={(props) => <TextField {...props} label={[TITLES[SUBDEPT_KEY]]} />}
-        renderOption={(props, option) => <ListItem {...props}>{option[NAME_KEY]}</ListItem>}
-        renderGroup={(props) => (
-          <li key={props.key}>
-            <GroupHeader>{props.group}</GroupHeader>
-            <GroupList>{props.children}</GroupList>
-          </li>
-        )}
-        getOptionKey={(option) => option[ID_KEY]}
-        onChange={(_, value, reason ) => resLinkHandlers[SUBDEPT_KEY]({ action: reason, items: reason === 'clear' ? [] : value })}
-      />}
-       */}
+      }].map((props) => <ResCategorySelector key={props.category} handler={resLinkHandlers} {...props} />)}
 
       {existableGroups.length > 0
         ? (<Box

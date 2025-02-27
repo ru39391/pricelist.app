@@ -19,6 +19,7 @@ import {
 import { useSelector } from '../services/hooks';
 
 import type {
+  TCategorySelectorHandler,
   TCustomData,
   TItemsArr,
   TItemData,
@@ -38,10 +39,10 @@ interface IResLinks {
   linkedSubdepts: TItemsArr;
   linkedGroups: TItemsArr;
   linkedItems: TItemsArr;
-  linkedDataConfig: TCustomData<boolean> | null;
-  resLinkHandlers: TCustomData<(payload: TLinkedResData) => void>;
+  linkedDataConfig: Record<string, boolean> | null;
+  resLinkHandlers: TCategorySelectorHandler;
   isLinkedItemActive: (arr: TItemsArr, data: TItemData) => boolean;
-  handleDataConfig: (data: TCustomData<boolean>) => void;
+  handleDataConfig: (data: Record<string, boolean>) => void;
 }
 
 // TODO: отыскать вероятные места применения useCallback и useMemo
@@ -56,7 +57,7 @@ const useResLinks = (): IResLinks => {
   const [linkedGroups, setLinkedGroups] = useState<TItemsArr>([]);
   const [linkedItems, setLinkedItems] = useState<TItemsArr>([]);
 
-  const [linkedDataConfig, setLinkedDataConfig] = useState<TCustomData<boolean> | null>(null);
+  const [linkedDataConfig, setLinkedDataConfig] = useState<Record<string, boolean> | null>(null);
 
   const { id: resId } = useParams();
 

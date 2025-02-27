@@ -21,14 +21,16 @@ const ResItemProvider: FC = () => {
 
   return (
     <ResItemContext.Provider value={{
-      linkedDepts,
-      linkedSubdepts,
-      linkedGroups,
-      linkedItems,
-      existableDepts,
-      existableSubdepts,
-      existableGroups,
-      existableItems,
+      linkedItemsData: {
+        linkedDepts,
+        linkedSubdepts,
+        linkedGroups,
+        linkedItems,
+        existableDepts,
+        existableSubdepts,
+        existableGroups,
+        existableItems,
+      },
       linkedDataConfig,
       resLinkHandlers
     }}>

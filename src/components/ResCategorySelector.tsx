@@ -5,7 +5,12 @@ import {
   TextField,
 } from '@mui/material';
 
-import type { TCustomData, TItemsArr, TLinkedResData } from '../types';
+import type {
+  TCategorySelectorHandler,
+  TCustomData,
+  TItemsArr,
+  TLinkedResData
+} from '../types';
 
 import {
   ID_KEY,
@@ -23,7 +28,7 @@ interface IResCategorySelector {
   sx: Record<string, string | number>;
   linkedList: TItemsArr;
   existableList: TItemsArr;
-  handler: TCustomData<(payload: TLinkedResData) => void>;
+  handler: TCategorySelectorHandler;
 }
 
 const ResCategorySelector: FC<IResCategorySelector> = ({
@@ -34,6 +39,7 @@ const ResCategorySelector: FC<IResCategorySelector> = ({
   handler
 }) => {
   const handleOptionData = <T, >(data: T, key: string, isNumber = false): number | string => isNumber ? data[key] as number : data[key] as string;
+  console.log({category});
 
   return (existableList.length + linkedList.length) > 0 && <Autocomplete
     multiple

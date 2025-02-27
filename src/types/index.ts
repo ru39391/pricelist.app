@@ -176,6 +176,14 @@ export type TLinkedResData = {
   key?: string;
 };
 
+export type TCategorySelectorHandler = TCustomData<(payload: TLinkedResData) => void>;
+
+export type TResItemData = {
+  linkedItemsData: Record<string, TItemsArr>;
+  linkedDataConfig: Record<string, boolean> | null;
+  resLinkHandlers: TCategorySelectorHandler;
+};
+
 export type TUrlData = {
   type: TPricelistTypes | string;
   id: number | null;
