@@ -178,7 +178,9 @@ export type TLinkedResData = {
 
 export type TCategorySelectorHandler = TCustomData<(payload: TLinkedResData) => void>;
 
-export type TLinkedDataConfigHandler = (data: Record<string, boolean>) => void;
+export type TLinkedDataConfigAction = 'SET_COMPLEX_DATA' | 'UNSET_COMPLEX_DATA' | 'SET_GROUP_IGNORED' | 'UNSET_GROUP_IGNORED' | 'SET_GROUP_USED' | 'UNSET_GROUP_USED';
+
+export type TLinkedDataConfigHandler = (type: TLinkedDataConfigAction, data?: Record<string, boolean> | null) => void;
 
 export type TResItemData = {
   linkedItemsData: Record<string, TItemsArr>;

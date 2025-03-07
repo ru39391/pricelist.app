@@ -77,11 +77,9 @@ const ResItem: FC = () => {
       return;
     }
 
+    // TODO: неясный момент - проверить, нужно ли это
     if(existableGroups.length === 0 && existableItems.length > 0) {
-      handleDataConfig({
-        [IS_COMPLEX_DATA_KEY]: true,
-        [IS_GROUP_IGNORED_KEY]: true,
-      });
+      handleDataConfig('SET_GROUP_IGNORED');
     }
   };
 
@@ -256,4 +254,6 @@ export default ResItem;
 "Комплексный выбор" - true и disabled, когда устанавливаем "Игнорировать группы" или "Сохранить группировку"
 "Игнорировать группы" - true и disabled, когда устанавливаем "Сохранить группировку"
 "Сохранить группировку" - проверить, чтобы при его изменении не изменялись "Комплексный выбор" и "Игнорировать группы"
+
+https://skrinshoter.ru/vUOAPn8lw7z
 */

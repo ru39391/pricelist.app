@@ -242,6 +242,7 @@ const useResLinkedItems = (): IResLinkedItems => {
     setResLinkedItems(depts);
     setLinkedListExist([...groupedItems, ...items].length > 0);
     // TODO: поправить для случая сохранения всех данных одного отделения
+    // лучший вариант - вынести в отдельный метод, разделив рендеринг и установку данных для отправки на сервер
     updateLinkedItems({
       arr: depts.reduce((acc: TLinkedSubdept[], item) => [...acc, ...item[TYPES[SUBDEPT_KEY] as TLinkedDeptKeys] as TLinkedSubdept[]], []),
       config
