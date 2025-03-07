@@ -106,6 +106,7 @@ const useTableData = (): ITableData => {
         headerName: CAPTIONS[item],
         flex: CAPTIONS[item].length > 4 ? 1 : 0,
         width: CAPTIONS[item].length > 4 ? 'auto' : 100,
+        resizable: true,
       } as GridColDef<GridValidRowModel>));
 
     return {

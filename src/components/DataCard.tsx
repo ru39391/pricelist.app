@@ -1,4 +1,4 @@
-import { FC, Fragment, useCallback, useEffect } from 'react';
+import { FC, Fragment, useCallback, useEffect, useMemo } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { Check, Delete } from '@mui/icons-material';
 
@@ -22,6 +22,8 @@ import {
   IS_VISIBLE_KEY,
   IS_COMPLEX_ITEM_KEY,
   IS_COMPLEX_KEY,
+  CREATEDON_KEY,
+  UPDATEDON_KEY,
   ROW_INDEX_KEY,
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
@@ -51,12 +53,34 @@ const DataCard: FC = () => {
   const complexData: TCustomData<string> = {
     [COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''
   };
+  // TODO: мемоизировать параметры
   const formHandlerData = {
     type: formData ? formData.type : null,
     items: formData && formData.items
       ? formData.items
       : formData && formData.data ? [{...formData.data}] : []
   };
+
+  const dates = useMemo(() => {
+    if(!formData) {
+      return {
+        [CREATEDON_KEY]: '',
+        [UPDATEDON_KEY]: '',
+      };
+    }
+
+    const { data, type } = formData;
+    const item = pricelist[type].find(item => item[ID_KEY] === data[ID_KEY]);
+
+    return {
+      [CREATEDON_KEY]: item ? item[CREATEDON_KEY] : '',
+      [UPDATEDON_KEY]: item ? item[UPDATEDON_KEY] : '',
+    };
+  }, [
+    pricelist,
+    formData
+  ]);
+
   const handlersData = {
     [ADD_ACTION_KEY]: useCallback(() => {
       if(!formData) {
@@ -135,6 +159,7 @@ const DataCard: FC = () => {
     formData
   ]);
 
+  // TODO: разбить на компоненты
   if(formData && formData.values && formData.action !== REMOVE_ACTION_KEY) {
     return (
       <>
@@ -187,6 +212,20 @@ const DataCard: FC = () => {
                   )
                   : <Alert icon={<Check fontSize="inherit" />} severity="success">Текущее значение: список услуг не указан</Alert>
                 }
+              </>
+            : ''
+          }
+          {formData.data
+            ? <>
+                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>Дата создания:</Typography>
+                <Typography variant="body2" component="div" sx={{ mb: 1.5, color: 'text.secondary' }}>{dates[CREATEDON_KEY] || 'Ещё не создан'}</Typography>
+              </>
+            : ''
+          }
+          {formData.data
+            ? <>
+                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>Дата обновления:</Typography>
+                <Typography variant="body2" component="div" sx={{ mb: 1.5, color: 'text.secondary' }}>{dates[UPDATEDON_KEY] || 'Пока не обновляли'}</Typography>
               </>
             : ''
           }

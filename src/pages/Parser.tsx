@@ -177,6 +177,8 @@ const Parser: FC = () => {
     const items = comparedFileData ? comparedFileData[currCategory][currSubCategory] : [];
     const data = items.length ? items.find((item: TItemData) => item[ID_KEY] === values[ID_KEY]) : {};
 
+    console.log(data);
+
     toggleModal({ title: `${title} «${values[NAME_KEY]}»` });
     dispatch(setFormData({
       data: {
