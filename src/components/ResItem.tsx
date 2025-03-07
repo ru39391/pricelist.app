@@ -69,6 +69,21 @@ const ResItem: FC = () => {
     [linkedDataConfig]
   );
 
+  const currLinkedItems = useMemo(() => {
+    // TODO: поправить присоединение услуг при установленном чекбоксе "Игнорировать группы", когда для существующей привязки сняли выбор групп - "Приём врача-отоларинголога": снимаю выбранные группы, выбираю "Игнорировать группы" - отображение корректное
+    // предусмотреть случай выбора позиций без групп при комплексном выборе, когда linkedGroups.length === 0 - "Приём врача-отоларинголога": снимаю выбранные группы, выбираю "Комплексный выбор", выбираю услуги - отображение корректное
+    const groupedLinkedItems = linkedItems.filter((item) => item[GROUP_KEY] !== 0);
+    const ungroupedLinkedItems = linkedItems.filter((item) => item[GROUP_KEY] === 0);
+    const linkedItemsList = isLinkedDataExist(IS_GROUP_IGNORED_KEY) ? linkedItems : ungroupedLinkedItems;
+    const complexLinkedItems = linkedGroups.length > 0 ? linkedItems : linkedItemsList
+
+    return isLinkedDataExist(IS_COMPLEX_DATA_KEY) ? complexLinkedItems : groupedLinkedItems;
+  }, [
+    linkedGroups,
+    linkedItems,
+    isLinkedDataExist
+  ]);
+
   const filterList = (arr: TItemsArr, data: TItemData, key: TPricelistKeys): TItemsArr => arr.filter((item) => item[key] === data[ID_KEY]);
 
   const setLinkedData = () => {
@@ -226,14 +241,7 @@ const ResItem: FC = () => {
                   [TYPES[DEPT_KEY]]: linkedDepts,
                   [TYPES[SUBDEPT_KEY]]: linkedSubdepts,
                   [TYPES[GROUP_KEY]]: linkedGroups,
-                  [TYPES[ITEM_KEY]]: isLinkedDataExist(IS_COMPLEX_DATA_KEY)
-                    // TODO: поправить присоединение услуг при установленном чекбоксе "Игнорировать группы", когда для существующей привязки сняли выбор групп
-                    // предусмотреть случай выбора позиций без групп при комплексном выборе, когда linkedGroups.length === 0
-                    // проверить приведённые ниже условия и создать корректный метод в компоненте ResItemControllers
-                    ? linkedGroups.length > 0
-                      ? linkedItems
-                      : isLinkedDataExist(IS_GROUP_IGNORED_KEY) ? linkedItems : linkedItems.filter((item) => item[GROUP_KEY] === 0)
-                    : linkedItems.filter((item) => item[GROUP_KEY] !== 0),
+                  [TYPES[ITEM_KEY]]: currLinkedItems
                 },
                 linkedDataConfig
               )}
