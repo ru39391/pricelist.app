@@ -55,7 +55,6 @@ const dataConfigReducer = (
   switch (action.type) {
     case 'SET_COMPLEX_DATA':
       return {
-        //...( state && {...state}),
         [IS_COMPLEX_DATA_KEY]: true,
         [IS_GROUP_IGNORED_KEY]: false,
         [IS_GROUP_USED_KEY]: false
@@ -107,7 +106,6 @@ const useResLinks = (): IResLinks => {
   const [linkedGroups, setLinkedGroups] = useState<TItemsArr>([]);
   const [linkedItems, setLinkedItems] = useState<TItemsArr>([]);
 
-  //const [linkedDataConfig, setLinkedDataConfig] = useState<Record<string, boolean> | null>(null);
   const [linkedDataConfig, setLinkedDataConfig] = useReducer(dataConfigReducer, null);
 
   const { id: resId } = useParams();
@@ -319,7 +317,6 @@ const useResLinks = (): IResLinks => {
 
   const updateComplexDataConfig = () => {
     if(linkedDataConfig !== null && linkedDataConfig[IS_COMPLEX_DATA_KEY]) {
-      //setLinkedDataConfig({ [IS_COMPLEX_DATA_KEY]: true });
       handleDataConfig('SET_COMPLEX_DATA');
     } else {
       setLinkedDataConfig({ data: null });
@@ -353,7 +350,6 @@ const useResLinks = (): IResLinks => {
 
     const itemsArr: number[] = JSON.parse(data[TYPES[ITEM_KEY]] as string);
 
-    //setLinkedDataConfig(JSON.parse(data.config as string));
     setLinkedDataConfig({ data: JSON.parse(data.config as string) });
 
     Object.values(TYPES).forEach((key, index) => {
@@ -364,7 +360,6 @@ const useResLinks = (): IResLinks => {
     });
 
     if(itemsArr.length > 0) {
-      //setLinkedDataConfig({ [IS_COMPLEX_DATA_KEY]: true });
       handleDataConfig('SET_COMPLEX_DATA');
     }
   }
@@ -379,7 +374,6 @@ const useResLinks = (): IResLinks => {
     setExistableSubdepts(
       filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)
     );
-    //setLinkedDataConfig(null);
     setLinkedDataConfig({ data: null });
     // console.log({linkedDepts, subdepts: filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)});
   }, [

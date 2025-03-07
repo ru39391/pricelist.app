@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
 
 import CheckboxController from './CheckboxController';
@@ -34,6 +34,21 @@ const ResItemControllers: FC<IResItemControllers> = ({
   configHandler,
   paramsHandler,
 }) => {
+  const groupsControllerLabel = useMemo(
+    () => existableList.length === linkedList.length ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY],
+    [existableList.length, linkedList.length]
+  );
+
+  const isGroupsControllerChecked = useMemo(
+    () => existableList.length === linkedList.length,
+    [existableList.length, linkedList.length]
+  );
+
+  const toggleGroupsController = useCallback(
+    () => { itemsHandler[GROUP_KEY]({ items: existableList.length === linkedList.length ? [] : existableList }) },
+    [itemsHandler, existableList, linkedList.length]
+  );
+
   return (
     existableList.length > 0 && <Box
     sx={{
@@ -44,10 +59,10 @@ const ResItemControllers: FC<IResItemControllers> = ({
     }}>
       <CheckboxController
         id={''}
-        label={existableList.length === linkedList.length ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY]}
-        isChecked={existableList.length === linkedList.length}
+        label={groupsControllerLabel}
+        isChecked={isGroupsControllerChecked}
         isDisabled={paramsHandler(IS_GROUP_IGNORED_KEY)}
-        handler={() => itemsHandler[GROUP_KEY]({ items: existableList.length === linkedList.length ? [] : existableList })}
+        handler={toggleGroupsController}
       />
       <CheckboxController
         id={IS_COMPLEX_DATA_KEY}
@@ -60,7 +75,7 @@ const ResItemControllers: FC<IResItemControllers> = ({
         id={IS_GROUP_IGNORED_KEY}
         label={LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
         isChecked={paramsHandler(IS_GROUP_IGNORED_KEY)}
-        isDisabled={linkedList.length !== 0}
+        isDisabled={linkedList.length !== 0 || paramsHandler(IS_GROUP_USED_KEY)}
         handler={() => configHandler(!paramsHandler(IS_GROUP_IGNORED_KEY) ? 'SET_GROUP_IGNORED' : 'UNSET_GROUP_IGNORED')}
       />
       {paramsHandler(IS_GROUP_IGNORED_KEY)
