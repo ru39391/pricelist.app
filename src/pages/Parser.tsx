@@ -12,12 +12,16 @@ import {
   Breadcrumbs,
   Button,
   Collapse,
+  FormControl,
   Grid,
+  InputLabel,
   Link,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  MenuItem,
+  Select,
   Typography
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
@@ -60,8 +64,17 @@ import {
   REMOVE_TITLE,
   EDIT_ITEM_TITLE,
   ID_KEY,
+  INDEX_KEY,
   NAME_KEY,
-  TYPES
+  PRICE_KEY,
+  ROW_INDEX_KEY,
+  CREATEDON_KEY,
+  UPDATEDON_KEY,
+  QUANTITY_KEY,
+  TYPES,
+  CAPTIONS,
+  LINKED_RES_PARAMS,
+  IS_GROUP_IGNORED_KEY
 } from '../utils/constants';
 
 const InvisibleInput = styled('input')({
@@ -76,6 +89,7 @@ const InvisibleInput = styled('input')({
 
 const Parser: FC = () => {
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
+  const [currParamData, setCurrParamData] = useState<Record<string, string> | undefined>({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
 
   const file = useSelector(state => state.file);
   const { isFileUploading } = file;
@@ -102,6 +116,33 @@ const Parser: FC = () => {
       title: REMOVE_TITLE
     }
   };
+  const categoryKeys = Object.entries(CAPTIONS).reduce((acc: Record<string, string>[], item) => {
+    const [key, value] = item;
+
+    if([ID_KEY, CREATEDON_KEY, UPDATEDON_KEY, QUANTITY_KEY].includes(key)) {
+      return acc;
+    } else {
+      return [
+        ...acc,
+        {
+          value,
+          ...( key === ROW_INDEX_KEY ? { key: INDEX_KEY } : { key } )
+        }
+      ];
+    }
+
+  }, []);
+
+  const handleCurrParamData = (key: string) => {
+    if(key === IS_GROUP_IGNORED_KEY) {
+      setCurrParamData(undefined);
+      return;
+    }
+
+    const value = categoryKeys.find(item => item.key === key);
+
+    setCurrParamData(value);
+  }
 
   const setDataItems = (): TPricelistData | null => {
     const data:TPricelistData = Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: file[type]}), {});
@@ -214,6 +255,12 @@ const Parser: FC = () => {
     });
   }, [
     fileDataNav
+  ]);
+
+  useEffect(() => {
+    console.log(currParamData);
+  }, [
+    currParamData
   ]);
 
   return (
@@ -329,16 +376,41 @@ const Parser: FC = () => {
             }}
           >
             <Typography sx={{ typography: 'body1' }}>{tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}</Typography>
-            {tableData && tableData.rows.length > 0
-              ? <Button
-                variant="outlined"
-                startIcon={<Sync />}
-                onClick={() => setConfirmModalVisible({currCategory, currSubCategory})}
-              >
-                {APPLY_TITLE}
-              </Button>
-              : ''
-            }
+            <Box
+              sx={{
+                gap: '0 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end'
+              }}
+            >
+              <FormControl sx={{ minWidth: 200, backgroundColor: '#fff' }} size="small">
+                <InputLabel id="demo-select-small-label">Изменение</InputLabel>
+                <Select
+                  labelId="demo-select-small-label"
+                  id="demo-select-small"
+                  value={currParamData ? currParamData.key : IS_GROUP_IGNORED_KEY}
+                  label={currParamData ? currParamData.value : LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
+                  disabled={Boolean(tableData)}
+                  onChange={({ target }) => handleCurrParamData(target.value)}
+                >
+                  {[
+                    ...categoryKeys,
+                    { key: IS_GROUP_IGNORED_KEY, value: LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY] }
+                  ].map(({ key, value }) => <MenuItem key={key} value={key}>{value}</MenuItem>)}
+                </Select>
+              </FormControl>
+              {tableData && tableData.rows.length > 0
+                ? <Button
+                  variant="outlined"
+                  startIcon={<Sync />}
+                  onClick={() => setConfirmModalVisible({currCategory, currSubCategory})}
+                >
+                  {APPLY_TITLE}
+                </Button>
+                : ''
+              }
+            </Box>
           </Box>
 
           {tableData !== null
