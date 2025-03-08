@@ -1,5 +1,5 @@
-import { FC, Fragment, useCallback, useEffect, useMemo } from 'react';
-import { Alert, Box, Typography } from '@mui/material';
+import { FC, useCallback, useEffect, useMemo } from 'react';
+import { Box } from '@mui/material';
 import { Check, Delete } from '@mui/icons-material';
 
 import DataCardRow from './DataCardRow';
@@ -172,7 +172,6 @@ const DataCard: FC = () => {
     formData
   ]);
 
-  // TODO: разбить на компоненты
   if(formData && isDetailsListVisible) {
     return (
       <>
@@ -182,7 +181,7 @@ const DataCard: FC = () => {
               key={key}
               caption={key === INDEX_KEY ? CAPTIONS[ROW_INDEX_KEY] : CAPTIONS[key]}
               value={formData.data[key].toString()}
-              currentValue={tableData ? tableData.rows[0][key] : ''}
+              currValue={tableData ? tableData.rows[0][key] : ''}
               isAlertVisible={Boolean(tableData && formData.data[key] !== tableData.rows[0][key])}
             />)
           }
@@ -191,7 +190,7 @@ const DataCard: FC = () => {
               key={key}
               caption={CAPTIONS[key]}
               value={formData.values && formData.values[key] ? `${formData.values[key]}, id: ${formData.data[key]}` : 'Не указано'}
-              currentValue={tableData && tableData.rows[0][key] || 'Не указано'}
+              currValue={tableData && tableData.rows[0][key] || 'Не указано'}
               isAlertVisible={Boolean(tableData && formData.values && formData.values[key] !== tableData.rows[0][key])}
             />)
           }
@@ -200,23 +199,18 @@ const DataCard: FC = () => {
               key={key}
               caption={CAPTIONS[key]}
               value={formData.values ? formData.values[key].toString() : ''}
-              currentValue={tableData ? tableData.rows[0][key] : ''}
+              currValue={tableData ? tableData.rows[0][key] : ''}
               isAlertVisible={Boolean(tableData && formData.values && formData.values[key] !== tableData.rows[0][key])}
             />)
           }
           {formData.data && formData.data[IS_COMPLEX_KEY]
-            ? <>
-                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>{CAPTIONS[COMPLEX_KEY]}</Typography>
-                {complexData[COMPLEX_KEY].split(', ').map(
-                  (item, index) => <Typography key={index} variant="body2" sx={{ mb: .05, color: 'text.secondary' }}>{item}</Typography>
-                )}
-                {tableData && complexData[COMPLEX_KEY] !== tableData.rows[0][COMPLEX_KEY] && Boolean(tableData.rows[0][COMPLEX_KEY]) && tableData.rows[0][COMPLEX_KEY].split(', ').length > 0
-                  ? tableData.rows[0][COMPLEX_KEY].split(', ').map(
-                    (item: string, index: number) => <Alert key={index} icon={<Check fontSize="inherit" />} severity="success">{item}</Alert>
-                  )
-                  : <Alert icon={<Check fontSize="inherit" />} severity="success">Текущее значение: список услуг не указан</Alert>
-                }
-              </>
+            ? <DataCardRow
+                caption={CAPTIONS[COMPLEX_KEY]}
+                complexValues={complexData[COMPLEX_KEY].split(', ')}
+                currComplexValues={tableData ? tableData.rows[0][COMPLEX_KEY].split(', ') : undefined}
+                isAlertVisible={!(tableData && complexData[COMPLEX_KEY] !== tableData.rows[0][COMPLEX_KEY] && tableData.rows[0][COMPLEX_KEY] && tableData.rows[0][COMPLEX_KEY].split(', ').length > 0)}
+                currValue='список услуг не указан'
+              />
             : ''
           }
           {formData.data
