@@ -177,7 +177,7 @@ const Parser: FC = () => {
     const items = comparedFileData ? comparedFileData[currCategory][currSubCategory] : [];
     const data = items.length ? items.find((item: TItemData) => item[ID_KEY] === values[ID_KEY]) : {};
 
-    console.log(data);
+    //console.log({data, values});
 
     toggleModal({ title: `${title} «${values[NAME_KEY]}»` });
     dispatch(setFormData({
@@ -192,7 +192,11 @@ const Parser: FC = () => {
   }
 
   useEffect(() => {
-    compareFileData(setDataItems());
+    compareFileData(
+      setDataItems(),
+      // TODO: заменить на динамическое значение
+      'price'
+    );
   }, [
     file
   ]);
@@ -228,10 +232,7 @@ const Parser: FC = () => {
             }}
           >
             <Button
-              sx={{
-                mb: 2,
-                width: '100%',
-              }}
+              sx={{ mb: 2, width: '100%' }}
               component="label"
               variant="contained"
               disabled={isFileUploading}
@@ -268,11 +269,7 @@ const Parser: FC = () => {
                       <ListItemButton
                         key={categoryTypes[item.key as string]}
                         selected={currCategory === key as THandledItemKeys && currSubCategory === item.key as string}
-                        sx={{
-                          pl: 6,
-                          color: 'grey.600',
-                          fontSize: 14,
-                        }}
+                        sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
                         onClick={() => selectFileCategory({category: key as THandledItemKeys, subCategory: item.key as TPricelistTypes })}
                       >
                         <ListItemText
@@ -346,18 +343,18 @@ const Parser: FC = () => {
 
           {tableData !== null
             ? <DataGrid
-              sx={{
-                border: 0,
-                flexGrow: 1,
-                height: 'auto',
-                boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)',
-                bgcolor: 'background.default',
-              }}
-              columns={tableData ? tableData.cols : []}
-              rows={tableData ? tableData.rows : []}
-              // TODO: необязательная доработка - возможность удалять группы записей
-              onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
-            />
+                sx={{
+                  border: 0,
+                  flexGrow: 1,
+                  height: 'auto',
+                  boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)',
+                  bgcolor: 'background.default',
+                }}
+                columns={tableData ? tableData.cols : []}
+                rows={tableData ? tableData.rows : []}
+                // TODO: необязательная доработка - возможность удалять группы записей
+                onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
+              />
             : ''
           }
         </Grid>

@@ -73,6 +73,8 @@ const useTableData = (): ITableData => {
       return null;
     }
 
+    //console.log({ arr, data, fileData });
+
     const keys = [
       ROW_INDEX_KEY,
       ID_KEY,
