@@ -49,6 +49,9 @@ const REMOVE_ITEM_ERROR_MSG = 'При удалении элементов про
 const ACTION_ERROR_MSG = 'Передан некорректный тип обработчика';
 const DATA_ERROR_MSG = 'Переданы некорректные данные: проверьте, правильно ли заполнены поля формы';
 
+const NOT_CREATED_KEY = 'Ещё не создан';
+const NOT_UPDATED_KEY = 'Обновления не производились';
+
 const INDEX_KEY = 'index';
 const ID_KEY = 'item_id';
 const NAME_KEY = 'name';
@@ -164,6 +167,8 @@ export {
   FILE_UPLOADING_ERROR_MSG,
   ACTION_ERROR_MSG,
   DATA_ERROR_MSG,
+  NOT_CREATED_KEY,
+  NOT_UPDATED_KEY,
   PARSER_TITLE,
   CMS_TITLE,
   ADD_TITLE,

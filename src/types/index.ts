@@ -48,6 +48,7 @@ export type TPriceList<T> = {
   [key in TPricelistTypes]: T;
 };
 
+// TODO: отказаться от TCustomData
 export type TItemData = TCustomData<string | number>;
 
 export type TItemsArr = TItemData[];

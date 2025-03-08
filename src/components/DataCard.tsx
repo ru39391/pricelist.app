@@ -2,6 +2,7 @@ import { FC, Fragment, useCallback, useEffect, useMemo } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { Check, Delete } from '@mui/icons-material';
 
+import DataCardRow from './DataCardRow';
 import ModalFooter from './ModalFooter';
 
 import useForm from '../hooks/useForm';
@@ -28,6 +29,8 @@ import {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
+  NOT_CREATED_KEY,
+  NOT_UPDATED_KEY,
   SAVE_TITLE,
   EDIT_TITLE,
   REMOVE_TITLE,
@@ -50,22 +53,35 @@ const DataCard: FC = () => {
   const { tableData, handleTableData } = useTableData();
 
   const complexKeys: string[] = [IS_VISIBLE_KEY, IS_COMPLEX_ITEM_KEY, IS_COMPLEX_KEY];
-  const complexData: TCustomData<string> = {
+  const complexData: TCustomData<string> = useMemo(() => ({
     [COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''
-  };
-  // TODO: мемоизировать параметры
-  const formHandlerData = {
+  }), [
+    formData
+  ]);
+  const formHandlerData = useMemo(() => ({
     type: formData ? formData.type : null,
     items: formData && formData.items
       ? formData.items
       : formData && formData.data ? [{...formData.data}] : []
-  };
+  }), [
+    formData
+  ]);
+  const dates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string> = useMemo(() => {
+    const formatDate = (value: TItemData[keyof TItemData], mess: string): string => {
+      if(!value) {
+        return mess;
+      }
 
-  const dates = useMemo(() => {
+      const [date, time] = value.toString().split(' ');
+      const formatedDate: string = date.split('-').reverse().join('.');
+
+      return `${formatedDate} ${time}`;
+    };
+
     if(!formData) {
       return {
-        [CREATEDON_KEY]: '',
-        [UPDATEDON_KEY]: '',
+        [CREATEDON_KEY]: NOT_CREATED_KEY,
+        [UPDATEDON_KEY]: NOT_UPDATED_KEY,
       };
     }
 
@@ -73,13 +89,14 @@ const DataCard: FC = () => {
     const item = pricelist[type].find(item => item[ID_KEY] === data[ID_KEY]);
 
     return {
-      [CREATEDON_KEY]: item ? item[CREATEDON_KEY] : '',
-      [UPDATEDON_KEY]: item ? item[UPDATEDON_KEY] : '',
+      [CREATEDON_KEY]: item && item[CREATEDON_KEY] ? formatDate(item[CREATEDON_KEY], NOT_CREATED_KEY) : NOT_CREATED_KEY,
+      [UPDATEDON_KEY]: item && item[UPDATEDON_KEY] ? formatDate(item[UPDATEDON_KEY], NOT_UPDATED_KEY) : NOT_UPDATED_KEY,
     };
   }, [
     pricelist,
     formData
   ]);
+  const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
 
   const handlersData = {
     [ADD_ACTION_KEY]: useCallback(() => {
@@ -87,43 +104,37 @@ const DataCard: FC = () => {
         return;
       }
 
-      dispatch(handlePricelistData({
-        ...formHandlerData,
-        action: ADD_ACTION_KEY,
-      }));
+      dispatch(handlePricelistData({ ...formHandlerData, action: ADD_ACTION_KEY }));
     }, [
       dispatch,
-      formData
+      formData,
+      formHandlerData
     ]),
     [EDIT_ACTION_KEY]: useCallback(() => {
       if(!formData) {
         return;
       }
 
-      dispatch(handlePricelistData({
-        ...formHandlerData,
-        action: EDIT_ACTION_KEY
-      }));
+      dispatch(handlePricelistData({ ...formHandlerData, action: EDIT_ACTION_KEY }));
     }, [
       dispatch,
-      formData
+      formData,
+      formHandlerData
     ]),
     [REMOVE_ACTION_KEY]: useCallback(() => {
       if(!formData) {
         return;
       }
 
-      dispatch(handlePricelistData({
-        ...formHandlerData,
-        action: REMOVE_ACTION_KEY
-      }));
+      dispatch(handlePricelistData({ ...formHandlerData, action: REMOVE_ACTION_KEY }));
     }, [
       dispatch,
-      formData
+      formData,
+      formHandlerData
     ]),
   };
 
-  const handleCurrFormData = (formData: TFormData | null) => {
+  const handleCurrFormData = useCallback((formData: TFormData | null) => {
     if(!formData) {
       return;
     }
@@ -148,7 +159,9 @@ const DataCard: FC = () => {
       },
       null
     );
-  }
+  }, [
+    pricelist
+  ]);
 
   useEffect(() => {
     handleCurrFormData(formData);
@@ -160,45 +173,36 @@ const DataCard: FC = () => {
   ]);
 
   // TODO: разбить на компоненты
-  if(formData && formData.values && formData.action !== REMOVE_ACTION_KEY) {
+  if(formData && isDetailsListVisible) {
     return (
       <>
         <Box sx={{ mb: 4 }}>
           {formFields[formData.type].map(
-            (key) =>
-              <Fragment key={key}>
-                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>{key === INDEX_KEY ? CAPTIONS[ROW_INDEX_KEY] : CAPTIONS[key]}</Typography>
-                <Typography variant="body2" component="div" sx={{ mb: 1.5, color: 'text.secondary' }}>
-                  {formData.data[key]}
-                  {tableData && formData.data[key] !== tableData.rows[0][key]
-                    && <Alert icon={<Check fontSize="inherit" />} severity="success">Текущее значение: {tableData.rows[0][key]}</Alert>}
-                </Typography>
-              </Fragment>
-            )
+            (key) => <DataCardRow
+              key={key}
+              caption={key === INDEX_KEY ? CAPTIONS[ROW_INDEX_KEY] : CAPTIONS[key]}
+              value={formData.data[key].toString()}
+              currentValue={tableData ? tableData.rows[0][key] : ''}
+              isAlertVisible={Boolean(tableData && formData.data[key] !== tableData.rows[0][key])}
+            />)
           }
           {selecterFields[formData.type].map(
-            (key) =>
-              <Fragment key={key}>
-                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>{CAPTIONS[key]}</Typography>
-                <Typography variant="body2" sx={{ mb: 1.5, color: 'text.secondary' }}>
-                  {formData.values && formData.values[key] ? `${formData.values[key]}, id: ${formData.data[key]}` : 'Не указано'}
-                  {tableData && formData.values && formData.values[key] !== tableData.rows[0][key]
-                    && <Alert icon={<Check fontSize="inherit" />} severity="success">Текущее значение: {tableData.rows[0][key] || 'Не указано'}</Alert>}
-                </Typography>
-              </Fragment>
-            )
+            (key) => <DataCardRow
+              key={key}
+              caption={CAPTIONS[key]}
+              value={formData.values && formData.values[key] ? `${formData.values[key]}, id: ${formData.data[key]}` : 'Не указано'}
+              currentValue={tableData && tableData.rows[0][key] || 'Не указано'}
+              isAlertVisible={Boolean(tableData && formData.values && formData.values[key] !== tableData.rows[0][key])}
+            />)
           }
           {formData.type === TYPES[ITEM_KEY] && complexKeys.map(
-            (key) =>
-              <Fragment key={key}>
-                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>{CAPTIONS[key]}</Typography>
-                <Typography variant="body2" sx={{ mb: 1.5, color: 'text.secondary' }}>
-                  {formData.values && formData.values[key]}
-                  {tableData && formData.values && formData.values[key] !== tableData.rows[0][key]
-                    && <Alert icon={<Check fontSize="inherit" />} severity="success">Текущее значение: {tableData.rows[0][key]}</Alert>}
-                </Typography>
-              </Fragment>
-            )
+            (key) => <DataCardRow
+              key={key}
+              caption={CAPTIONS[key]}
+              value={formData.values ? formData.values[key].toString() : ''}
+              currentValue={tableData ? tableData.rows[0][key] : ''}
+              isAlertVisible={Boolean(tableData && formData.values && formData.values[key] !== tableData.rows[0][key])}
+            />)
           }
           {formData.data && formData.data[IS_COMPLEX_KEY]
             ? <>
@@ -216,17 +220,10 @@ const DataCard: FC = () => {
             : ''
           }
           {formData.data
-            ? <>
-                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>Дата создания:</Typography>
-                <Typography variant="body2" component="div" sx={{ mb: 1.5, color: 'text.secondary' }}>{dates[CREATEDON_KEY] || 'Ещё не создан'}</Typography>
-              </>
-            : ''
-          }
-          {formData.data
-            ? <>
-                <Typography gutterBottom variant="body1" component="div" sx={{ mb: .25 }}>Дата обновления:</Typography>
-                <Typography variant="body2" component="div" sx={{ mb: 1.5, color: 'text.secondary' }}>{dates[UPDATEDON_KEY] || 'Пока не обновляли'}</Typography>
-              </>
+            ? [
+                {caption: 'Дата создания:', value: dates[CREATEDON_KEY], isAlertVisible: false},
+                {caption: 'Дата обновления:', value: dates[UPDATEDON_KEY], isAlertVisible: false}
+              ].map((props, index) => <DataCardRow key={index} {...props} />)
             : ''
           }
         </Box>
