@@ -165,7 +165,7 @@ const DataCard: FC = () => {
 
   useEffect(() => {
     handleCurrFormData(formData);
-    //console.log('formData', formData);
+    console.log('formData', formData);
     //console.log('formFields', formFields);
     //console.log('selecterFields', selecterFields);
   }, [

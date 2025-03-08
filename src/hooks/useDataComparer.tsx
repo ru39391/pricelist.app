@@ -31,7 +31,7 @@ type TFileHandlerData = {
 
 interface IDataComparer {
   comparedFileData: Record<THandledItemKeys, TPricelistData> | null;
-  compareFileData: (data: TPricelistData | null, param: keyof TItemData | undefined) => void;
+  compareFileData: (data: TPricelistData | null, param?: keyof TItemData) => void;
 }
 
 const useDataComparer = (): IDataComparer => {
@@ -80,14 +80,9 @@ const useDataComparer = (): IDataComparer => {
     currItems: TItemsArr;
     param?: keyof TItemData
   }) => {
-    const fileItems = items.filter(item => ids.includes(item[ID_KEY] as number));/*
-    console.log({
-      ids,
-      items,
-      currItems
-    });*/
+    const fileItems = items.filter(item => ids.includes(item[ID_KEY] as number));
 
-    const hndledFileItems = fileItems.reduce((acc: TItemsArr, item) => {
+    const handledFileItems = fileItems.reduce((acc: TItemsArr, item) => {
       const currItem = currItems.find(data => {
         const {
           itemId,
@@ -111,9 +106,9 @@ const useDataComparer = (): IDataComparer => {
         ? acc
         : [...acc, item];
     }, []);
-    console.log(hndledFileItems);
+    //console.log(handledFileItems);
 
-    return hndledFileItems;
+    return handledFileItems;
   };
 
   const handleItems = (
@@ -150,6 +145,7 @@ const useDataComparer = (): IDataComparer => {
     param: keyof TItemData | undefined = undefined
   ): void => {
     if(!data) {
+      setComparedFileData(null);
       return;
     }
 

@@ -38,7 +38,7 @@ type TTableData = {
 
 interface ITableData {
   tableData: TTableData | null;
-  handleTableData: (data: TCategoryData, fileData: TPricelistData | null) => void;
+  handleTableData: (data: TCategoryData | null, fileData?: TPricelistData | null) => void;
 }
 
 const useTableData = (): ITableData => {
@@ -118,9 +118,15 @@ const useTableData = (): ITableData => {
   }
 
   const handleTableData = (
-    {data, category, params}: TCategoryData,
+    payload: TCategoryData | null,
     fileData: TPricelistData | null = null
   ): void => {
+    if(!payload) {
+      setTableData(null);
+      return;
+    }
+
+    const {data, category, params} = payload;
     //console.log({data, category, params});
     const key = params !== null ? Object.keys(params)[0] : null;
     const id = params !== null && key !== null ? params[key] : null;

@@ -1,8 +1,9 @@
 import {
   FC,
   Fragment,
-  useState,
-  useEffect
+  useCallback,
+  useEffect,
+  useState
 } from 'react';
 import { NavLink } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -25,7 +26,7 @@ import {
   Typography
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { CloudUpload, FolderOpen, Sync } from '@mui/icons-material';
+import { CloudUpload, DeleteOutlined, FolderOpen, Sync } from '@mui/icons-material';
 
 import Layout from '../components/Layout';
 
@@ -37,6 +38,7 @@ import useDataComparer from '../hooks/useDataComparer';
 import useFileDataNav from '../hooks/useFileDataNav';
 
 import { useSelector, useDispatch } from '../services/hooks';
+import { resetFileList } from '../services/actions/file';
 import { setFormData } from '../services/slices/form-slice';
 
 import type {
@@ -60,6 +62,7 @@ import {
   NO_FILE_ITEMS_TITLE,
   FILE_ITEMS_TITLE,
   APPLY_TITLE,
+  CLEAR_TITLE,
   ADD_TITLE,
   REMOVE_TITLE,
   EDIT_ITEM_TITLE,
@@ -89,6 +92,7 @@ const InvisibleInput = styled('input')({
 
 const Parser: FC = () => {
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
+  // TODO: переделать для использования useReducer или вынести значение по умолчанию в переменную
   const [currParamData, setCurrParamData] = useState<Record<string, string> | undefined>({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
 
   const file = useSelector(state => state.file);
@@ -161,6 +165,7 @@ const Parser: FC = () => {
     }
   ): void => {
     if(!comparedFileData) {
+      handleTableData(null);
       return;
     }
 
@@ -232,11 +237,17 @@ const Parser: FC = () => {
     }));
   }
 
+  const resetFileData =  useCallback(() => {
+    dispatch(resetFileList());
+    setCurrParamData({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
+  }, [
+    dispatch
+  ]);
+
   useEffect(() => {
     compareFileData(
       setDataItems(),
-      // TODO: заменить на динамическое значение
-      'price'
+      currParamData ? currParamData.key : undefined
     );
   }, [
     file
@@ -255,12 +266,6 @@ const Parser: FC = () => {
     });
   }, [
     fileDataNav
-  ]);
-
-  useEffect(() => {
-    console.log(currParamData);
-  }, [
-    currParamData
   ]);
 
   return (
@@ -288,24 +293,13 @@ const Parser: FC = () => {
               Загрузить файл
               <InvisibleInput type="file" accept=".xlsx, .xls" onChange={uploadFile} />
             </Button>
+            {/* // TODO: возможно, вынести в отдельный компонент */}
             {fileDataNav.map(({ key, caption, counter, data }) =>
               (<Fragment key={key}>
-                <ListItemButton
-                  selected={true}
-                  sx={{ py: 0.5 }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
+                <ListItemButton selected={true} sx={{ py: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
-                    <ListItemText
-                      primary={caption}
-                      sx={{ mr: 3 }}
-                    />
+                    <ListItemText primary={caption} sx={{ mr: 3 }} />
                     <Badge badgeContent={counter} color="primary" />
                   </Box>
                 </ListItemButton>
@@ -333,21 +327,9 @@ const Parser: FC = () => {
             )}
           </Box>
         </Grid>
-        <Grid
-          item
-          xs={9}
-          sx={{
-            pl: 3,
-            pr: 2,
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
+        <Grid item xs={9} sx={{ pl: 3, pr: 2, display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h5" sx={{ mb: 1 }}>{DEFAULT_DOC_TITLE}</Typography>
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ mb: 4, typography: 'subtitle2' }}
-          >
+          <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 4, typography: 'subtitle2' }}>
             <Link
               component={NavLink}
               to="/"
@@ -385,7 +367,7 @@ const Parser: FC = () => {
               }}
             >
               <FormControl sx={{ minWidth: 200, backgroundColor: '#fff' }} size="small">
-                <InputLabel id="demo-select-small-label">Изменение</InputLabel>
+                <InputLabel id="demo-select-small-label">Изменения</InputLabel>
                 <Select
                   labelId="demo-select-small-label"
                   id="demo-select-small"
@@ -401,13 +383,23 @@ const Parser: FC = () => {
                 </Select>
               </FormControl>
               {tableData && tableData.rows.length > 0
-                ? <Button
-                  variant="outlined"
-                  startIcon={<Sync />}
-                  onClick={() => setConfirmModalVisible({currCategory, currSubCategory})}
-                >
-                  {APPLY_TITLE}
-                </Button>
+                ? <>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Sync />}
+                      onClick={() => setConfirmModalVisible({currCategory, currSubCategory})}
+                    >
+                      {APPLY_TITLE}
+                    </Button>
+                    <Button
+                      color="error"
+                      variant="outlined"
+                      startIcon={<DeleteOutlined />}
+                      onClick={resetFileData}
+                    >
+                      {CLEAR_TITLE}
+                    </Button>
+                  </>
                 : ''
               }
             </Box>

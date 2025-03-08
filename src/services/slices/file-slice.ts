@@ -80,6 +80,14 @@ const fileSlice = createSlice({
         )
       }
     },
+    resetList: (state) => ({
+      ...state,
+      depts: [],
+      subdepts: [],
+      groups: [],
+      pricelist: [],
+      rowData: null,
+    }),
   }
 });
 
@@ -92,5 +100,6 @@ export const {
   getFileUploadingSucceed,
   getFileUploadingFailed,
   setRowData,
-  removeItems
+  removeItems,
+  resetList
 } = fileSlice.actions;
