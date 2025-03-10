@@ -114,6 +114,18 @@ const ResItem: FC = () => {
     existableItems
   ]);
 
+  useEffect(() => {
+    console.log({
+      isDeptTogglerVisible,
+      linkedDepts,
+      linkedSubdepts,
+      linkedGroups,
+      currLinkedItems
+    });
+  }, [
+    isDeptTogglerVisible
+  ]);
+
   if(resLinkedItems.length > 0) {
     return (
       <>

@@ -67,10 +67,43 @@ interface IResLinkedItems {
   resetLinkedItems: () => void;
 }
 
+/**
+ * Обработка выбранных элементов прайслиста для привязки к ресурсу
+ *
+ * Используемые состояния:
+ * - resLinkedItems: список привязанных к ресурсу элементов прайслиста;
+ * - resLinkedData: обработанные для сохранения данные привязки;
+ * - isLinkedListExist: истинность существования списка привязанных к ресурсу элементов;
+ * - isLinkedListCurrent: истинность изменения списка элементов прайслиста текущего ресурса.
+ *
+ * @returns {TLinkedDept[]} resLinkedItems;
+ * @returns {TResLinkedAction|null} resLinkedData;
+ * @returns {boolean} isLinkedListExist;
+ * @returns {boolean} isLinkedListCurrent;
+ * @returns {function} renderLinkedItems - обработка привязанных пользователем элементов ресурса;
+ * @returns {function} resetLinkedItems - сброс привязанных пользователем элементов ресурса.
+ */
 const useResLinkedItems = (): IResLinkedItems => {
+  /**
+   * Список привязанных к ресурсу элементов прайслиста:
+   * - принимает массив объектов отделений с доп. ключами,
+   * - соответствующих элементам ниже по иерархии
+   */
   const [resLinkedItems, setResLinkedItems] = useState<TLinkedDept[]>([]);
+  /**
+   * Обработанные данные элементов, соответствующих ресурсу:
+   * - содержит тип действия - сохранение или обновление,
+   * - а также объект со списками идентификаторов привязанных к ресурсу элементов и описание их кофигурации
+   */
   const [resLinkedData, setResLinkedData] = useState<TResLinkedAction | null>(null);
+  /**
+   * Истинность существования списка привязанных к ресурсу элементов прайслиста:
+   * - истинно, если длина массива объектов групп и позиций больше нуля
+   */
   const [isLinkedListExist, setLinkedListExist] = useState<boolean>(false);
+  /**
+   * Истинность изменения списка элементов прайслиста текущего ресурса
+   */
   const [isLinkedListCurrent, setLinkedListCurrent] = useState<boolean>(true);
 
   const { id: resId } = useParams();
@@ -80,6 +113,11 @@ const useResLinkedItems = (): IResLinkedItems => {
     ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce((acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {}
   ));
 
+  /**
+   * Сравнивает текущие данные ресурса с обновлёнными.
+   * @property {object|undefined} item - текущие данные ресурса
+   * @property {object} data - обновлённые данные
+   */
   const handleCurrResLinkedData = ({ item, data }: TCurrResLinkedData) => {
     if(!item) {
       setLinkedListCurrent(Boolean(item));
@@ -91,6 +129,13 @@ const useResLinkedItems = (): IResLinkedItems => {
     setLinkedListCurrent(isDataCurrent);
   };
 
+  /**
+   * Формирует объект обновлённых данных элементов прайслиста, привязанных к ресурсу.
+   * - устанавливает состояние истинности изменения данных,
+   * - обрабатывает данные для обновления и сохраняет их для передачи на сервер
+   * @property {object[]} arr - массив с данными отделений, соответствующих ресурсу
+   * @property {object|null} config - параметры отображения списка элементов на сайте
+   */
   const updateLinkedItems = ({ arr, config }: TResLinkedData) => {
     const handleLinkedItems = (
       array: TLinkedItem[] | TLinkedGroup[] | TLinkedSubdept[] | TItemsArr
@@ -130,10 +175,7 @@ const useResLinkedItems = (): IResLinkedItems => {
     const updResLinkedData = {
       [ID_KEY]: Number(resId),
       [TYPES[DEPT_KEY]]: handleLinkedItems(
-        fetchArray(
-          arr.map(item => ({ [ID_KEY]: item[DEPT_KEY] })),
-          ID_KEY
-        )
+        fetchArray(arr.map(item => ({ [ID_KEY]: item[DEPT_KEY] })), ID_KEY)
       ),
       [TYPES[SUBDEPT_KEY]]: handleLinkedItems(arr),
       [TYPES[GROUP_KEY]]: handleLinkedItems(data[TYPES[GROUP_KEY] as TResItemsKeys]),
@@ -158,12 +200,20 @@ const useResLinkedItems = (): IResLinkedItems => {
     });
   };
 
+  /**
+   * Обрабатывает установленные пользователем значения
+   * - устанавливает состояние для отрисовки списка элементов прайслиста,
+   * - устанавливает состояние истинности существования массива обработанных элементов,
+   * - передаёт данные для проверки изменения данных ресурса
+   * @property {object} payload - объект, содержащий массивы элементов, соответствующих ресурсу (отделения, специализации, группы, позиции)
+   * @property {object|null} config - параметры отображения на сайте
+   */
   const renderLinkedItems = (
     payload: TPricelistData,
     config: TCustomData<boolean> | null
   ) => {
     console.log({payload, config});
-    const updatItemsArr = (arr: TItemsArr): TLinkedItem[] => sortArrValues(
+    const updateItemsArr = (arr: TItemsArr): TLinkedItem[] => sortArrValues(
       arr.map((item: TItemData) => ({
         [ID_KEY]: item[ID_KEY] as number,
         [NAME_KEY]: item[NAME_KEY] as string,
@@ -177,7 +227,7 @@ const useResLinkedItems = (): IResLinkedItems => {
       INDEX_KEY
     ) as TLinkedItem[];
 
-    const updatGroupsArr = (arr: TItemsArr, items: TLinkedItem[]): TLinkedGroup[] => arr.map((item: TItemData) => ({
+    const updateGroupsArr = (arr: TItemsArr, items: TLinkedItem[]): TLinkedGroup[] => arr.map((item: TItemData) => ({
       [ID_KEY]: item[ID_KEY] as number,
       [NAME_KEY]: item[NAME_KEY] as string,
       [DEPT_KEY]: item[DEPT_KEY] as number,
@@ -185,17 +235,13 @@ const useResLinkedItems = (): IResLinkedItems => {
       pricelist: items.filter(data => data[GROUP_KEY] === item[ID_KEY])
     }));
 
-    const params = config
-      ? {
-        [IS_GROUP_IGNORED_KEY]: Boolean(config[IS_GROUP_IGNORED_KEY]),
-        [IS_GROUP_USED_KEY]: Boolean(config[IS_GROUP_USED_KEY])
-      }
-      : {
-        [IS_GROUP_IGNORED_KEY]: false,
-        [IS_GROUP_USED_KEY]: false
-      };
+    const params = {
+      [IS_COMPLEX_DATA_KEY]: config ? Boolean(config[IS_COMPLEX_DATA_KEY]) : false,
+      [IS_GROUP_IGNORED_KEY]: config ? Boolean(config[IS_GROUP_IGNORED_KEY]) : false,
+      [IS_GROUP_USED_KEY]: config ? Boolean(config[IS_GROUP_USED_KEY]) : false
+    };
 
-    const groupedItems = updatItemsArr(
+    const groupedItems = updateItemsArr(
       getMatchedItems(
         payload[TYPES[GROUP_KEY]],
         pricelist[TYPES[ITEM_KEY]],
@@ -203,7 +249,7 @@ const useResLinkedItems = (): IResLinkedItems => {
       )
     );
 
-    const items = updatItemsArr(
+    const items = updateItemsArr(
       getMatchedItems(
         payload[TYPES[SUBDEPT_KEY]],
         payload[TYPES[ITEM_KEY]],
@@ -212,13 +258,13 @@ const useResLinkedItems = (): IResLinkedItems => {
     );
 
     const groups: TLinkedGroup[] = params[IS_GROUP_USED_KEY]
-      ? updatGroupsArr(
+      ? updateGroupsArr(
           pricelist[TYPES[GROUP_KEY]].filter(
             item => fetchArray(payload[TYPES[ITEM_KEY]], GROUP_KEY).map(data => data[GROUP_KEY]).includes(item[ID_KEY])
           ),
           items
         )
-      : updatGroupsArr(payload[TYPES[GROUP_KEY]], groupedItems)
+      : updateGroupsArr(payload[TYPES[GROUP_KEY]], groupedItems)
 
     const subdepts: TLinkedSubdept[] = payload[TYPES[SUBDEPT_KEY]].map(item => ({
       [ID_KEY]: item[ID_KEY] as number,
@@ -249,6 +295,10 @@ const useResLinkedItems = (): IResLinkedItems => {
     })
   };
 
+  /**
+   * Удаляет массив элементов, выбранных пользователем,
+   * удаляет обработанные для сохранения изменений данные
+   */
   const resetLinkedItems = () => {
     setResLinkedItems([]);
     setResLinkedData(null);
