@@ -101,7 +101,7 @@ const useResLinks = (): IResLinks => {
   const [existableGroups, setExistableGroups] = useState<TItemsArr>([]);
   const [existableItems, setExistableItems] = useState<TItemsArr>([]);
 
-  const [linkedDepts, setLinkedDepts] = useState<TItemsArr>([]);
+  const [linkedDepts, handleLinkedDepts] = useState<TItemsArr>([]);
   const [linkedSubdepts, setLinkedSubdepts] = useState<TItemsArr>([]);
   const [linkedGroups, setLinkedGroups] = useState<TItemsArr>([]);
   const [linkedItems, setLinkedItems] = useState<TItemsArr>([]);
@@ -179,7 +179,7 @@ const useResLinks = (): IResLinks => {
   }), {} as Record<TPricelistKeys, (arr: TItemsArr) => void>);
 
   const resLinkHandlers = [
-    setLinkedDepts,
+    handleLinkedDepts,
     setLinkedSubdepts,
     setLinkedGroups,
     setLinkedItems

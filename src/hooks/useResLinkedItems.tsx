@@ -36,7 +36,8 @@ import type {
   TResLinkParams,
   TLinkedDeptKeys,
   TLinkedSubdeptKeys,
-  TLinkedGroupKeys
+  TLinkedGroupKeys,
+  TPricelistKeys
 } from '../types';
 
 import { fetchArray, getMatchedItems, sortArrValues } from '../utils';
@@ -72,6 +73,7 @@ interface IResLinkedItems {
   renderLinkedItems: (payload: TPricelistData, config: TCustomData<boolean> | null) => void;
   resetLinkedItems: () => void;
   setGroupedLinkedItems: ({ items, groups, config }: TGroupedItemsData) => TItemsArr;
+  handleLinkedDepts: (isListExist: boolean, arr: TItemsArr) => void;
 }
 
 /**
@@ -89,7 +91,8 @@ interface IResLinkedItems {
  * @returns {boolean} isLinkedListCurrent;
  * @returns {function} renderLinkedItems - обработка привязанных пользователем элементов ресурса;
  * @returns {function} resetLinkedItems - сброс привязанных пользователем элементов ресурса;
- * @returns {function} setGroupedLinkedItems - вычисляет привязанные к ресурсу позиции в зависимости от установленной конфигурации групп.
+ * @returns {function} setGroupedLinkedItems - вычисляет привязанные к ресурсу позиции в зависимости от установленной конфигурации групп;
+ * @returns {function} handleLinkedDepts - реализует возможность привязать к ресурсу отделение, минуя выбор дочерних элементов.
  */
 const useResLinkedItems = (): IResLinkedItems => {
   /**
@@ -138,9 +141,18 @@ const useResLinkedItems = (): IResLinkedItems => {
   };
 
   /**
+   * Устанавливает состояние истинности изменения данных и записывает в состояние для передачи на сервер
+   * @property {object} data - параметры отображения списка элементов на сайте
+   */
+  const handleUpdResLinkedData = (data: Record<string, string | number>) => {
+    const currResLinkedData = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
+
+    handleCurrResLinkedData({ data, item: currResLinkedData });
+    setResLinkedData({ data, action: currResLinkedData ? EDIT_ACTION_KEY : ADD_ACTION_KEY });
+  }
+
+  /**
    * Формирует объект обновлённых данных элементов прайслиста, привязанных к ресурсу
-   * - устанавливает состояние истинности изменения данных,
-   * - обрабатывает данные для обновления и сохраняет их для передачи на сервер
    * @property {object[]} arr - массив с данными отделений, соответствующих ресурсу
    * @property {object|null} config - параметры отображения списка элементов на сайте
    */
@@ -151,7 +163,7 @@ const useResLinkedItems = (): IResLinkedItems => {
       array.map((item: TLinkedItem | TLinkedGroup | TLinkedSubdept | TItemData) => item[ID_KEY])
     );
 
-    const currResLinkedData = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
+    //const currResLinkedData = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
     const data = {
       [TYPES[GROUP_KEY]]: arr.reduce(
         (acc: TLinkedGroup[], item) => {
@@ -198,6 +210,8 @@ const useResLinkedItems = (): IResLinkedItems => {
       config: JSON.stringify(params)
     }
 
+    handleUpdResLinkedData(updResLinkedData);
+    /*
     handleCurrResLinkedData({
       item: currResLinkedData,
       data: updResLinkedData
@@ -206,7 +220,29 @@ const useResLinkedItems = (): IResLinkedItems => {
       action: currResLinkedData ? EDIT_ACTION_KEY : ADD_ACTION_KEY,
       data: updResLinkedData
     });
+    */
   };
+
+  /**
+   * Реализует возможность привязать к ресурсу отделение, минуя выбор дочерних элементов
+   */
+  const handleLinkedDepts = (isListExist: boolean, arr: TItemsArr) => {
+    if(!isListExist || arr.length !== 1) {
+      return;
+    }
+
+    const params = [IS_COMPLEX_DATA_KEY, IS_GROUP_IGNORED_KEY, IS_GROUP_USED_KEY].reduce(
+      (acc, key) => ({ ...acc, [key]: false }), {} as Record<TResLinkParams, boolean>
+    );
+    const data = {
+      [ID_KEY]: Number(resId),
+      [TYPES[DEPT_KEY]]: JSON.stringify(arr.map(item => item[ID_KEY])),
+      config: JSON.stringify(params),
+      ...( [SUBDEPT_KEY, GROUP_KEY, ITEM_KEY].reduce((acc, key) => ({ ...acc, [TYPES[key]]: '[]' }), {} as Record<TPricelistKeys, string>) )
+    };
+
+    handleUpdResLinkedData(data);
+  }
 
   /**
    * Обрабатывает установленные пользователем значения
@@ -220,7 +256,7 @@ const useResLinkedItems = (): IResLinkedItems => {
     payload: TPricelistData,
     config: TCustomData<boolean> | null
   ) => {
-    console.log({payload, config});
+    //console.log({payload, config});
     const updateItemsArr = (arr: TItemsArr): TLinkedItem[] => sortArrValues(
       arr.map((item: TItemData) => ({
         [ID_KEY]: item[ID_KEY] as number,
@@ -292,11 +328,8 @@ const useResLinkedItems = (): IResLinkedItems => {
       subdepts: subdepts.filter(data => data[DEPT_KEY] === item[ID_KEY])
     }));
 
-    console.log({items, groupedItems}, [...groupedItems, ...items].length);
     setResLinkedItems(depts);
     setLinkedListExist([...groupedItems, ...items].length > 0);
-    // TODO: поправить для случая сохранения всех данных одного отделения
-    // лучший вариант - вынести в отдельный метод, разделив рендеринг и установку данных для отправки на сервер
     updateLinkedItems({
       arr: depts.reduce((acc: TLinkedSubdept[], item) => [...acc, ...item[TYPES[SUBDEPT_KEY] as TLinkedDeptKeys] as TLinkedSubdept[]], []),
       config
@@ -341,7 +374,8 @@ const useResLinkedItems = (): IResLinkedItems => {
     isLinkedListCurrent,
     renderLinkedItems,
     resetLinkedItems,
-    setGroupedLinkedItems
+    setGroupedLinkedItems,
+    handleLinkedDepts
   }
 }
 

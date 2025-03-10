@@ -57,13 +57,9 @@ const ResItem: FC = () => {
     isLinkedListCurrent,
     renderLinkedItems,
     resetLinkedItems,
-    setGroupedLinkedItems
+    setGroupedLinkedItems,
+    handleLinkedDepts
   } = useResLinkedItems();
-
-  const isDeptTogglerVisible = useMemo(
-    () => linkedDepts.length === 1 && linkedSubdepts.length === 0,
-    [linkedDepts, linkedSubdepts]
-  );
 
   const isLinkedDataExist = useCallback(
     (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]),
@@ -83,10 +79,14 @@ const ResItem: FC = () => {
     isLinkedDataExist
   ]);
 
+  const isDeptTogglerVisible = useMemo(
+    () => linkedDepts.length === 1 && linkedSubdepts.length === 0,
+    [linkedDepts, linkedSubdepts]
+  );
+
   const filterList = (arr: TItemsArr, data: TItemData, key: TPricelistKeys): TItemsArr => arr.filter((item) => item[key] === data[ID_KEY]);
 
-  const setLinkedData = () => {
-    // console.log({linkedDataConfig});
+  const setLinkedData = useCallback(() => {
     if(isLinkedDataExist(IS_COMPLEX_DATA_KEY) && isLinkedDataExist(IS_GROUP_IGNORED_KEY)) {
       return;
     }
@@ -95,10 +95,22 @@ const ResItem: FC = () => {
     if(existableGroups.length === 0 && existableItems.length > 0) {
       handleDataConfig('SET_GROUP_IGNORED');
     }
-  };
+  }, [
+    existableGroups,
+    existableItems,
+    isLinkedDataExist,
+    handleDataConfig
+  ]);
+
+  const setLinkedDept = useCallback(() => {
+    handleLinkedDepts(isDeptTogglerVisible, linkedDepts);
+  }, [
+    isDeptTogglerVisible,
+    linkedDepts
+  ]);
 
   const dispatchResLinkedData = useCallback(() => {
-    console.log({resLinkedData, isLinkedListExist});
+    //console.log({resLinkedData, isLinkedListExist});
     if(resLinkedData) dispatch(handleResLinkedData(resLinkedData));
   }, [
     dispatch,
@@ -114,13 +126,7 @@ const ResItem: FC = () => {
   ]);
 
   useEffect(() => {
-    console.log({
-      isDeptTogglerVisible,
-      linkedDepts,
-      linkedSubdepts,
-      linkedGroups,
-      currLinkedItems
-    });
+    setLinkedDept();
   }, [
     isDeptTogglerVisible
   ]);
