@@ -209,3 +209,12 @@ export type TFilterData = {
 };
 
 export type TFilterKeys = keyof TFilterData;
+
+export type TFormController = {
+  icon?: string;
+  color?: string;
+  introText?: string;
+  actionBtnCaption: string;
+  disabled: boolean;
+  actionHandler: () => void;
+}

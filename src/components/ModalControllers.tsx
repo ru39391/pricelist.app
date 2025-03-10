@@ -1,18 +1,18 @@
-import { FC, ReactNode } from 'react';
+import { FC, useMemo } from 'react';
 import { Box, Button, DialogContentText } from '@mui/material';
 import { ButtonOwnProps } from '@mui/material/Button';
 import { LoadingButton } from '@mui/lab';
-import { Check } from '@mui/icons-material';
+import { Check, Delete } from '@mui/icons-material';
 
 import useModal from '../hooks/useModal';
 
 import { useSelector } from '../services/hooks';
 
-import { PARSER_CONFIRM_MSG } from '../utils/constants';
+import { PARSER_CONFIRM_MSG, REMOVE_ACTION_KEY } from '../utils/constants';
 
-interface IModalFooter {
-  icon?: ReactNode;
-  color?: ButtonOwnProps['color'];
+interface IModalControllers {
+  icon?: string;
+  color?: string;
   actionBtnCaption: string;
   introText?: string;
   disabled: boolean;
@@ -20,7 +20,7 @@ interface IModalFooter {
   actionHandler: () => void;
 }
 
-const ModalFooter: FC<IModalFooter> = ({
+const ModalControllers: FC<IModalControllers> = ({
   icon,
   color,
   actionBtnCaption,
@@ -33,16 +33,21 @@ const ModalFooter: FC<IModalFooter> = ({
 
   const { toggleModal } = useModal();
 
+  const btnColor: ButtonOwnProps['color'] = useMemo(
+    () => color as ButtonOwnProps['color'] || 'success',
+    [color]
+  );
+
   return (
     <>
       {introText && !isParserData && <DialogContentText sx={{ mb: 4 }}>{introText}.</DialogContentText>}
       {isParserData && <DialogContentText sx={{ mb: 4 }}>{PARSER_CONFIRM_MSG}.</DialogContentText>}
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <LoadingButton
-          color={color || 'success'}
+          color={btnColor}
           variant="outlined"
           loadingPosition="start"
-          startIcon={icon || <Check />}
+          startIcon={(icon && icon === REMOVE_ACTION_KEY && <Delete />) || <Check />}
           loading={isPricelistLoading}
           disabled={disabled}
           onClick={actionHandler}
@@ -60,4 +65,4 @@ const ModalFooter: FC<IModalFooter> = ({
   )
 }
 
-export default ModalFooter;
+export default ModalControllers;

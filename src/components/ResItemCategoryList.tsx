@@ -1,9 +1,12 @@
 import { FC } from 'react';
 import {
   Autocomplete,
+  AutocompleteChangeReason,
   ListItem,
   TextField,
 } from '@mui/material';
+
+import useModal from '../hooks/useModal';
 
 import type {
   TCategorySelectorHandler,
@@ -15,10 +18,14 @@ import {
   ID_KEY,
   NAME_KEY,
   CATEGORY_KEY,
+  REMOVE_ACTION_KEY,
   TITLES,
   CLEAR_TITLE,
   REMOVE_TITLE,
-  NO_ITEMS_TITLE
+  NO_ITEMS_TITLE,
+  CONFIRM_MSG,
+  REMOVE_CONFIRM_MSG,
+  PARSER_CONFIRM_MSG
 } from '../utils/constants';
 
 interface IResItemCategoryList {
@@ -36,13 +43,38 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   existableList,
   handler
 }) => {
+  const { toggleModal } = useModal();
+
   const handleOptionData = <T, >(data: T, key: string, isNumber = false): number | string => isNumber ? data[key] as number : data[key] as string;
 
   const groupByOption = (option: TItemData): string => {
     const category = handleOptionData(option, CATEGORY_KEY);
 
     return category ? category.toString() : '';
-  }
+  };
+
+  const confirmCategoryAction = (value: TItemsArr, reason: AutocompleteChangeReason) => {
+    const handlerConfig = { action: reason, items: value };
+
+    if(reason === 'clear' || reason === 'removeOption') {
+      toggleModal({
+        title: CONFIRM_MSG,
+        formController: {
+          icon: REMOVE_ACTION_KEY,
+          color: 'error',
+          introText: `${REMOVE_CONFIRM_MSG} ${reason === 'clear' ? `${CLEAR_TITLE.toLowerCase()} список элементов?` : `${REMOVE_TITLE.toLowerCase()} элемент из списка?`} ${PARSER_CONFIRM_MSG}`,
+          actionBtnCaption: reason === 'clear' ? CLEAR_TITLE : REMOVE_TITLE,
+          disabled: false,
+          actionHandler: () => {
+            handler[category]({ ...handlerConfig, ...( reason === 'clear' && { items: [] } ) });
+            toggleModal(null);
+          }
+        }
+      });
+    } else {
+      handler[category](handlerConfig);
+    }
+  };
 
   return (
     (existableList.length + linkedList.length) > 0 && <Autocomplete
@@ -60,16 +92,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
       renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
       getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}
       groupBy={(option) => groupByOption(option)}
-      onChange={(_, value, reason ) => {
-        // TODO: вызвать модальное окно с подтверждением действия
-        if(reason === 'clear' || reason === 'removeOption') {
-          console.log('Вызвать модальное окно с подтверждением действия');
-        }
-        handler[category]({
-          action: reason,
-          items: reason === 'clear' ? [] : value as TItemsArr
-        })
-      }}
+      onChange={(_, value, reason ) =>confirmCategoryAction(value, reason)}
     />
   )
 };

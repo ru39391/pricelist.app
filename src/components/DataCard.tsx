@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { Check, Delete } from '@mui/icons-material';
 
 import DataCardRow from './DataCardRow';
-import ModalFooter from './ModalFooter';
+import ModalControllers from './ModalControllers';
 
 import useForm from '../hooks/useForm';
 import useTableData from '../hooks/useTableData';
@@ -221,8 +221,7 @@ const DataCard: FC = () => {
             : ''
           }
         </Box>
-        <ModalFooter
-          icon={<Check />}
+        <ModalControllers
           color='success'
           disabled={false}
           actionBtnCaption={formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
@@ -234,8 +233,8 @@ const DataCard: FC = () => {
 
   return (
     formData
-      ? <ModalFooter
-          icon={formData && formData.action === REMOVE_ACTION_KEY ? <Delete /> : <Check />}
+      ? <ModalControllers
+          icon={formData && formData.action}
           color={formData && formData.action === REMOVE_ACTION_KEY ? 'error' : 'success'}
           actionBtnCaption={
             formData && formData.action === REMOVE_ACTION_KEY

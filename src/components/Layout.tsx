@@ -32,9 +32,7 @@ const Layout: FC<ILayout> = ({ children }) => {
       >
         {children}
       </Grid>
-      {formData && <Modal
-        {...({ fc: formData.isFormHidden ? DataCard : DataForm })}
-      />}
+      {formData ? <Modal {...({ fc: formData.isFormHidden ? DataCard : DataForm })} /> : <Modal />}
     </>
   )
 };
