@@ -58,6 +58,12 @@ type TResItemsData = {
 
 type TResItemsKeys = keyof TResItemsData;
 
+type TGroupedItemsData = {
+  items: TItemsArr;
+  groups: TItemsArr;
+  config: Record<typeof IS_GROUP_IGNORED_KEY | typeof IS_COMPLEX_DATA_KEY, boolean>;
+};
+
 interface IResLinkedItems {
   resLinkedItems: TLinkedDept[];
   resLinkedData: TResLinkedAction | null;
@@ -65,6 +71,7 @@ interface IResLinkedItems {
   isLinkedListCurrent: boolean;
   renderLinkedItems: (payload: TPricelistData, config: TCustomData<boolean> | null) => void;
   resetLinkedItems: () => void;
+  setGroupedLinkedItems: ({ items, groups, config }: TGroupedItemsData) => TItemsArr;
 }
 
 /**
@@ -81,13 +88,14 @@ interface IResLinkedItems {
  * @returns {boolean} isLinkedListExist;
  * @returns {boolean} isLinkedListCurrent;
  * @returns {function} renderLinkedItems - обработка привязанных пользователем элементов ресурса;
- * @returns {function} resetLinkedItems - сброс привязанных пользователем элементов ресурса.
+ * @returns {function} resetLinkedItems - сброс привязанных пользователем элементов ресурса;
+ * @returns {function} setGroupedLinkedItems - вычисляет привязанные к ресурсу позиции в зависимости от установленной конфигурации групп.
  */
 const useResLinkedItems = (): IResLinkedItems => {
   /**
    * Список привязанных к ресурсу элементов прайслиста:
    * - принимает массив объектов отделений с доп. ключами,
-   * - соответствующих элементам ниже по иерархии
+   * соответствующих элементам ниже по иерархии
    */
   const [resLinkedItems, setResLinkedItems] = useState<TLinkedDept[]>([]);
   /**
@@ -114,7 +122,7 @@ const useResLinkedItems = (): IResLinkedItems => {
   ));
 
   /**
-   * Сравнивает текущие данные ресурса с обновлёнными.
+   * Сравнивает текущие данные привязки ресурса с обновлёнными
    * @property {object|undefined} item - текущие данные ресурса
    * @property {object} data - обновлённые данные
    */
@@ -130,7 +138,7 @@ const useResLinkedItems = (): IResLinkedItems => {
   };
 
   /**
-   * Формирует объект обновлённых данных элементов прайслиста, привязанных к ресурсу.
+   * Формирует объект обновлённых данных элементов прайслиста, привязанных к ресурсу
    * - устанавливает состояние истинности изменения данных,
    * - обрабатывает данные для обновления и сохраняет их для передачи на сервер
    * @property {object[]} arr - массив с данными отделений, соответствующих ресурсу
@@ -296,6 +304,22 @@ const useResLinkedItems = (): IResLinkedItems => {
   };
 
   /**
+   * Формирует массив привязанных к ресурсу позиций в конфигурации от конфигурации групп
+   * @property {object[]} items - массив выбранных для ресурса позиций
+   * @property {object[]} groups - массив выбранных для ресурса групп
+   * @property {object} config - параметры конфигурации групп
+   * @returns {object} - массив привязанных к ресурсу позиций
+   */
+  const setGroupedLinkedItems = ({ items, groups, config }: TGroupedItemsData): TItemsArr => {
+      const groupedLinkedItems = items.filter((item) => item[GROUP_KEY] !== 0);
+      const ungroupedLinkedItems = items.filter((item) => item[GROUP_KEY] === 0);
+      const linkedItemsList = config[IS_GROUP_IGNORED_KEY] ? items : ungroupedLinkedItems;
+      const complexLinkedItems = groups.length > 0 ? items : linkedItemsList
+
+      return config[IS_COMPLEX_DATA_KEY] ? complexLinkedItems : groupedLinkedItems;
+  };
+
+  /**
    * Удаляет массив элементов, выбранных пользователем,
    * удаляет обработанные для сохранения изменений данные
    */
@@ -316,7 +340,8 @@ const useResLinkedItems = (): IResLinkedItems => {
     isLinkedListExist,
     isLinkedListCurrent,
     renderLinkedItems,
-    resetLinkedItems
+    resetLinkedItems,
+    setGroupedLinkedItems
   }
 }
 
