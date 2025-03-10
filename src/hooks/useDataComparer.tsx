@@ -20,7 +20,9 @@ import {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
-  ID_KEY
+  ID_KEY,
+  ITEM_KEY,
+  TYPES
 } from '../utils/constants';
 
 type TFileHandlerData = {
@@ -98,15 +100,12 @@ const useDataComparer = (): IDataComparer => {
       const isParamExist = param
         ? currItem && item[param] === currItem[param]
         : currItem && Object.keys(item).every(key => item[key] === currItem[key])
-
       const isEqual = currItem ? isParamExist : true;
 
-      //console.log(Object.keys(item).every(key => item[key] === currItem[key]));
       return isEqual
         ? acc
         : [...acc, item];
     }, []);
-    //console.log(handledFileItems);
 
     return handledFileItems;
   };
@@ -129,7 +128,12 @@ const useDataComparer = (): IDataComparer => {
     return {
       ...acc,
       [item]: key === UPDATED_KEY
-        ? handleUpdatedItems({ ids, items: items[index], currItems: arr, param })
+        ? handleUpdatedItems({
+            ids,
+            items: items[index],
+            currItems: arr,
+            ...( item === TYPES[ITEM_KEY] && param && { param } )
+          })
         : arr.filter(data => !ids.includes(data[ID_KEY] as number))
     };
   }, {});
