@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
-import { Check, Delete } from '@mui/icons-material';
 
 import DataCardRow from './DataCardRow';
 import ModalControllers from './ModalControllers';

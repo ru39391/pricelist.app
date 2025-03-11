@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo } from 'react';
+import { FC } from 'react';
 import { Box } from '@mui/material';
 
 import CheckboxController from './CheckboxController';
@@ -34,20 +34,10 @@ const ResItemControllers: FC<IResItemControllers> = ({
   configHandler,
   paramsHandler,
 }) => {
-  const groupsControllerLabel = useMemo(
-    () => existableList.length === linkedList.length ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY],
-    [existableList.length, linkedList.length]
-  );
+  const isGroupsControllerChecked = existableList.length === linkedList.length;
+  const groupsControllerLabel = isGroupsControllerChecked ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY];
 
-  const isGroupsControllerChecked = useMemo(
-    () => existableList.length === linkedList.length,
-    [existableList.length, linkedList.length]
-  );
-
-  const toggleGroupsController = useCallback(
-    () => { itemsHandler[GROUP_KEY]({ items: existableList.length === linkedList.length ? [] : existableList }) },
-    [itemsHandler, existableList, linkedList.length]
-  );
+  const toggleGroupsController = () => { itemsHandler[GROUP_KEY]({ items: isGroupsControllerChecked ? [] : existableList }) };
 
   return (
     existableList.length > 0 && <Box

@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC } from 'react';
 import { Box, Button, DialogContentText } from '@mui/material';
 import { ButtonOwnProps } from '@mui/material/Button';
 import { LoadingButton } from '@mui/lab';
@@ -33,10 +33,7 @@ const ModalControllers: FC<IModalControllers> = ({
 
   const { toggleModal } = useModal();
 
-  const btnColor: ButtonOwnProps['color'] = useMemo(
-    () => color as ButtonOwnProps['color'] || 'success',
-    [color]
-  );
+  const btnColor: ButtonOwnProps['color'] = color as ButtonOwnProps['color'] || 'success';
 
   return (
     <>

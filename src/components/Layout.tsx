@@ -14,7 +14,7 @@ interface ILayout {
 }
 
 const Layout: FC<ILayout> = ({ children }) => {
-  const { formData } = useSelector(state => state.form);
+  const { isVisible: isFormVisible, formData } = useSelector(state => state.form);
 
   return (
     <>
@@ -32,7 +32,7 @@ const Layout: FC<ILayout> = ({ children }) => {
       >
         {children}
       </Grid>
-      {formData ? <Modal {...({ fc: formData.isFormHidden ? DataCard : DataForm })} /> : <Modal />}
+      {formData ? <Modal {...({ fc: formData.isFormHidden ? DataCard : DataForm })} /> : (isFormVisible && <Modal />)}
     </>
   )
 };
