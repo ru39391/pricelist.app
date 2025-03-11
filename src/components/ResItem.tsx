@@ -27,6 +27,7 @@ import {
   IS_COMPLEX_DATA_KEY,
   IS_GROUP_IGNORED_KEY,
   SAVE_TITLE,
+  NO_GROUP_TITLE
 } from '../utils/constants';
 import { TItemData, TItemsArr, TPricelistKeys } from '../types';
 
@@ -239,7 +240,7 @@ const ResItem: FC = () => {
                         styles={{ mb: 0, ...(!isLinkedDataExist(IS_GROUP_IGNORED_KEY) && { mt: 2 }) }}
                         caption={
                           isLinkedDataExist(IS_GROUP_IGNORED_KEY)
-                            ? <Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>Без группы</Typography>
+                            ? <Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>{NO_GROUP_TITLE}</Typography>
                             : <Fragment />
                         }
                       />

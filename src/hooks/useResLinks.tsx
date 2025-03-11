@@ -130,7 +130,7 @@ const useResLinks = (): IResLinks => {
   const [existableGroups, setExistableGroups] = useState<TItemsArr>([]);
   const [existableItems, setExistableItems] = useState<TItemsArr>([]);
 
-  const [linkedDepts, handleLinkedDepts] = useState<TItemsArr>([]);
+  const [linkedDepts, setLinkedDepts] = useState<TItemsArr>([]);
   const [linkedSubdepts, setLinkedSubdepts] = useState<TItemsArr>([]);
   const [linkedGroups, setLinkedGroups] = useState<TItemsArr>([]);
   const [linkedItems, setLinkedItems] = useState<TItemsArr>([]);
@@ -171,7 +171,7 @@ const useResLinks = (): IResLinks => {
       // баг, при котором можно дважды выбрать аллергологию
       const category = arr.find(data => item[categoryKey] === data[ID_KEY]) || { [NAME_KEY]: item[CATEGORY_KEY] };
       if(!category) {
-        console.log({arr, item, category: item[categoryKey]});
+        //console.log({arr, item, category: item[categoryKey]});
         /*
           arr - массив родительских категорий (при удалении специализации приходит массив специализаций - некорректно)
           item - обрабатываемый элемент (приходит элемент массив специализаций)
@@ -226,14 +226,38 @@ const useResLinks = (): IResLinks => {
     )
   }), {} as Record<TPricelistKeys, (arr: TItemsArr) => void>);
 
-  const resLinkHandlers = [
-    handleLinkedDepts,
+  const resLinkHandlers = {
+    'dept': (payload) => {
+      console.log(payload);
+      setLinkedDepts(
+        [...linkedDepts].length === 0
+          ? payload.items
+          : [...linkedDepts, ...payload.items.filter(item => linkedDepts.find(data => data[ID_KEY] !== item[ID_KEY]))]
+      );
+    },
+    'subdept': (payload) => console.log(payload),
+    'group': (payload) => console.log(payload),
+    'items': (payload) => console.log(payload),
+  };
+
+  const _resLinkHandlers = [
+    setLinkedDepts,
     setLinkedSubdepts,
     setLinkedGroups,
     setLinkedItems
   ].reduce((acc, handler, index) => ({
     ...acc,
-    [Object.keys(TYPES)[index]]: (payload: TLinkedResData) => handler(
+    [Object.keys(TYPES)[index]]: (payload: TLinkedResData) => {
+      console.log(
+        resLinkData[Object.keys(TYPES)[index]],
+        {
+          ...payload,
+          key: Object.keys(TYPES)[index]
+        }
+      );
+
+    }
+    /*handler(
       handleLinkedItems(
         resLinkData[Object.keys(TYPES)[index]],
         {
@@ -241,7 +265,7 @@ const useResLinks = (): IResLinks => {
           key: Object.keys(TYPES)[index]
         }
       )
-    )
+    ) */
   }), {} as Record<TPricelistKeys, (payload: TLinkedResData) => void>);
 
   /**
@@ -399,7 +423,7 @@ const useResLinks = (): IResLinks => {
   const setResLinks = () => {
     const data = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
 
-    console.log({data});
+    //console.log({data});
 
     if(!data) {
       return;
@@ -421,7 +445,16 @@ const useResLinks = (): IResLinks => {
     }
   }
 
+  const changeSubdepts = () => {
+    // обновилось глобальное состояние
+    // записали данные в состояние существующих отделений
+    // выбрали элемент из этого списка
+    // при выборе обновили состояние существующих специализаций, поппутно записав наименование родителя
+    console.log(pricelist[TYPES[DEPT_KEY]]);
+  }
+
   useEffect(() => {
+    console.log({pricelist});
     setExistableDepts(pricelist[TYPES[DEPT_KEY]]);
   }, [
     pricelist[TYPES[DEPT_KEY]]
