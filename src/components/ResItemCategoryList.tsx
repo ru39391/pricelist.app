@@ -57,6 +57,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
 
   const confirmCategoryAction = (value: TItemsArr, reason: AutocompleteChangeReason) => {
     const handlerConfig = { action: reason, items: value };
+    console.log({ action: reason, items: value });
 
     if(reason === 'clear' || reason === 'removeOption') {
       toggleModal({
