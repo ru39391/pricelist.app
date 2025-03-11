@@ -28,9 +28,15 @@ import {
   REMOVE_ACTION_KEY
 } from '../utils/constants';
 
-const existableListReducer = (
+type TExistableListAction = Partial<{
+  type: TActionKeys;
+  key: TPricelistKeys;
+  arr: TItemsArr;
+}>;
+
+const createListReducer = (
   state: TPriceList<TPricelistTypes, TItemsArr>,
-  action: { type?: TActionKeys; key?: TPricelistKeys; arr?: TItemsArr; }
+  action: TExistableListAction
 ) => {
   switch (action.type) {
     case ADD_ACTION_KEY:
@@ -53,9 +59,16 @@ const existableListReducer = (
   }
 };
 
+const existableListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TExistableListAction) => createListReducer(state, action);
+const linkedListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TExistableListAction) => createListReducer(state, action);
+
 const useResLinkz = (): IResLinks => {
   const [existableList, setExistableList] = useReducer(
     existableListReducer,
+    { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
+  );
+  const [linkedList, setLinkedList] = useReducer(
+    linkedListReducer,
     { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
   );
 
@@ -64,24 +77,27 @@ const useResLinkz = (): IResLinks => {
       (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as TPriceList<TPricelistExtTypes, TItemsArr>
   ));
 
+  /**
+   * Формирует и устанавливает списки элементов прайслиста в зависимости от их родительских категорий
+   * @returns TExistableListAction - данные для сохранения в локальном состоянии
+   * @property {TItemsArr} array - массив родительских элементов
+   * @property {TPricelistKeys} key - тип дочерних элементов
+   * @property {TPricelistKeys} categoryKey - ключ родительской категории
+   */
   const setExistableArr = ({ array, key, categoryKey }: {
     array: TItemsArr;
     key: TPricelistKeys;
     categoryKey: TPricelistKeys;
   }) => {
     let arr: TItemsArr = [];
+    const payload: TExistableListAction = { type: REMOVE_ACTION_KEY, key, arr };
 
     if(array.length === 0) {
-      setExistableList({
-        type: REMOVE_ACTION_KEY,
-        key,//: SUBDEPT_KEY,
-        arr
-      });
-      return;
+      return payload;
     }
 
     arr = array.length === 1
-      ? pricelist[TYPES[key]].filter(item => item[categoryKey] === array[0][ID_KEY]) // DEPT_KEY
+      ? pricelist[TYPES[key]].filter(item => item[categoryKey] === array[0][ID_KEY])
       : pricelist[TYPES[key]].reduce(
           (acc, item) => {
             const dept = array.find(data => data[ID_KEY] === item[categoryKey]);
@@ -91,11 +107,10 @@ const useResLinkz = (): IResLinks => {
           [] as TItemsArr
         );
 
-    setExistableList({
-      type: ADD_ACTION_KEY,
-      key,//: SUBDEPT_KEY,
+    return {
+      ...payload,
       arr: arr.length === 1 ? [{...arr[0], [CATEGORY_KEY]: array[0][NAME_KEY], [LABEL_KEY]: arr[0][NAME_KEY]}] : arr
-    });
+    };
   };
 
   useEffect(() => {
