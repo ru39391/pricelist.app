@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -27,8 +27,10 @@ import type {
   TLinkedDataConfigAction,
   TLinkedDataConfigHandler,
   TLinkedResData,
+  TPriceList,
   TPricelistExtTypes,
-  TPricelistKeys
+  TPricelistKeys,
+  TPricelistTypes
 } from '../types';
 
 import { sortArrValues, fetchArray, getMatchedItems } from '../utils';
@@ -137,14 +139,27 @@ const useResLinks = (): IResLinks => {
 
   const { id: resId } = useParams();
 
-  const pricelist: TCustomData<TItemsArr>  = useSelector(
-    ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce((acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {}
+  const pricelist = useSelector(
+    ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce(
+      (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as TPriceList<TPricelistExtTypes, TItemsArr>
   ));
 
-  const setResData = (arr: TItemsArr[]): TCustomData<TItemsArr> => arr.reduce(
-    (acc, item, index) => ({ ...acc, [Object.keys(TYPES)[index]]: item }), {}
+  /**
+   * Возвращает объект массивов, соответствующих категориям элементов прайслиста
+   * @returns {TPriceList<TPricelistTypes, TItemsArr>} объект, содержащий списки элементов прайслиста
+   * @property {TItemsArr} arr - массив, содержащий состояния доступных или выбранных элементов
+   */
+  const setResData = (arr: TItemsArr[]): TPriceList<TPricelistTypes, TItemsArr> => arr.reduce(
+    (acc, item, index) => ({ ...acc, [Object.keys(TYPES)[index]]: item }), {} as TPriceList<TPricelistTypes, TItemsArr>
   );
 
+  /**
+   * Обрабатывет массив дочерних элементов категории, добавляя название родителя в объекты массива
+   * @returns {TItemsArr} массив дочерних элементов, объекты которых содержат наименование родительской категории
+   * @property {TItemsArr} arr - массив элементов-категорий
+   * @property {TItemsArr} childrenArr - массив дочерних элементов категории
+   * @property {TPricelistKeys} categoryKey - категория прайслиста
+   */
   const handleSortedArr = (
     arr: TItemsArr,
     childrenArr: TItemsArr,
@@ -152,7 +167,7 @@ const useResLinks = (): IResLinks => {
   ): TItemsArr => childrenArr.map(
     (item) => {
       // TODO: проверить корректность решения проблемы с { [NAME_KEY]: item[CATEGORY_KEY] }
-      // после удаления одной категории список делятся надвое
+      // после удаления одной категории список делится надвое
       // баг, при котором можно дважды выбрать аллергологию
       const category = arr.find(data => item[categoryKey] === data[ID_KEY]) || { [NAME_KEY]: item[CATEGORY_KEY] };
       if(!category) {
@@ -182,9 +197,15 @@ const useResLinks = (): IResLinks => {
     }
   );
 
-  const existableData: TCustomData<TItemsArr> = setResData([existableDepts, existableSubdepts, existableGroups, existableItems]);
+  const existableData: TPriceList<TPricelistTypes, TItemsArr> = useMemo(
+    () => setResData([existableDepts, existableSubdepts, existableGroups, existableItems]),
+    [existableDepts, existableSubdepts, existableGroups, existableItems]
+  );
 
-  const resLinkData: TCustomData<TItemsArr> = setResData([linkedDepts, linkedSubdepts, linkedGroups, linkedItems]);
+  const resLinkData: TPriceList<TPricelistTypes, TItemsArr> = useMemo(
+    () => setResData([linkedDepts, linkedSubdepts, linkedGroups, linkedItems]),
+    [linkedDepts, linkedSubdepts, linkedGroups, linkedItems]
+  );
 
   const existableDataHandlers = [
     setExistableDepts,
@@ -225,8 +246,8 @@ const useResLinks = (): IResLinks => {
 
   /**
    * Переключение параметров конфигурации обработки прикреплённых к ресурсу позиций прайслиста
-   * @property {string} type - тип действия
-   * @property {object} data - объект значений параметров конфигурации
+   * @property {TLinkedDataConfigAction} type - тип действия
+   * @property {IResLinks['linkedDataConfig']} data - объект значений параметров конфигурации
    */
   const handleDataConfig = (type: TLinkedDataConfigAction, data: IResLinks['linkedDataConfig'] = null) => {
     setLinkedDataConfig({ type, data });
@@ -239,10 +260,10 @@ const useResLinks = (): IResLinks => {
   const isLinkedItemActive = (arr: TItemsArr, data: TItemData): boolean => arr.map(item => item[ID_KEY]).includes(data[ID_KEY]);
 
   /**
-   * Обновляет массив подкатегории при удалении прикреплённого к ресурсу элемента
-   * @property {object[]} arr - массив текущих элементов, прикреплённых к ресурсу
-   * @property {object[]} items - массив передаваемых элементов
-   * @property {string} key - ключ подкатегории
+   * Обновляет массив подкатегории при изменении списка прикреплённых к ресурсу элементов
+   * @property {TItemsArr} arr - массив текущих элементов, прикреплённых к ресурсу
+   * @property {TItemsArr} items - массив передаваемых элементов
+   * @property {TPricelistKeys|string} key - ключ подкатегории
    * @property {string} action - тип действия
    */
   const handleExistableItems = (
@@ -275,10 +296,10 @@ const useResLinks = (): IResLinks => {
 
   /**
    * Возвращает массив элементов для установки нового состояния
-   * @returns {object[]} массив подходящих элементов
-   * @property {object[]} arr - массив текущих элементов, прикреплённых к ресурсу
-   * @property {object[]} items - массив передаваемых элементов
-   * @property {object} data
+   * @returns {TItemsArr} массив подходящих элементов
+   * @property {TItemsArr} arr - массив текущих элементов, прикреплённых к ресурсу
+   * @property {TItemsArr} items - массив передаваемых элементов
+   * @property {TItemData} data - данные передаваемого элемента
    * @property {string} key - ключ подкатегории
    * @property {string} action - тип действия
    */
@@ -299,8 +320,8 @@ const useResLinks = (): IResLinks => {
 
   /**
    * Формирует массив дочерних элементов выбранных категорий
-   * @returns {object[]} массив подходящих элементов
-   * @property {object[]} arr - массив объектов родительской категории
+   * @returns {TItemsArr} массив подходящих элементов
+   * @property {TItemsArr} arr - массив объектов родительской категории
    * @property {TPricelistKeys} categoryKey - ключ параметра категории, напр. DEPT_KEY
    * @property {TPricelistKeys} currentKey - ключ параметра дочернего элемента, напр. SUBDEPT_KEY
    * @property {TPricelistKeys} extendedKey - ключ для выборки услуг, вложенных напрямую в специализацию, напр. GROUP_KEY
@@ -342,6 +363,9 @@ const useResLinks = (): IResLinks => {
     );
   };
 
+  /**
+   * Обновляет состояние конфигурации при выборе специализаций с вложенными услугами
+   */
   const updateComplexDataConfig = () => {
     if(linkedDataConfig !== null && linkedDataConfig[IS_COMPLEX_DATA_KEY]) {
       handleDataConfig('SET_COMPLEX_DATA');
@@ -350,6 +374,9 @@ const useResLinks = (): IResLinks => {
     }
   }
 
+  /**
+   * Обновляет состояния списков услуг при изменении состояния конфигурации
+   */
   const updateLinkedDataConfig = () => {
     if(linkedDataConfig !== null && linkedDataConfig[IS_COMPLEX_DATA_KEY] !== undefined) {
       setLinkedItems([]);
@@ -366,6 +393,9 @@ const useResLinks = (): IResLinks => {
     }
   };
 
+  /**
+   * Устанавливает локальные состояния существующих и выбранных элементов ресурса при обновлении глобального хранилища
+   */
   const setResLinks = () => {
     const data = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
 

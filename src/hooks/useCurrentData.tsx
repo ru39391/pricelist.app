@@ -35,6 +35,7 @@ interface ICurrentData {
   setCurrentFormValues: (type: string) => TItemData;
 }
 
+// TODO: проверить использование returns и property в других случаях
 /**
  * Формирование данных текущей категории
  * @returns {object} данные категории
