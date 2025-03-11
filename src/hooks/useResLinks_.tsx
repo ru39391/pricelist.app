@@ -20,6 +20,7 @@ import {
   DEPT_KEY,
   SUBDEPT_KEY,
   GROUP_KEY,
+  LABEL_KEY,
   CATEGORY_KEY,
   RESLINKS_KEY,
   ADD_ACTION_KEY,
@@ -52,7 +53,7 @@ const existableListReducer = (
   }
 };
 
-const useResLinks = (): IResLinks => {
+const useResLinkz = (): IResLinks => {
   const [existableList, setExistableList] = useReducer(
     existableListReducer,
     { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
@@ -63,33 +64,37 @@ const useResLinks = (): IResLinks => {
       (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as TPriceList<TPricelistExtTypes, TItemsArr>
   ));
 
-  const setExistableSubdepts = (arr: TItemsArr) => {
-    let subdepts: TItemsArr = [];
+  const setExistableArr = ({ array, key, categoryKey }: {
+    array: TItemsArr;
+    key: TPricelistKeys;
+    categoryKey: TPricelistKeys;
+  }) => {
+    let arr: TItemsArr = [];
 
-    if(arr.length === 0) {
+    if(array.length === 0) {
       setExistableList({
         type: REMOVE_ACTION_KEY,
-        key: SUBDEPT_KEY,
-        arr: subdepts
+        key,//: SUBDEPT_KEY,
+        arr
       });
       return;
     }
 
-    subdepts = arr.length === 1
-      ? pricelist[TYPES[SUBDEPT_KEY]].filter(item => item[DEPT_KEY] === arr[0][ID_KEY])
-      : pricelist[TYPES[SUBDEPT_KEY]].reduce(
+    arr = array.length === 1
+      ? pricelist[TYPES[key]].filter(item => item[categoryKey] === array[0][ID_KEY]) // DEPT_KEY
+      : pricelist[TYPES[key]].reduce(
           (acc, item) => {
-            const dept = arr.find(data => data[ID_KEY] === item[DEPT_KEY]);
+            const dept = array.find(data => data[ID_KEY] === item[categoryKey]);
 
-            return dept ? [...acc, {...item, [CATEGORY_KEY]: dept[NAME_KEY]}] : acc;
+            return dept ? [...acc, {...item, [CATEGORY_KEY]: dept[NAME_KEY], [LABEL_KEY]: item[NAME_KEY]}] : acc;
           },
           [] as TItemsArr
         );
 
     setExistableList({
       type: ADD_ACTION_KEY,
-      key: SUBDEPT_KEY,
-      arr: subdepts.length === 1 ? subdepts.map(data => ({...data, [CATEGORY_KEY]: data[NAME_KEY]})) : subdepts
+      key,//: SUBDEPT_KEY,
+      arr: arr.length === 1 ? [{...arr[0], [CATEGORY_KEY]: array[0][NAME_KEY], [LABEL_KEY]: arr[0][NAME_KEY]}] : arr
     });
   };
 
@@ -104,10 +109,28 @@ const useResLinks = (): IResLinks => {
   ]);
 
   useEffect(() => {
-    setExistableSubdepts(existableList[TYPES[DEPT_KEY]]);
+    setExistableArr({
+      array: existableList[TYPES[DEPT_KEY]],
+      key: SUBDEPT_KEY,
+      categoryKey: DEPT_KEY,
+    });
   }, [
     existableList[TYPES[DEPT_KEY]]
   ]);
+
+  useEffect(() => {
+    setExistableArr({
+      array: existableList[TYPES[SUBDEPT_KEY]],
+      key: GROUP_KEY,
+      categoryKey: SUBDEPT_KEY,
+    });
+  }, [
+    existableList[TYPES[SUBDEPT_KEY]]
+  ]);
+
+  return {
+    existableList
+  }
 }
 
-export default useResLinks;
+export default useResLinkz;

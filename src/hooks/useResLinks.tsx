@@ -228,16 +228,16 @@ const useResLinks = (): IResLinks => {
 
   const resLinkHandlers = {
     'dept': (payload) => {
-      console.log(payload);
+      //console.log(payload);
       setLinkedDepts(
         [...linkedDepts].length === 0
           ? payload.items
           : [...linkedDepts, ...payload.items.filter(item => linkedDepts.find(data => data[ID_KEY] !== item[ID_KEY]))]
       );
     },
-    'subdept': (payload) => console.log(payload),
-    'group': (payload) => console.log(payload),
-    'items': (payload) => console.log(payload),
+    'subdept': (payload) => console.log(),
+    'group': (payload) => console.log(),
+    'items': (payload) => console.log(),
   };
 
   const _resLinkHandlers = [
@@ -454,7 +454,6 @@ const useResLinks = (): IResLinks => {
   }
 
   useEffect(() => {
-    console.log({pricelist});
     setExistableDepts(pricelist[TYPES[DEPT_KEY]]);
   }, [
     pricelist[TYPES[DEPT_KEY]]

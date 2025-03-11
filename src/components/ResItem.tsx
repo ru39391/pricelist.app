@@ -9,6 +9,7 @@ import ResItemTogglersList from './ResItemTogglersList';
 import ResLinkedItems from './ResLinkedItems';
 
 import useResLinks from '../hooks/useResLinks';
+import useResLinkz from '../hooks/useResLinks_';
 import useResLinkedItems from '../hooks/useResLinkedItems';
 
 import ResItemContext from '../contexts/ResItemContext';
@@ -61,6 +62,8 @@ const ResItem: FC = () => {
     setGroupedLinkedItems,
     handleLinkedDepts
   } = useResLinkedItems();
+
+  const { existableList } = useResLinkz();
 
   const isLinkedDataExist = useCallback(
     (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]),
@@ -130,6 +133,12 @@ const ResItem: FC = () => {
     setLinkedDept();
   }, [
     isDeptTogglerVisible
+  ]);
+
+  useEffect(() => {
+    console.log('existableList', existableList);
+  }, [
+    existableList
   ]);
 
   if(resLinkedItems.length > 0) {
