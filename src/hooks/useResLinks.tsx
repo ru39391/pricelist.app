@@ -95,6 +95,33 @@ const dataConfigReducer = (
 };
 
 // TODO: отыскать вероятные места применения useCallback и useMemo
+/**
+ * Формирование структуры элементов прайслиста, доступных для привязки к ресурсу
+ *
+ * Используемые состояния:
+ * - existableDepts: список доступных для выбора отделений;
+ * - existableSubdepts: список доступных для выбора специализаций;
+ * - existableGroups: список доступных для выбора групп;
+ * - existableItems: список доступных для выбора услуг;
+ * - linkedDepts: список выбранных отделений;
+ * - linkedSubdepts: список выбранных отделений;
+ * - linkedGroups: список выбранных отделений;
+ * - linkedItems: список выбранных отделений;
+ * - linkedDataConfig: конфигурация структуры списка цен на сайте.
+ *
+ * @returns {TItemsArr} existableDepts;
+ * @returns {TItemsArr} existableSubdepts;
+ * @returns {TItemsArr} existableGroups;
+ * @returns {TItemsArr} existableItems;
+ * @returns {TItemsArr} linkedDepts;
+ * @returns {TItemsArr} linkedSubdepts;
+ * @returns {TItemsArr} linkedGroups;
+ * @returns {TItemsArr} linkedItems;
+ * @returns {Record<string, boolean>|null} linkedDataConfig;
+ * @returns {TCategorySelectorHandler} resLinkHandlers,
+ * @returns {function} isLinkedItemActive - истинность наличия объекта в массиве привязанных к ресурсу элементов;
+ * @returns {function} handleDataConfig - устанавливает состояние конфигурации списка цен для отображения на сайте.
+ */
 const useResLinks = (): IResLinks => {
   const [existableDepts, setExistableDepts] = useState<TItemsArr>([]);
   const [existableSubdepts, setExistableSubdepts] = useState<TItemsArr>([]);

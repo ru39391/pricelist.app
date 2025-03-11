@@ -32,6 +32,7 @@ const Layout: FC<ILayout> = ({ children }) => {
       >
         {children}
       </Grid>
+      {/* // TODO: унифицировать модальные окна */}
       {formData ? <Modal {...({ fc: formData.isFormHidden ? DataCard : DataForm })} /> : (isFormVisible && <Modal />)}
     </>
   )

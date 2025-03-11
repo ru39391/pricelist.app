@@ -45,7 +45,9 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
 }) => {
   const { toggleModal } = useModal();
 
-  const handleOptionData = <T, >(data: T, key: string, isNumber = false): number | string => isNumber ? data[key] as number : data[key] as string;
+  const handleOptionData = <T, >(
+    data: T, key: string, isNumber = false
+  ): number | string => isNumber ? data[key] as number : data[key] as string;
 
   const groupByOption = (option: TItemData): string => {
     const category = handleOptionData(option, CATEGORY_KEY);

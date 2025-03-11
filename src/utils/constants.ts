@@ -1,7 +1,7 @@
 import type {
   TCustomData,
-  TPricelistKeys,
-  TPricelistTypes,
+  // TPricelistKeys,
+  // TPricelistTypes,
   THandledItemKeys
 } from '../types';
 
@@ -129,12 +129,13 @@ const HANDLED_ITEMS_CAPTIONS: Record<THandledItemKeys, string> = {
   [REMOVED_KEY]: 'Удалённые записи',
 };
 
-const TYPES: Record<TPricelistKeys, TPricelistTypes> = {
+// : Record<TPricelistKeys, TPricelistTypes>
+const TYPES = {
   [DEPT_KEY]: `${DEPT_KEY}s`,
   [SUBDEPT_KEY]: `${SUBDEPT_KEY}s`,
   [GROUP_KEY]: `${GROUP_KEY}s`,
   [ITEM_KEY]: 'pricelist'
-};
+} as const;
 
 const LINKED_RES_PARAMS: TCustomData<string> = {
   [IS_COMPLEX_DATA_KEY]: 'Комплексный выбор',
