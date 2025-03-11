@@ -3,6 +3,7 @@ import { createContext } from 'react';
 import type {
   TCategorySelectorHandler,
   TItemsArr,
+  TListReducerOptions,
   TResItemData
 } from '../types';
 
@@ -23,7 +24,8 @@ const contextData = {
   resLinkHandlers: Object.keys(TYPES).reduce(
     (acc, key) => ({...acc, [key]: () => console.log(ACTION_ERROR_MSG)}), {} as TCategorySelectorHandler
   ),
-  handleDataConfig: () => console.log(ACTION_ERROR_MSG)
+  handleDataConfig: () => console.log(ACTION_ERROR_MSG),
+  handleListOptions: (data: TListReducerOptions) => console.log({...data, ACTION_ERROR_MSG}),
 } as TResItemData;
 
 const ResItemContext = createContext<TResItemData>(contextData);

@@ -5,8 +5,8 @@ import { AutocompleteChangeReason } from '@mui/material';
 import { useSelector } from '../services/hooks';
 
 import type {
-  TActionKeys,
   TItemsArr,
+  TListReducerOptions,
   TPriceList,
   TPricelistExtTypes,
   TPricelistKeys,
@@ -31,13 +31,13 @@ import {
   REMOVE_ACTION_KEY
 } from '../utils/constants';
 
-type TListReducerOptions = Partial<{
-  type: TActionKeys;
-  key: TPricelistKeys;
-  arr: TItemsArr;
-}>;
-
 type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & { action: AutocompleteChangeReason; };
+
+interface IResLinks {
+  existableList: TPriceList<TPricelistTypes, TItemsArr>;
+  linkedList: TPriceList<TPricelistTypes, TItemsArr>;
+  handleListOptions: (data: TListHandlerOptions) => TListReducerOptions;
+}
 
 const createListReducer = (
   state: TPriceList<TPricelistTypes, TItemsArr>,
@@ -52,7 +52,8 @@ const createListReducer = (
     case EDIT_ACTION_KEY:
       return {
         ...state,
-        ...( action.key && { [TYPES[action.key]]: [...state[TYPES[action.key]], ...action.arr || []] } )
+        ...( action.key && { [TYPES[action.key]]: action.arr || [] } )
+        //...( action.key && { [TYPES[action.key]]: [...state[TYPES[action.key]], ...action.arr || []] } )
       };
     case REMOVE_ACTION_KEY:
       return {
@@ -83,7 +84,7 @@ const useResLinkz = (): IResLinks => {
   ));
 
   /**
-   * Формирует и устанавливает списки элементов прайслиста в зависимости от их родительских категорий
+   * Возвращает списки элементов прайслиста в зависимости от их родительских категорий
    * @returns TListReducerOptions - данные для сохранения в локальном состоянии
    * @property {TItemsArr} array - массив родительских элементов
    * @property {TPricelistKeys} key - тип дочерних элементов
@@ -93,7 +94,7 @@ const useResLinkz = (): IResLinks => {
     array: TItemsArr;
     key: TPricelistKeys;
     categoryKey: TPricelistKeys;
-  }) => {
+  }): TListReducerOptions => {
     let arr: TItemsArr = [];
     const payload: TListReducerOptions = { type: REMOVE_ACTION_KEY, key, arr };
 
@@ -119,7 +120,16 @@ const useResLinkz = (): IResLinks => {
     };
   };
 
-  const handleListOptions = (data: TListHandlerOptions) => {
+  /**
+   * Возвращает списки выбранных элементов прайслиста
+   * @returns TListReducerOptions - данные для сохранения в локальном состоянии
+   * @property {TItemsArr} array - массив элементов
+   * @property {TPricelistKeys} key - тип элементов
+   * @property {AutocompleteChangeReason} action - тип взаимодействия с выпадающим списком
+   */
+  const handleListOptions = (data: TListHandlerOptions): TListReducerOptions => {
+    console.log(data);
+    //return;
     let arr: TItemsArr = [];
     const { action, key, arr: array } = data;
     const payload: TListReducerOptions = { type: REMOVE_ACTION_KEY, key, arr };
@@ -127,9 +137,18 @@ const useResLinkz = (): IResLinks => {
     const sortOption = key === DEPT_KEY ? NAME_KEY : CATEGORY_KEY;
 
     if(action !== 'selectOption') {
-      return action === 'clear'
-        ? payload
-        : {...payload, arr: sortArrValues(list.filter(item => item[ID_KEY] !== array[0][ID_KEY]), sortOption)};
+      //return
+      console.log(
+        action === 'clear'
+          ? payload
+          : {...payload, arr: sortArrValues(array, sortOption)}
+      );
+      setLinkedList(
+        action === 'clear'
+          ? payload
+          : {...payload, arr: sortArrValues(array, sortOption)}
+      );
+      return;
     }
 
     arr = sortArrValues(
@@ -137,7 +156,10 @@ const useResLinkz = (): IResLinks => {
       sortOption
     );
 
-    return {...payload, type: EDIT_ACTION_KEY, arr};
+    //return
+    console.log([...list, ...array]);
+    console.log({...payload, type: EDIT_ACTION_KEY, arr});
+    setLinkedList({...payload, type: EDIT_ACTION_KEY, arr});
   };
 
   useEffect(() => {
@@ -149,6 +171,7 @@ const useResLinkz = (): IResLinks => {
   }, [
     pricelist[TYPES[DEPT_KEY]]
   ]);
+  /*
 
   useEffect(() => {
     handleResList({
@@ -169,9 +192,12 @@ const useResLinkz = (): IResLinks => {
   }, [
     existableList[TYPES[SUBDEPT_KEY]]
   ]);
+  */
 
   return {
-    existableList
+    existableList,
+    linkedList,
+    handleListOptions
   }
 }
 

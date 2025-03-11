@@ -56,8 +56,9 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   };
 
   const confirmCategoryAction = (value: TItemsArr, reason: AutocompleteChangeReason) => {
-    const handlerConfig = { action: reason, items: value };
-    console.log({ action: reason, items: value });
+    //const handlerConfig = { action: reason, items: value };
+    //console.log({ action: reason, items: value });
+    const handlerConfig = { action: reason, key: category, arr: value };
 
     if(reason === 'clear' || reason === 'removeOption') {
       toggleModal({
@@ -69,13 +70,15 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
           actionBtnCaption: reason === 'clear' ? CLEAR_TITLE : REMOVE_TITLE,
           disabled: false,
           actionHandler: () => {
-            handler[category]({ ...handlerConfig, ...( reason === 'clear' && { items: [] } ) });
+            handler(handlerConfig);
+            //handler[category]({ ...handlerConfig, ...( reason === 'clear' && { items: [] } ) });
             toggleModal(null);
           }
         }
       });
     } else {
-      handler[category](handlerConfig);
+      handler(handlerConfig);
+      //handler[category](handlerConfig);
     }
   };
 

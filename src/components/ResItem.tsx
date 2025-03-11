@@ -46,7 +46,8 @@ const ResItem: FC = () => {
     },
     linkedDataConfig,
     resLinkHandlers,
-    handleDataConfig
+    handleDataConfig,
+    handleListOptions
   } = useContext(ResItemContext);
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
@@ -63,7 +64,7 @@ const ResItem: FC = () => {
     handleLinkedDepts
   } = useResLinkedItems();
 
-  const { existableList } = useResLinkz();
+  //const { existableList } = useResLinkz();
 
   const isLinkedDataExist = useCallback(
     (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]),
@@ -136,9 +137,9 @@ const ResItem: FC = () => {
   ]);
 
   useEffect(() => {
-    console.log('existableList', existableList);
+    //console.log('existableList', existableList);
   }, [
-    existableList
+    //existableList
   ]);
 
   if(resLinkedItems.length > 0) {
@@ -181,7 +182,7 @@ const ResItem: FC = () => {
         sx: { mb: 2.5, backgroundColor: '#fff' },
         linkedList: linkedSubdepts,
         existableList: existableSubdepts
-      }].map((props) => <ResItemCategoryList key={props.category} handler={resLinkHandlers} {...props} />)}
+      }].map((props) => <ResItemCategoryList key={props.category} handler={handleListOptions} {...props} />)}
 
       {isDeptTogglerVisible
         ? <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

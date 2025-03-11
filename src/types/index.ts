@@ -263,3 +263,9 @@ export type TFormController = {
   disabled: boolean;
   actionHandler: () => void;
 } & Partial<Record<'icon' | 'color' | 'introText', string>>;
+
+export type TListReducerOptions = Partial<{
+  type: TActionKeys;
+  key: TPricelistKeys;
+  arr: TItemsArr;
+}>;
