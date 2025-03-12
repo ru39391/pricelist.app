@@ -57,7 +57,7 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
               (data) => <Chip
                 key={data[ID_KEY].toString()}
                 label={data[NAME_KEY]}
-                onClick={() => handler[category]({ data })}
+                onClick={() => handler({ arr: linkedList, key: category, data })}
                 {...(variant && {variant})}
                 {...( paramsHandler(linkedList, data) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
               />

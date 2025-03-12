@@ -26,13 +26,14 @@ const ResItemProvider: FC = () => {
     existableGroups,
     existableItems,
     linkedDataConfig,
-    resLinkHandlers,
+    //resLinkHandlers,
     handleDataConfig
   } = useResLinks();
   const {
     existableList,
     linkedList,
-    handleListOptions
+    handleListOptions,
+    handleLinkedItems
   } = useResLinkz();
 
   return (
@@ -48,9 +49,10 @@ const ResItemProvider: FC = () => {
         existableItems: existableList[TYPES[ITEM_KEY]],
       },
       linkedDataConfig,
-      resLinkHandlers,
+      //resLinkHandlers,
       handleDataConfig,
-      handleListOptions
+      handleListOptions,
+      handleLinkedItems
     }}>
       <ResItem />
     </ResItemContext.Provider>

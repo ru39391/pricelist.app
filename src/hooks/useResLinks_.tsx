@@ -5,6 +5,7 @@ import { AutocompleteChangeReason } from '@mui/material';
 import { useSelector } from '../services/hooks';
 
 import type {
+  TItemData,
   TItemsArr,
   TListReducerOptions,
   TPriceList,
@@ -35,7 +36,8 @@ type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & { actio
 interface IResLinks {
   existableList: TPriceList<TPricelistTypes, TItemsArr>;
   linkedList: TPriceList<TPricelistTypes, TItemsArr>;
-  handleListOptions: (data: TListHandlerOptions) => TListReducerOptions;
+  handleListOptions: (data: TListHandlerOptions) => void;
+  handleLinkedItems: (data: { arr: TItemsArr; data: TItemData; key: TPricelistKeys; }) => void;
 }
 
 const createListReducer = (
@@ -98,9 +100,9 @@ const useResLinkz = (): IResLinks => {
       ? pricelist[TYPES[key]].filter(item => item[categoryKey] === array[0][ID_KEY])
       : sortArrValues([...pricelist[TYPES[key]]], NAME_KEY).reduce(
           (acc, item) => {
-            const dept = array.find(data => data[ID_KEY] === item[categoryKey]);
+            const category = array.find(data => data[ID_KEY] === item[categoryKey]);
 
-            return dept ? [...acc, {...item, [CATEGORY_KEY]: dept[NAME_KEY], [LABEL_KEY]: item[NAME_KEY]}] : acc;
+            return category ? [...acc, {...item, [CATEGORY_KEY]: category[NAME_KEY], [LABEL_KEY]: item[NAME_KEY]}] : acc;
           },
           [] as TItemsArr
         );
@@ -194,6 +196,34 @@ const useResLinkz = (): IResLinks => {
     }
   };
 
+  /**
+   * Обновляет список привязанных групп и услуг
+   * @property {TItemsArr} array - массив выбранных элементов
+   * @property {TItemData} data - данные элемента
+   * @property {TPricelistKeys} key - ключ элемента прасйлиста
+   */
+  const handleLinkedItems = ({ arr, data, key }: {
+    arr: TItemsArr;
+    data: TItemData;
+    key: TPricelistKeys;
+  }) => {
+    const payload: TListHandlerOptions = { action: 'selectOption', key, arr: [data] };
+
+    if(arr.length === 0) {
+      handleListOptions(payload);
+      return;
+    }
+
+    const linkedList = arr.filter(item => item[ID_KEY] !== data[ID_KEY]);
+    // нет в arr: linkedList.length === arr.length
+    // есть в arr: linkedList.length === arr.length - 1
+
+    handleListOptions({
+      ...payload,
+      ...( linkedList.length === arr.length - 1 && { action: 'removeOption', arr: linkedList } )
+    });
+  };
+
   useEffect(() => {
     // при получении данных прайслиста, устанавливаем список доступных для выбора отделений
     setExistableList({
@@ -241,6 +271,20 @@ const useResLinkz = (): IResLinks => {
         categoryKey: SUBDEPT_KEY,
       })
     );
+    /*
+    // при изменении выбранных специализаций изменяем список выбранных групп
+    handleResLinkedList({
+      array: linkedList[TYPES[SUBDEPT_KEY]],
+      key: GROUP_KEY,
+      categoryKey: SUBDEPT_KEY,
+    });
+    // при изменении выбранных специализаций изменяем список выбранных услуг
+    handleResLinkedList({
+      array: linkedList[TYPES[SUBDEPT_KEY]],
+      key: ITEM_KEY,
+      categoryKey: SUBDEPT_KEY,
+    });
+    */
   }, [
     linkedList[TYPES[SUBDEPT_KEY]]
   ]);
@@ -248,7 +292,8 @@ const useResLinkz = (): IResLinks => {
   return {
     existableList,
     linkedList,
-    handleListOptions
+    handleListOptions,
+    handleLinkedItems
   }
 }
 
