@@ -45,7 +45,6 @@ const ResItem: FC = () => {
       existableItems,
     },
     linkedDataConfig,
-    //resLinkHandlers,
     handleDataConfig,
     handleListOptions,
     toggleLinkedItems
@@ -53,7 +52,7 @@ const ResItem: FC = () => {
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
   const dispatch = useDispatch();
-  const { isLinkedItemActive } = useResLinks();
+  const { isLinkedItemActive } = useResLinkz();
   const {
     resLinkedItems,
     resLinkedData,
@@ -64,8 +63,6 @@ const ResItem: FC = () => {
     setGroupedLinkedItems,
     handleLinkedDepts
   } = useResLinkedItems();
-
-  //const { existableList } = useResLinkz();
 
   const isLinkedDataExist = useCallback(
     (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]),
@@ -216,8 +213,8 @@ const ResItem: FC = () => {
                     ? (filterList(existableGroups, subdept, SUBDEPT_KEY).map(
                         (options) => <ResItemTogglersList
                           key={options[ID_KEY].toString()}
-                          handler={toggleLinkedItems}
-                          paramsHandler={isLinkedItemActive}
+                          handleClick={toggleLinkedItems}
+                          isTogglerActive={isLinkedItemActive}
                           arr={filterList(existableItems, options, GROUP_KEY)}
                           linkedList={linkedItems}
                           category={ITEM_KEY}
@@ -228,8 +225,8 @@ const ResItem: FC = () => {
                         />)
                       )
                     : <ResItemTogglersList
-                        handler={toggleLinkedItems}
-                        paramsHandler={isLinkedItemActive}
+                        handleClick={toggleLinkedItems}
+                        isTogglerActive={isLinkedItemActive}
                         arr={filterList(existableGroups, subdept, SUBDEPT_KEY)}
                         linkedList={linkedGroups}
                         category={GROUP_KEY}
@@ -243,8 +240,8 @@ const ResItem: FC = () => {
                   {(isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY))
                     && filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0).length > 0
                     && <ResItemTogglersList
-                        handler={toggleLinkedItems}
-                        paramsHandler={isLinkedItemActive}
+                        handleClick={toggleLinkedItems}
+                        isTogglerActive={isLinkedItemActive}
                         arr={filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0)}
                         linkedList={linkedItems}
                         category={ITEM_KEY}

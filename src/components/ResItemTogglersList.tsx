@@ -21,8 +21,8 @@ import {
 } from '../utils/constants';
 
 interface IResItemTogglersList {
-  handler: TCategorySelectorHandler;
-  paramsHandler: (arr: TItemsArr, data: TItemData) => boolean;
+  handleClick: TCategorySelectorHandler;
+  isTogglerActive: (arr: TItemsArr, data: TItemData) => boolean;
   arr: TItemsArr;
   linkedList: TItemsArr;
   category: string;
@@ -35,8 +35,8 @@ interface IResItemTogglersList {
 }
 
 const ResItemTogglersList: FC<IResItemTogglersList> = ({
-  handler,
-  paramsHandler,
+  handleClick,
+  isTogglerActive,
   arr,
   linkedList,
   category,
@@ -57,9 +57,9 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
               (data) => <Chip
                 key={data[ID_KEY].toString()}
                 label={data[NAME_KEY]}
-                onClick={() => handler({ arr: linkedList, key: category, data })}
+                onClick={() => handleClick({ arr: linkedList, key: category, data })}
                 {...(variant && {variant})}
-                {...( paramsHandler(linkedList, data) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
+                {...( isTogglerActive({ arr: linkedList, [ID_KEY]: data[ID_KEY] }) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
               />
             )}
           </Box>

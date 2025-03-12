@@ -7,11 +7,14 @@ import { useSelector } from '../services/hooks';
 import type {
   TItemData,
   TItemsArr,
+  TLinkedData,
+  TLinkedDataConfigAction,
   TListReducerOptions,
   TPriceList,
   TPricelistExtTypes,
   TPricelistKeys,
-  TPricelistTypes
+  TPricelistTypes,
+  TResLinkParams
 } from '../types';
 
 import { sortArrValues, fetchArray } from '../utils';
@@ -28,7 +31,10 @@ import {
   CATEGORY_KEY,
   RESLINKS_KEY,
   ADD_ACTION_KEY,
-  REMOVE_ACTION_KEY
+  REMOVE_ACTION_KEY,
+  IS_COMPLEX_DATA_KEY,
+  IS_GROUP_IGNORED_KEY,
+  IS_GROUP_USED_KEY
 } from '../utils/constants';
 
 type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & { action: AutocompleteChangeReason; };
@@ -38,6 +44,7 @@ interface IResLinks {
   linkedList: TPriceList<TPricelistTypes, TItemsArr>;
   handleListOptions: (data: TListHandlerOptions) => void;
   toggleLinkedItems: (data: { arr: TItemsArr; data: TItemData; key: TPricelistKeys; }) => void;
+  isLinkedItemActive: (data: { arr: TItemsArr; } & Pick<TLinkedData, typeof ID_KEY>) => boolean;
 }
 
 const createListReducer = (
@@ -60,10 +67,48 @@ const createListReducer = (
   }
 };
 
+const setListConfig = (values: boolean[], value: boolean = false): Record<TResLinkParams, boolean> => {
+  const keys: TResLinkParams[] = [IS_COMPLEX_DATA_KEY, IS_GROUP_IGNORED_KEY, IS_GROUP_USED_KEY];
+
+  const data = values.length === 1
+    ? keys.reduce((acc, key) => ({ ...acc, [key]: values[0] }), {} as Record<TResLinkParams, boolean>)
+    : [...values, value].reduce((acc, item, index) => ({ ...acc, [keys[index]]: item }), {} as Record<TResLinkParams, boolean>);
+
+  return data;
+}
+
+const listConfigReducer = (
+  state: Record<TResLinkParams, boolean> | undefined,
+  action: { type?: TLinkedDataConfigAction, data?: Record<TResLinkParams, boolean>}
+) => {
+  switch (action.type) {
+    case 'SET_COMPLEX_DATA':
+      return setListConfig([true, false]);
+      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: false, [IS_GROUP_USED_KEY]: false };
+    case 'UNSET_COMPLEX_DATA':
+      return setListConfig([false]);
+      // { [IS_COMPLEX_DATA_KEY]: false, [IS_GROUP_IGNORED_KEY]: false, [IS_GROUP_USED_KEY]: false };
+    case 'SET_GROUP_IGNORED':
+      return setListConfig([true, true]);
+      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: true, [IS_GROUP_USED_KEY]: false };
+    case 'UNSET_GROUP_IGNORED':
+      return setListConfig([true, false]);
+      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: false, [IS_GROUP_USED_KEY]: false };
+    case 'SET_GROUP_USED':
+      return setListConfig([true]);
+      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: true, [IS_GROUP_USED_KEY]: true };
+    case 'UNSET_GROUP_USED':
+      return setListConfig([true, true]);
+      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: true, [IS_GROUP_USED_KEY]: false };
+    default:
+      return action.data || undefined;
+  }
+};
 const existableListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
 const linkedListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
 
 const useResLinkz = (): IResLinks => {
+  const [linkedListConfig, setLinkedListConfig] = useReducer(listConfigReducer, undefined);
   const [existableList, setExistableList] = useReducer(
     existableListReducer,
     { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
@@ -179,6 +224,7 @@ const useResLinkz = (): IResLinks => {
     //console.log({ array, key, categoryKey });
 
     if(array.length === 0 && keys[categoryKey]) {
+      setLinkedListConfig({});
       keys[categoryKey].forEach(key => handleListOptions({ action: 'clear', key, arr: [] }));
       return;
     }
@@ -244,6 +290,16 @@ const useResLinkz = (): IResLinks => {
     updateSubcategoryList(payload);
   };
 
+  /**
+   * Проверяет истинность наличия группы/услуги среди выбранных элементов
+   * @returns {boolean} истинно, если удалось найти элемент в массиве
+   * @property {TItemsArr} arr - массив выбранных элементов
+   * @property {number} item_id - идентификатор элемента
+   */
+  const isLinkedItemActive = (
+    data: { arr: TItemsArr; } & Pick<TLinkedData, typeof ID_KEY>
+  ): boolean => Boolean(data.arr.find(item => item[ID_KEY] === data[ID_KEY]));
+
   useEffect(() => {
     // при получении данных прайслиста, устанавливаем список доступных для выбора отделений
     setExistableList({
@@ -290,7 +346,8 @@ const useResLinkz = (): IResLinks => {
     existableList,
     linkedList,
     handleListOptions,
-    toggleLinkedItems
+    toggleLinkedItems,
+    isLinkedItemActive
   }
 }
 

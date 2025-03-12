@@ -46,7 +46,7 @@ interface IResLinks {
   linkedItems: TItemsArr;
   linkedDataConfig: Record<string, boolean> | null;
   resLinkHandlers: TCategorySelectorHandler;
-  isLinkedItemActive: (arr: TItemsArr, data: TItemData) => boolean;
+  //isLinkedItemActive: (arr: TItemsArr, data: TItemData) => boolean;
   handleDataConfig: TLinkedDataConfigHandler;
 }
 
@@ -263,8 +263,8 @@ const useResLinks = (): IResLinks => {
   /**
    * Проверка наличия объекта в массиве привязанных к ресурсу элементов
    * @returns {boolean}
-   */
   const isLinkedItemActive = (arr: TItemsArr, data: TItemData): boolean => arr.map(item => item[ID_KEY]).includes(data[ID_KEY]);
+   */
 
   /**
    * Обновляет массив подкатегории при изменении списка прикреплённых к ресурсу элементов
@@ -309,7 +309,6 @@ const useResLinks = (): IResLinks => {
    * @property {TItemData} data - данные передаваемого элемента
    * @property {string} key - ключ подкатегории
    * @property {string} action - тип действия
-   */
   const handleLinkedItems = (arr: TItemsArr, { action, data, items, key }: TLinkedResData): TItemsArr => {
     handleExistableItems(
       { arr, items: items || [] },
@@ -324,6 +323,7 @@ const useResLinks = (): IResLinks => {
       ? [...arr].filter(item => item[ID_KEY] !== data[ID_KEY])
       : [...arr, data];
   };
+   */
 
   /**
    * Формирует массив дочерних элементов выбранных категорий
@@ -435,34 +435,34 @@ const useResLinks = (): IResLinks => {
     pricelist[TYPES[DEPT_KEY]]
   ]);
 
-  // после установки списка выбранных отделений устанавливаем список доступных специализаций - готово
+  // после установки списка выбранных отделений устанавливаем список доступных специализаций
   // и сбрасываем конфигурацию
   useEffect(() => {
     setExistableSubdepts(
-      filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)
+      filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY) // +
     );
-    setLinkedDataConfig({ data: null });
+    setLinkedDataConfig({ data: null }); // +
   }, [
     linkedDepts
   ]);
 
-  // после установки списка выбранных специализаций устанавливаем список доступных групп и услуг - готово
+  // после установки списка выбранных специализаций устанавливаем список доступных групп и услуг
   // и обновляем конфигурацию
   useEffect(() => {
     setExistableGroups(
-      filterItems(linkedSubdepts, SUBDEPT_KEY, GROUP_KEY)
+      filterItems(linkedSubdepts, SUBDEPT_KEY, GROUP_KEY) // +
     );
     setExistableItems(
-      filterItems(linkedSubdepts, SUBDEPT_KEY, ITEM_KEY, GROUP_KEY)
+      filterItems(linkedSubdepts, SUBDEPT_KEY, ITEM_KEY, GROUP_KEY) // +
     );
-    updateComplexDataConfig();
+    updateComplexDataConfig(); // ? - больше относится к изменению состояния после получения данных с сервера
   }, [
     linkedSubdepts
   ]);
 
   // при обновлении конфигурации записываем новое значение в локальное состояние
   useEffect(() => {
-    updateLinkedDataConfig();
+    updateLinkedDataConfig(); // ? - пока неясно, понадобится ли
   }, [
     linkedDataConfig
   ]);
@@ -485,7 +485,7 @@ const useResLinks = (): IResLinks => {
     linkedItems,
     linkedDataConfig,
     resLinkHandlers,
-    isLinkedItemActive,
+    //isLinkedItemActive,
     handleDataConfig
   }
 }
