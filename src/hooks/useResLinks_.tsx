@@ -191,7 +191,7 @@ const useResLinkz = (): IResLinks => {
    */
   const handleListOptions = ({ action, key, arr }: TListHandlerOptions): void => {
     //console.log({ action, key, arr });
-
+    // TODO: вынести все значения AutocompleteChangeReason в константы
     if(action == 'clear') {
       setLinkedList({ type: REMOVE_ACTION_KEY, key, arr: [] });
       return;
@@ -224,6 +224,7 @@ const useResLinkz = (): IResLinks => {
     //console.log({ array, key, categoryKey });
 
     if(array.length === 0 && keys[categoryKey]) {
+      // TODO: установить комплексный выбор, если хотя бы одна специализация содержит услуги
       setLinkedListConfig({});
       keys[categoryKey].forEach(key => handleListOptions({ action: 'clear', key, arr: [] }));
       return;
@@ -240,7 +241,9 @@ const useResLinkz = (): IResLinks => {
           }, []
         );
 
-        handleListOptions({ action: 'removeOption', key, arr })
+        handleListOptions({ action: 'removeOption', key, arr });
+
+        if(key === GROUP_KEY && linkedList[TYPES[key]].length === 0) setLinkedListConfig({});
       });
     }
   };
@@ -300,6 +303,17 @@ const useResLinkz = (): IResLinks => {
     data: { arr: TItemsArr; } & Pick<TLinkedData, typeof ID_KEY>
   ): boolean => Boolean(data.arr.find(item => item[ID_KEY] === data[ID_KEY]));
 
+  /**
+   * Переключение параметров конфигурации обработки прикреплённых к ресурсу позиций прайслиста
+   * @property {TLinkedDataConfigAction} type - тип действия
+   * // TODO: создать отдельный тип
+   * @property {Record<TResLinkParams, boolean> | undefined} data - объект значений параметров конфигурации
+   */
+  const handleDataConfig = (type: TLinkedDataConfigAction, data: Record<TResLinkParams, boolean> | undefined = undefined) => {
+    console.log({ type, data });
+    setLinkedListConfig({ type, data });
+  };
+
   useEffect(() => {
     // при получении данных прайслиста, устанавливаем список доступных для выбора отделений
     setExistableList({
@@ -345,9 +359,11 @@ const useResLinkz = (): IResLinks => {
   return {
     existableList,
     linkedList,
+    linkedListConfig,
     handleListOptions,
     toggleLinkedItems,
-    isLinkedItemActive
+    isLinkedItemActive,
+    handleDataConfig
   }
 }
 

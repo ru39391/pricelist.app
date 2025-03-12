@@ -44,7 +44,7 @@ const ResItem: FC = () => {
       existableGroups,
       existableItems,
     },
-    linkedDataConfig,
+    linkedListConfig,
     handleDataConfig,
     handleListOptions,
     toggleLinkedItems
@@ -65,8 +65,8 @@ const ResItem: FC = () => {
   } = useResLinkedItems();
 
   const isLinkedDataExist = useCallback(
-    (param: string): boolean => Boolean(linkedDataConfig && linkedDataConfig[param]),
-    [linkedDataConfig]
+    (param: string): boolean => Boolean(linkedListConfig && linkedListConfig[param]),
+    [linkedListConfig]
   );
 
   const currLinkedItems = useMemo(() => setGroupedLinkedItems({
@@ -89,6 +89,7 @@ const ResItem: FC = () => {
 
   const filterList = (arr: TItemsArr, data: TItemData, key: TPricelistKeys): TItemsArr => arr.filter((item) => item[key] === data[ID_KEY]);
 
+  // TODO: проверить, нужен ли этот функционал
   const setLinkedData = useCallback(() => {
     if(isLinkedDataExist(IS_COMPLEX_DATA_KEY) && isLinkedDataExist(IS_GROUP_IGNORED_KEY)) {
       return;
@@ -132,12 +133,6 @@ const ResItem: FC = () => {
     setLinkedDept();
   }, [
     isDeptTogglerVisible
-  ]);
-
-  useEffect(() => {
-    //console.log('existableList', existableList);
-  }, [
-    //existableList
   ]);
 
   if(resLinkedItems.length > 0) {
@@ -197,10 +192,11 @@ const ResItem: FC = () => {
             </LoadingButton>
           </Box>
         : <>
+          {/* // TODO: скорректировать именования для configHandler и paramsHandler */}
           <ResItemControllers
             linkedList={linkedGroups}
             existableList={existableGroups}
-            itemsHandler={toggleLinkedItems}
+            handleClick={handleListOptions}
             configHandler={handleDataConfig}
             paramsHandler={isLinkedDataExist}
           />
@@ -269,7 +265,7 @@ const ResItem: FC = () => {
                   [TYPES[GROUP_KEY]]: linkedGroups,
                   [TYPES[ITEM_KEY]]: currLinkedItems
                 },
-                linkedDataConfig
+                linkedListConfig
               )}
             >
               Предпросмотр

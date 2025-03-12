@@ -2,7 +2,6 @@ import { FC } from 'react';
 
 import ResItem from './ResItem';
 
-import useResLinks from '../hooks/useResLinks';
 import useResLinkz from '../hooks/useResLinks_';
 import ResItemContext from '../contexts/ResItemContext';
 
@@ -14,19 +13,16 @@ import {
   ITEM_KEY,
 } from '../utils/constants';
 
-
+// TODO: привести типы в правильное соответствие: в контексте, компонентах-переключателях и хуке useResLinkz
 const ResItemProvider: FC = () => {
   const {
     existableList,
     linkedList,
+    linkedListConfig,
     handleListOptions,
-    toggleLinkedItems
-  } = useResLinkz();
-
-  const {
-    linkedDataConfig,
+    toggleLinkedItems,
     handleDataConfig
-  } = useResLinks();
+  } = useResLinkz();
 
   return (
     <ResItemContext.Provider value={{
@@ -44,7 +40,8 @@ const ResItemProvider: FC = () => {
       toggleLinkedItems,
 
 
-      linkedDataConfig,
+      linkedListConfig,
+      // TODO: поменять на handleLinkedListConfig
       handleDataConfig,
     }}>
       <ResItem />

@@ -166,9 +166,6 @@ const useResLinks = (): IResLinks => {
     categoryKey: TPricelistKeys
   ): TItemsArr => childrenArr.map(
     (item) => {
-      // TODO: проверить корректность решения проблемы с { [NAME_KEY]: item[CATEGORY_KEY] }
-      // после удаления одной категории список делится надвое
-      // баг, при котором можно дважды выбрать аллергологию
       const category = arr.find(data => item[categoryKey] === data[ID_KEY]) || { [NAME_KEY]: item[CATEGORY_KEY] };
 
       return {
@@ -179,10 +176,12 @@ const useResLinks = (): IResLinks => {
     }
   );
 
+  /*
   const existableData: TPriceList<TPricelistTypes, TItemsArr> = useMemo(
     () => setResData([existableDepts, existableSubdepts, existableGroups, existableItems]),
     [existableDepts, existableSubdepts, existableGroups, existableItems]
   );
+  */
 
   const resLinkData: TPriceList<TPricelistTypes, TItemsArr> = useMemo(
     () => setResData([linkedDepts, linkedSubdepts, linkedGroups, linkedItems]),
@@ -208,20 +207,6 @@ const useResLinks = (): IResLinks => {
     )
   }), {} as Record<TPricelistKeys, (arr: TItemsArr) => void>);
 
-  const _resLinkHandlers = {
-    'dept': (payload) => {
-      //console.log(payload);
-      setLinkedDepts(
-        [...linkedDepts].length === 0
-          ? payload.items
-          : [...linkedDepts, ...payload.items.filter(item => linkedDepts.find(data => data[ID_KEY] !== item[ID_KEY]))]
-      );
-    },
-    'subdept': (payload) => console.log(),
-    'group': (payload) => console.log(),
-    'items': (payload) => console.log(),
-  };
-
   const resLinkHandlers = [
     setLinkedDepts,
     setLinkedSubdepts,
@@ -229,18 +214,7 @@ const useResLinks = (): IResLinks => {
     setLinkedItems
   ].reduce((acc, handler, index) => ({
     ...acc,
-    [Object.keys(TYPES)[index]]: (payload: TLinkedResData) => {
-      /*
-      console.log(
-        resLinkData[Object.keys(TYPES)[index]],
-        {
-          ...payload,
-          key: Object.keys(TYPES)[index]
-        }
-      );*/
-
-    }
-    /*handler(
+    [Object.keys(TYPES)[index]]: (payload: TLinkedResData) => handler(
       handleLinkedItems(
         resLinkData[Object.keys(TYPES)[index]],
         {
@@ -248,7 +222,7 @@ const useResLinks = (): IResLinks => {
           key: Object.keys(TYPES)[index]
         }
       )
-    ) */
+    )
   }), {} as Record<TPricelistKeys, (payload: TLinkedResData) => void>);
 
   /**
@@ -259,12 +233,6 @@ const useResLinks = (): IResLinks => {
   const handleDataConfig = (type: TLinkedDataConfigAction, data: IResLinks['linkedDataConfig'] = null) => {
     setLinkedDataConfig({ type, data });
   }
-
-  /**
-   * Проверка наличия объекта в массиве привязанных к ресурсу элементов
-   * @returns {boolean}
-  const isLinkedItemActive = (arr: TItemsArr, data: TItemData): boolean => arr.map(item => item[ID_KEY]).includes(data[ID_KEY]);
-   */
 
   /**
    * Обновляет массив подкатегории при изменении списка прикреплённых к ресурсу элементов
@@ -309,6 +277,7 @@ const useResLinks = (): IResLinks => {
    * @property {TItemData} data - данные передаваемого элемента
    * @property {string} key - ключ подкатегории
    * @property {string} action - тип действия
+   */
   const handleLinkedItems = (arr: TItemsArr, { action, data, items, key }: TLinkedResData): TItemsArr => {
     handleExistableItems(
       { arr, items: items || [] },
@@ -323,7 +292,6 @@ const useResLinks = (): IResLinks => {
       ? [...arr].filter(item => item[ID_KEY] !== data[ID_KEY])
       : [...arr, data];
   };
-   */
 
   /**
    * Формирует массив дочерних элементов выбранных категорий
@@ -469,6 +437,7 @@ const useResLinks = (): IResLinks => {
 
   // устанавливаем привязки при изменении глобального хранилища
   useEffect(() => {
+    // TODO: перенести метод в основной компонент
     setResLinks();
   }, [
     pricelist[RESLINKS_KEY]
@@ -486,7 +455,7 @@ const useResLinks = (): IResLinks => {
     linkedDataConfig,
     resLinkHandlers,
     //isLinkedItemActive,
-    handleDataConfig
+    //handleDataConfig
   }
 }
 

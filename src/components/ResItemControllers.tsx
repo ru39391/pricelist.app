@@ -30,14 +30,21 @@ interface IResItemControllers {
 const ResItemControllers: FC<IResItemControllers> = ({
   linkedList,
   existableList,
-  itemsHandler,
+  handleClick,
   configHandler,
   paramsHandler,
 }) => {
   const isGroupsControllerChecked = existableList.length === linkedList.length;
   const groupsControllerLabel = isGroupsControllerChecked ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY];
 
-  const toggleGroupsController = () => { itemsHandler[GROUP_KEY]({ items: isGroupsControllerChecked ? [] : existableList }) };
+  const toggleGroupsController = () => {
+    const payload = { action: 'selectOption', key: GROUP_KEY, arr: existableList };
+
+    handleClick({
+      ...payload,
+      ...( isGroupsControllerChecked && { action: 'clear', arr: [] } )
+    })
+  };
 
   return (
     existableList.length > 0 && <Box
