@@ -175,24 +175,26 @@ const useResLinkz = (): IResLinks => {
       [SUBDEPT_KEY]: [GROUP_KEY, ITEM_KEY],
       [GROUP_KEY]: [ITEM_KEY],
     };
-    console.log({ array, key, categoryKey });
+    //console.log({ array, key, categoryKey });
 
     if(array.length === 0 && keys[categoryKey]) {
       keys[categoryKey].forEach(value => handleListOptions({ action: 'clear', key: value, arr: [] }));
       return;
     }
 
-    const { arr: existableArr } = handleResList({ array, key, categoryKey });
-    const arr = linkedList[TYPES[key]].reduce(
-      (acc: TItemsArr, linkedItem) => {
-        const data = existableArr?.find(item => item[ID_KEY] === linkedItem[ID_KEY]);
-
-        return data ? [...acc, data] : acc;
-      }, []
-    );
-
     if(keys[categoryKey]) {
-      keys[categoryKey].forEach(value => handleListOptions({ action: 'removeOption', key: value, arr }));
+      keys[categoryKey].forEach((subCategoryKey) => {
+        const { arr: existableArr } = handleResList({ array, key: subCategoryKey, categoryKey });
+        const arr = linkedList[TYPES[subCategoryKey]].reduce(
+          (acc: TItemsArr, linkedItem) => {
+            const data = existableArr?.find(item => item[ID_KEY] === linkedItem[ID_KEY]);
+
+            return data ? [...acc, data] : acc;
+          }, []
+        );
+
+        handleListOptions({ action: 'removeOption', key: subCategoryKey, arr })
+      });
     }
   };
 
@@ -272,6 +274,7 @@ const useResLinkz = (): IResLinks => {
       })
     );
     /*
+    */
     // при изменении выбранных специализаций изменяем список выбранных групп
     handleResLinkedList({
       array: linkedList[TYPES[SUBDEPT_KEY]],
@@ -284,9 +287,14 @@ const useResLinkz = (): IResLinks => {
       key: ITEM_KEY,
       categoryKey: SUBDEPT_KEY,
     });
-    */
   }, [
     linkedList[TYPES[SUBDEPT_KEY]]
+  ]);
+
+  useEffect(() => {
+    //console.log('linkedList', linkedList);
+  }, [
+    linkedList
   ]);
 
   return {
