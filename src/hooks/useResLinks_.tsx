@@ -227,6 +227,23 @@ const useResLinkz = (): IResLinks => {
     });
   };
 
+  /**
+   * Устанавливает в локальное хранилище список привязанных элементов
+   * @property {TItemsArr} array - массив родительских элементов
+   * @property {TPricelistKeys} key - тип дочерних элементов
+   * @property {TPricelistKeys} categoryKey - ключ родительской категории
+   */
+  const updateCategoryList = (payload: {
+    array: TItemsArr;
+    key: TPricelistKeys;
+    categoryKey: TPricelistKeys;
+  }) => {
+    const data = handleResList(payload);
+
+    setExistableList(data);
+    updateSubcategoryList(payload);
+  };
+
   useEffect(() => {
     // при получении данных прайслиста, устанавливаем список доступных для выбора отделений
     setExistableList({
@@ -240,15 +257,8 @@ const useResLinkz = (): IResLinks => {
 
   useEffect(() => {
     // при изменении выбранных отделений устанавливаем список доступных для выбора специализаций
-    setExistableList(
-      handleResList({
-        array: linkedList[TYPES[DEPT_KEY]],
-        key: SUBDEPT_KEY,
-        categoryKey: DEPT_KEY,
-      })
-    );
     // при изменении выбранных отделений изменяем список выбранных специализаций
-    updateSubcategoryList({
+    updateCategoryList({
       array: linkedList[TYPES[DEPT_KEY]],
       key: SUBDEPT_KEY,
       categoryKey: DEPT_KEY,
@@ -259,30 +269,15 @@ const useResLinkz = (): IResLinks => {
 
   useEffect(() => {
     // при изменении выбранных специализаций устанавливаем список доступных для выбора групп
-    setExistableList(
-      handleResList({
-        array: linkedList[TYPES[SUBDEPT_KEY]],
-        key: GROUP_KEY,
-        categoryKey: SUBDEPT_KEY,
-      })
-    );
-    // при изменении выбранных специализаций устанавливаем список доступных для выбора услуг
-    // handleResItemsList - сохраняем в состоянии только непосредственно вложенные в специализацию услуги
-    setExistableList(
-      handleResList({
-        array: linkedList[TYPES[SUBDEPT_KEY]],
-        key: ITEM_KEY,
-        categoryKey: SUBDEPT_KEY,
-      })
-    );
     // при изменении выбранных специализаций изменяем список выбранных групп
-    updateSubcategoryList({
+    updateCategoryList({
       array: linkedList[TYPES[SUBDEPT_KEY]],
       key: GROUP_KEY,
       categoryKey: SUBDEPT_KEY,
     });
+    // при изменении выбранных специализаций устанавливаем список доступных для выбора услуг
     // при изменении выбранных специализаций изменяем список выбранных услуг
-    updateSubcategoryList({
+    updateCategoryList({
       array: linkedList[TYPES[SUBDEPT_KEY]],
       key: ITEM_KEY,
       categoryKey: SUBDEPT_KEY,

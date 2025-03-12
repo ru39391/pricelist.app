@@ -17,24 +17,16 @@ import {
 
 const ResItemProvider: FC = () => {
   const {
-    linkedDepts,
-    linkedSubdepts,
-    linkedGroups,
-    linkedItems,
-    existableDepts,
-    existableSubdepts,
-    existableGroups,
-    existableItems,
-    linkedDataConfig,
-    //resLinkHandlers,
-    handleDataConfig
-  } = useResLinks();
-  const {
     existableList,
     linkedList,
     handleListOptions,
     toggleLinkedItems
   } = useResLinkz();
+
+  const {
+    linkedDataConfig,
+    handleDataConfig
+  } = useResLinks();
 
   return (
     <ResItemContext.Provider value={{
@@ -48,11 +40,12 @@ const ResItemProvider: FC = () => {
         existableGroups: existableList[TYPES[GROUP_KEY]],
         existableItems: existableList[TYPES[ITEM_KEY]],
       },
-      linkedDataConfig,
-      //resLinkHandlers,
-      handleDataConfig,
       handleListOptions,
-      toggleLinkedItems
+      toggleLinkedItems,
+
+
+      linkedDataConfig,
+      handleDataConfig,
     }}>
       <ResItem />
     </ResItemContext.Provider>
