@@ -27,7 +27,6 @@ import {
   CATEGORY_KEY,
   RESLINKS_KEY,
   ADD_ACTION_KEY,
-  EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY
 } from '../utils/constants';
 
@@ -49,16 +48,10 @@ const createListReducer = (
         ...state,
         ...( action.key && { [TYPES[action.key]]: action.arr || [] } )
       };
-    case EDIT_ACTION_KEY:
-      return {
-        ...state,
-        ...( action.key && { [TYPES[action.key]]: action.arr || [] } )
-        //...( action.key && { [TYPES[action.key]]: [...state[TYPES[action.key]], ...action.arr || []] } )
-      };
     case REMOVE_ACTION_KEY:
       return {
         ...state,
-        ...( action.key && { [TYPES[action.key]]: action.arr || [] } )
+        ...( action.key && { [TYPES[action.key]]: [] } )
       };
     default:
       return { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] };
@@ -121,45 +114,25 @@ const useResLinkz = (): IResLinks => {
   };
 
   /**
-   * Возвращает списки выбранных элементов прайслиста
-   * @returns TListReducerOptions - данные для сохранения в локальном состоянии
+   * Устанавливает списки выбранных элементов прайслиста
    * @property {TItemsArr} array - массив элементов
    * @property {TPricelistKeys} key - тип элементов
    * @property {AutocompleteChangeReason} action - тип взаимодействия с выпадающим списком
    */
-  const handleListOptions = (data: TListHandlerOptions): TListReducerOptions => {
-    console.log(data);
-    //return;
-    let arr: TItemsArr = [];
-    const { action, key, arr: array } = data;
+  const handleListOptions = ({ action, key, arr }: TListHandlerOptions): void => {
     const payload: TListReducerOptions = { type: REMOVE_ACTION_KEY, key, arr };
-    const list = sortArrValues(linkedList[TYPES[key]], NAME_KEY);
-    const sortOption = key === DEPT_KEY ? NAME_KEY : CATEGORY_KEY;
+    //console.log({ action, key, arr });
 
-    if(action !== 'selectOption') {
-      //return
-      console.log(
-        action === 'clear'
-          ? payload
-          : {...payload, arr: sortArrValues(array, sortOption)}
-      );
-      setLinkedList(
-        action === 'clear'
-          ? payload
-          : {...payload, arr: sortArrValues(array, sortOption)}
-      );
+    if(action == 'clear') {
+      setLinkedList(payload);
       return;
     }
 
-    arr = sortArrValues(
-      fetchArray([...list, ...array], ID_KEY),
-      sortOption
-    );
-
-    //return
-    console.log([...list, ...array]);
-    console.log({...payload, type: EDIT_ACTION_KEY, arr});
-    setLinkedList({...payload, type: EDIT_ACTION_KEY, arr});
+    setLinkedList({
+      ...payload,
+      type: ADD_ACTION_KEY,
+      arr: action == 'removeOption' ? arr : fetchArray([...linkedList[TYPES[key]], ...arr], ID_KEY)
+    });
   };
 
   useEffect(() => {
