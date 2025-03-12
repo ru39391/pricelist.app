@@ -56,8 +56,6 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   };
 
   const confirmCategoryAction = (value: TItemsArr, reason: AutocompleteChangeReason) => {
-    //const handlerConfig = { action: reason, items: value };
-    //console.log({ action: reason, items: value });
     const handlerConfig = { action: reason, key: category, arr: value };
 
     if(reason === 'clear' || reason === 'removeOption') {
@@ -71,14 +69,12 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
           disabled: false,
           actionHandler: () => {
             handler(handlerConfig);
-            //handler[category]({ ...handlerConfig, ...( reason === 'clear' && { items: [] } ) });
             toggleModal(null);
           }
         }
       });
     } else {
       handler(handlerConfig);
-      //handler[category](handlerConfig);
     }
   };
 
@@ -98,7 +94,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
       renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
       getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}
       groupBy={(option) => groupByOption(option)}
-      onChange={(_, value, reason ) =>confirmCategoryAction(value, reason)}
+      onChange={(_, value, reason ) => confirmCategoryAction(value, reason)}
     />
   )
 };

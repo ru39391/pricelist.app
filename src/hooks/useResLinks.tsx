@@ -170,24 +170,6 @@ const useResLinks = (): IResLinks => {
       // после удаления одной категории список делится надвое
       // баг, при котором можно дважды выбрать аллергологию
       const category = arr.find(data => item[categoryKey] === data[ID_KEY]) || { [NAME_KEY]: item[CATEGORY_KEY] };
-      if(!category) {
-        //console.log({arr, item, category: item[categoryKey]});
-        /*
-          arr - массив родительских категорий (при удалении специализации приходит массив специализаций - некорректно)
-          item - обрабатываемый элемент (приходит элемент массив специализаций)
-          item: {
-            "id": 25,
-            "item_id": 10013059,
-            "name": "Аллергология-иммунология",
-            "dept": 4,
-            "createdon": "2024-12-13 19:02:18",
-            "updatedon": null,
-            "label": "Аллергология-иммунология",
-            "category": "Медицина"
-          }
-          "categoryKey": "subdept",
-        */
-      }
 
       return {
         ...item,
@@ -226,7 +208,7 @@ const useResLinks = (): IResLinks => {
     )
   }), {} as Record<TPricelistKeys, (arr: TItemsArr) => void>);
 
-  const resLinkHandlers = {
+  const _resLinkHandlers = {
     'dept': (payload) => {
       //console.log(payload);
       setLinkedDepts(
@@ -240,7 +222,7 @@ const useResLinks = (): IResLinks => {
     'items': (payload) => console.log(),
   };
 
-  const _resLinkHandlers = [
+  const resLinkHandlers = [
     setLinkedDepts,
     setLinkedSubdepts,
     setLinkedGroups,
@@ -248,13 +230,14 @@ const useResLinks = (): IResLinks => {
   ].reduce((acc, handler, index) => ({
     ...acc,
     [Object.keys(TYPES)[index]]: (payload: TLinkedResData) => {
+      /*
       console.log(
         resLinkData[Object.keys(TYPES)[index]],
         {
           ...payload,
           key: Object.keys(TYPES)[index]
         }
-      );
+      );*/
 
     }
     /*handler(
@@ -445,30 +428,26 @@ const useResLinks = (): IResLinks => {
     }
   }
 
-  const changeSubdepts = () => {
-    // обновилось глобальное состояние
-    // записали данные в состояние существующих отделений
-    // выбрали элемент из этого списка
-    // при выборе обновили состояние существующих специализаций, поппутно записав наименование родителя
-    console.log(pricelist[TYPES[DEPT_KEY]]);
-  }
-
+  // при получении данных прайслиста, устанавливаем список доступных отделений
   useEffect(() => {
     setExistableDepts(pricelist[TYPES[DEPT_KEY]]);
   }, [
     pricelist[TYPES[DEPT_KEY]]
   ]);
 
+  // после установки списка выбранных отделений устанавливаем список доступных специализаций
+  // и сбрасываем конфигурацию
   useEffect(() => {
     setExistableSubdepts(
       filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)
     );
     setLinkedDataConfig({ data: null });
-    // console.log({linkedDepts, subdepts: filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)});
   }, [
     linkedDepts
   ]);
 
+  // после установки списка выбранных специализаций устанавливаем список доступных групп и услуг
+  // и обновляем конфигурацию
   useEffect(() => {
     setExistableGroups(
       filterItems(linkedSubdepts, SUBDEPT_KEY, GROUP_KEY)
@@ -481,12 +460,14 @@ const useResLinks = (): IResLinks => {
     linkedSubdepts
   ]);
 
+  // при обновлении конфигурации записываем новое значение в локальное состояние
   useEffect(() => {
     updateLinkedDataConfig();
   }, [
     linkedDataConfig
   ]);
 
+  // устанавливаем привязки при изменении глобального хранилища
   useEffect(() => {
     setResLinks();
   }, [
