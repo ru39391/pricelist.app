@@ -33,7 +33,7 @@ const ResItemProvider: FC = () => {
     existableList,
     linkedList,
     handleListOptions,
-    handleLinkedItems
+    toggleLinkedItems
   } = useResLinkz();
 
   return (
@@ -52,7 +52,7 @@ const ResItemProvider: FC = () => {
       //resLinkHandlers,
       handleDataConfig,
       handleListOptions,
-      handleLinkedItems
+      toggleLinkedItems
     }}>
       <ResItem />
     </ResItemContext.Provider>

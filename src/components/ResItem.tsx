@@ -48,7 +48,7 @@ const ResItem: FC = () => {
     //resLinkHandlers,
     handleDataConfig,
     handleListOptions,
-    handleLinkedItems
+    toggleLinkedItems
   } = useContext(ResItemContext);
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
@@ -203,7 +203,7 @@ const ResItem: FC = () => {
           <ResItemControllers
             linkedList={linkedGroups}
             existableList={existableGroups}
-            itemsHandler={handleLinkedItems}
+            itemsHandler={toggleLinkedItems}
             configHandler={handleDataConfig}
             paramsHandler={isLinkedDataExist}
           />
@@ -216,7 +216,7 @@ const ResItem: FC = () => {
                     ? (filterList(existableGroups, subdept, SUBDEPT_KEY).map(
                         (options) => <ResItemTogglersList
                           key={options[ID_KEY].toString()}
-                          handler={handleLinkedItems}
+                          handler={toggleLinkedItems}
                           paramsHandler={isLinkedItemActive}
                           arr={filterList(existableItems, options, GROUP_KEY)}
                           linkedList={linkedItems}
@@ -228,7 +228,7 @@ const ResItem: FC = () => {
                         />)
                       )
                     : <ResItemTogglersList
-                        handler={handleLinkedItems}
+                        handler={toggleLinkedItems}
                         paramsHandler={isLinkedItemActive}
                         arr={filterList(existableGroups, subdept, SUBDEPT_KEY)}
                         linkedList={linkedGroups}
@@ -243,7 +243,7 @@ const ResItem: FC = () => {
                   {(isLinkedDataExist(IS_COMPLEX_DATA_KEY) || isLinkedDataExist(IS_GROUP_IGNORED_KEY))
                     && filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0).length > 0
                     && <ResItemTogglersList
-                        handler={handleLinkedItems}
+                        handler={toggleLinkedItems}
                         paramsHandler={isLinkedItemActive}
                         arr={filterList(existableItems, subdept, SUBDEPT_KEY).filter((item) => item[GROUP_KEY] === 0)}
                         linkedList={linkedItems}

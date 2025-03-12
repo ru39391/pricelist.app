@@ -79,6 +79,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   };
 
   return (
+    // TODO: настроить disabled
     (existableList.length + linkedList.length) > 0 && <Autocomplete
       multiple
       filterSelectedOptions

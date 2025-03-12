@@ -37,7 +37,7 @@ interface IResLinks {
   existableList: TPriceList<TPricelistTypes, TItemsArr>;
   linkedList: TPriceList<TPricelistTypes, TItemsArr>;
   handleListOptions: (data: TListHandlerOptions) => void;
-  handleLinkedItems: (data: { arr: TItemsArr; data: TItemData; key: TPricelistKeys; }) => void;
+  toggleLinkedItems: (data: { arr: TItemsArr; data: TItemData; key: TPricelistKeys; }) => void;
 }
 
 const createListReducer = (
@@ -165,27 +165,28 @@ const useResLinkz = (): IResLinks => {
    * @property {TPricelistKeys} key - тип дочерних элементов
    * @property {TPricelistKeys} categoryKey - ключ родительской категории
    */
-  const handleResLinkedList = ({ array, key, categoryKey }: {
+  const updateSubcategoryList = (payload: {
     array: TItemsArr;
     key: TPricelistKeys;
     categoryKey: TPricelistKeys;
   }) => {
+    const { array, categoryKey } = payload;
     const keys: Partial<Record<TPricelistKeys, TPricelistKeys[]>> = {
       [DEPT_KEY]: [SUBDEPT_KEY, GROUP_KEY, ITEM_KEY],
       [SUBDEPT_KEY]: [GROUP_KEY, ITEM_KEY],
-      [GROUP_KEY]: [ITEM_KEY],
+      //[GROUP_KEY]: [ITEM_KEY],
     };
     //console.log({ array, key, categoryKey });
 
     if(array.length === 0 && keys[categoryKey]) {
-      keys[categoryKey].forEach(value => handleListOptions({ action: 'clear', key: value, arr: [] }));
+      keys[categoryKey].forEach(key => handleListOptions({ action: 'clear', key, arr: [] }));
       return;
     }
 
     if(keys[categoryKey]) {
-      keys[categoryKey].forEach((subCategoryKey) => {
-        const { arr: existableArr } = handleResList({ array, key: subCategoryKey, categoryKey });
-        const arr = linkedList[TYPES[subCategoryKey]].reduce(
+      keys[categoryKey].forEach((key) => {
+        const { arr: existableArr } = handleResList({ array, key, categoryKey });
+        const arr = linkedList[TYPES[key]].reduce(
           (acc: TItemsArr, linkedItem) => {
             const data = existableArr?.find(item => item[ID_KEY] === linkedItem[ID_KEY]);
 
@@ -193,7 +194,7 @@ const useResLinkz = (): IResLinks => {
           }, []
         );
 
-        handleListOptions({ action: 'removeOption', key: subCategoryKey, arr })
+        handleListOptions({ action: 'removeOption', key, arr })
       });
     }
   };
@@ -204,7 +205,7 @@ const useResLinkz = (): IResLinks => {
    * @property {TItemData} data - данные элемента
    * @property {TPricelistKeys} key - ключ элемента прасйлиста
    */
-  const handleLinkedItems = ({ arr, data, key }: {
+  const toggleLinkedItems = ({ arr, data, key }: {
     arr: TItemsArr;
     data: TItemData;
     key: TPricelistKeys;
@@ -247,7 +248,7 @@ const useResLinkz = (): IResLinks => {
       })
     );
     // при изменении выбранных отделений изменяем список выбранных специализаций
-    handleResLinkedList({
+    updateSubcategoryList({
       array: linkedList[TYPES[DEPT_KEY]],
       key: SUBDEPT_KEY,
       categoryKey: DEPT_KEY,
@@ -266,23 +267,22 @@ const useResLinkz = (): IResLinks => {
       })
     );
     // при изменении выбранных специализаций устанавливаем список доступных для выбора услуг
+    // handleResItemsList - сохраняем в состоянии только непосредственно вложенные в специализацию услуги
     setExistableList(
-      handleResItemsList({
+      handleResList({
         array: linkedList[TYPES[SUBDEPT_KEY]],
         key: ITEM_KEY,
         categoryKey: SUBDEPT_KEY,
       })
     );
-    /*
-    */
     // при изменении выбранных специализаций изменяем список выбранных групп
-    handleResLinkedList({
+    updateSubcategoryList({
       array: linkedList[TYPES[SUBDEPT_KEY]],
       key: GROUP_KEY,
       categoryKey: SUBDEPT_KEY,
     });
     // при изменении выбранных специализаций изменяем список выбранных услуг
-    handleResLinkedList({
+    updateSubcategoryList({
       array: linkedList[TYPES[SUBDEPT_KEY]],
       key: ITEM_KEY,
       categoryKey: SUBDEPT_KEY,
@@ -291,17 +291,11 @@ const useResLinkz = (): IResLinks => {
     linkedList[TYPES[SUBDEPT_KEY]]
   ]);
 
-  useEffect(() => {
-    //console.log('linkedList', linkedList);
-  }, [
-    linkedList
-  ]);
-
   return {
     existableList,
     linkedList,
     handleListOptions,
-    handleLinkedItems
+    toggleLinkedItems
   }
 }
 
