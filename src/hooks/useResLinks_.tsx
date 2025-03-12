@@ -88,6 +88,7 @@ const useResLinkz = (): IResLinks => {
     key: TPricelistKeys;
     categoryKey: TPricelistKeys;
   }): TListReducerOptions => {
+    console.log({ array, key, categoryKey });
     let arr: TItemsArr = [];
     const payload: TListReducerOptions = { type: REMOVE_ACTION_KEY, key, arr };
 
@@ -97,7 +98,7 @@ const useResLinkz = (): IResLinks => {
 
     arr = array.length === 1
       ? pricelist[TYPES[key]].filter(item => item[categoryKey] === array[0][ID_KEY])
-      : sortArrValues(pricelist[TYPES[key]], NAME_KEY).reduce(
+      : sortArrValues([...pricelist[TYPES[key]]], NAME_KEY).reduce(
           (acc, item) => {
             const dept = array.find(data => data[ID_KEY] === item[categoryKey]);
 
@@ -144,28 +145,30 @@ const useResLinkz = (): IResLinks => {
   }, [
     pricelist[TYPES[DEPT_KEY]]
   ]);
-  /*
 
   useEffect(() => {
-    handleResList({
-      array: existableList[TYPES[DEPT_KEY]],
-      key: SUBDEPT_KEY,
-      categoryKey: DEPT_KEY,
-    });
+    setExistableList(
+      handleResList({
+        array: linkedList[TYPES[DEPT_KEY]],
+        key: SUBDEPT_KEY,
+        categoryKey: DEPT_KEY,
+      })
+    );
   }, [
-    existableList[TYPES[DEPT_KEY]]
+    linkedList[TYPES[DEPT_KEY]]
   ]);
 
   useEffect(() => {
-    handleResList({
-      array: existableList[TYPES[SUBDEPT_KEY]],
-      key: GROUP_KEY,
-      categoryKey: SUBDEPT_KEY,
-    });
+    setExistableList(
+      handleResList({
+        array: linkedList[TYPES[SUBDEPT_KEY]],
+        key: GROUP_KEY,
+        categoryKey: SUBDEPT_KEY,
+      })
+    );
   }, [
-    existableList[TYPES[SUBDEPT_KEY]]
+    linkedList[TYPES[SUBDEPT_KEY]]
   ]);
-  */
 
   return {
     existableList,
