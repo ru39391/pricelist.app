@@ -122,6 +122,8 @@ const useResLinkz = (): IResLinks => {
     { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
   );
 
+  const { id: resId } = useParams();
+
   const pricelist = useSelector(
     ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce(
       (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as TPriceList<TPricelistExtTypes, TItemsArr>
@@ -278,7 +280,7 @@ const useResLinkz = (): IResLinks => {
    * @property {TLinkedListConfig} data - объект значений параметров конфигурации
    */
   const handleLinkedListConfig = (type: TLinkedListConfigAction, data: TLinkedListConfig = null) => {
-    console.log({ type, data });
+    //console.log({ type, data });
     setLinkedListConfig({ type, data });
   };
 
@@ -293,8 +295,46 @@ const useResLinkz = (): IResLinks => {
     };
 
     if(groupsList.length === 0 && itemsList.length > 0) {
-      setLinkedListConfig({ type: 'SET_COMPLEX_DATA' });
+      handleLinkedListConfig('SET_COMPLEX_DATA');
     }
+  };
+
+  /**
+   * Сохранение в состояние компонента ресурса данных ранее привязанных элементов прайслиста
+   * @property {TItemsArr} arr - массив данных привязанных к ресурсам позиций
+   */
+  const setCurrentLinkedList = (arr: TItemsArr) => {
+    const data = arr.find(item => item[ID_KEY] === Number(resId));
+
+    if(!data) {
+      return;
+    }
+
+    const keys: TPricelistKeys[] = [DEPT_KEY, SUBDEPT_KEY, GROUP_KEY, ITEM_KEY];
+    const params: TLinkedListConfig = JSON.parse(data.config.toString());
+    const { config, isConfigSet }: {
+      config: Record<TResLinkParams, boolean>;
+      isConfigSet: boolean;
+    } = {
+      config: params || setListConfig([false]),
+      isConfigSet: Boolean(params && Object.values(params).reduce((acc: boolean, item: boolean) => acc || item, false))
+    };
+
+    if(isConfigSet) {
+      setLinkedListConfig({ data: config });
+    }
+
+    keys.forEach((key) => {
+      const arr = JSON.parse(data[TYPES[key]].toString()).map(
+        (value: number) => pricelist[TYPES[key]].find(item => item[ID_KEY] === value)
+      );
+
+      setLinkedList({ key, type: ADD_ACTION_KEY, arr });
+
+      if(key === ITEM_KEY && arr.length > 0 && !isConfigSet) {
+        handleLinkedListConfig('SET_COMPLEX_DATA');
+      }
+    });
   };
 
   useEffect(() => {
@@ -344,6 +384,12 @@ const useResLinkz = (): IResLinks => {
   }, [
     existableList[TYPES[GROUP_KEY]],
     existableList[TYPES[ITEM_KEY]]
+  ]);
+
+  useEffect(() => {
+    setCurrentLinkedList(pricelist[RESLINKS_KEY]);
+  }, [
+    pricelist[RESLINKS_KEY]
   ]);
 
   return {
