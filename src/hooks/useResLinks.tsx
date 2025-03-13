@@ -20,12 +20,8 @@ import {
 import { useSelector } from '../services/hooks';
 
 import type {
-  TCategorySelectorHandler,
   TCustomData,
   TItemsArr,
-  TItemData,
-  TLinkedListConfigAction,
-  TLinkedDataConfigHandler,
   TLinkedResData,
   TPriceList,
   TPricelistExtTypes,
@@ -45,9 +41,6 @@ interface IResLinks {
   linkedGroups: TItemsArr;
   linkedItems: TItemsArr;
   linkedDataConfig: Record<string, boolean> | null;
-  resLinkHandlers: TCategorySelectorHandler;
-  //isLinkedItemActive: (arr: TItemsArr, data: TItemData) => boolean;
-  handleDataConfig: TLinkedDataConfigHandler;
 }
 
 const dataConfigReducer = (
@@ -120,7 +113,6 @@ const dataConfigReducer = (
  * @returns {TItemsArr} linkedGroups;
  * @returns {TItemsArr} linkedItems;
  * @returns {Record<string, boolean>|null} linkedDataConfig;
- * @returns {TCategorySelectorHandler} resLinkHandlers,
  * @returns {function} isLinkedItemActive - истинность наличия объекта в массиве привязанных к ресурсу элементов;
  * @returns {function} handleDataConfig - устанавливает состояние конфигурации списка цен для отображения на сайте.
  */

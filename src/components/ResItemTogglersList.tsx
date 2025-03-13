@@ -10,9 +10,9 @@ import {
 import { Done } from '@mui/icons-material';
 
 import type {
-  TCategorySelectorHandler,
   TItemsArr,
-  TItemData
+  TPricelistKeys,
+  TResItemContext
 } from '../types';
 
 import {
@@ -21,11 +21,11 @@ import {
 } from '../utils/constants';
 
 interface IResItemTogglersList {
-  handleClick: TCategorySelectorHandler;
-  isTogglerActive: (arr: TItemsArr, data: TItemData) => boolean;
+  handleClick: TResItemContext['toggleLinkedItems'];
+  isTogglerActive: TResItemContext['isLinkedItemActive'];
   arr: TItemsArr;
   linkedList: TItemsArr;
-  category: string;
+  category: TPricelistKeys;
   styles?: BoxProps['sx'];
   sx?: ChipOwnProps['sx'];
   warningStyles?: TypographyOwnProps['sx'];
@@ -59,11 +59,14 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
                 label={data[NAME_KEY]}
                 onClick={() => handleClick({ arr: linkedList, key: category, data })}
                 {...(variant && {variant})}
-                {...( isTogglerActive({ arr: linkedList, [ID_KEY]: data[ID_KEY] }) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
+                {...( isTogglerActive({ arr: linkedList, data }) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
               />
             )}
           </Box>
-        : (warningMess ? <Typography variant="body2" color="textSecondary" component="div" {...(warningStyles && {...warningStyles})}>{warningMess}</Typography> : '')
+        : (warningMess
+            ? <Typography variant="body2" component="div" {...( { color: "textSecondary" } )}  {...(warningStyles && {...warningStyles})}>{warningMess}</Typography>
+            : ''
+          )
       }
     </>
   )

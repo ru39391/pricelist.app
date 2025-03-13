@@ -203,16 +203,12 @@ export type TFormController = {
 } & Partial<Record<'icon' | 'color' | 'introText', string>>;
 
 // useResLinks
-export type TCategorySelectorHandler = TCustomData<(payload: TLinkedResData) => void>;
-
 export type TLinkedListConfigAction = 'SET_COMPLEX_DATA'
   | 'UNSET_COMPLEX_DATA'
   | 'SET_GROUP_IGNORED'
   | 'UNSET_GROUP_IGNORED'
   | 'SET_GROUP_USED'
   | 'UNSET_GROUP_USED';
-
-export type TLinkedDataConfigHandler = (type: TLinkedListConfigAction, data?: Record<string, boolean> | null) => void;
 
 export type TLinkedListData = {
   array: TItemsArr;
@@ -231,15 +227,8 @@ export type TLinkedListConfig = Record<TResLinkParams, boolean> | null;
 export type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & { action: AutocompleteChangeReason; };
 
 export type TListTogglerData = Omit<Required<TListReducerOptions>, 'type'> & { data: TItemData; };
-/*
-{
-  arr: TItemsArr;
-  data: TItemData;
-  key: TPricelistKeys;
-};
-*/
 
-export type TActiveLinkedItem = Pick<Required<TListReducerOptions>, 'arr'> & Pick<TLinkedData, typeof ID_KEY>;
+export type TActiveLinkedItem = Pick<Required<TListReducerOptions>, 'arr'> & Pick<TListTogglerData, 'data'>;
 
 export type TResItemContext = {
   linkedItemsData: Record<string, TItemsArr>;

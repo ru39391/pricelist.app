@@ -40,7 +40,10 @@ const ResItemControllers: FC<IResItemControllers> = ({
   const isGroupsControllerChecked = existableList.length === linkedList.length;
   const groupsControllerLabel = isGroupsControllerChecked ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY];
 
-  const toggleListOptions = () => {
+  /**
+   * Установить/отменить выбор всех групп ресурса
+   */
+  const toggleGroupsList = () => {
     const payload: TListHandlerOptions = { action: SELECT_OPTION_KEY, key: GROUP_KEY, arr: existableList };
 
     handleClick({
@@ -62,7 +65,7 @@ const ResItemControllers: FC<IResItemControllers> = ({
         label={groupsControllerLabel}
         isChecked={isGroupsControllerChecked}
         isDisabled={isConfigParamExist(IS_GROUP_IGNORED_KEY)}
-        handleChange={toggleListOptions}
+        handleChange={toggleGroupsList}
       />
       <CheckboxController
         id={IS_COMPLEX_DATA_KEY}

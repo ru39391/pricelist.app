@@ -49,16 +49,32 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
 }) => {
   const { toggleModal } = useModal();
 
+  /**
+   * Приведение типа параметра в объекте элемента прасйлиста
+   * @returns {number | string} значение параметра
+   * @property {string} key - ключ параметра в объекте
+   * @property {boolean} isNumber - является ли значение числом
+   */
   const handleOptionData = <T, >(
     data: T, key: string, isNumber = false
   ): number | string => isNumber ? data[key] as number : data[key] as string;
 
+  /**
+   * Группировка элементов выпадающего списка по категории
+   * @returns {string} наименование категории
+   * @property {TItemData} option - объект данных элемента прайслиста
+   */
   const groupByOption = (option: TItemData): string => {
     const category = handleOptionData(option, CATEGORY_KEY);
 
     return category ? category.toString() : '';
   };
 
+  /**
+   * Отображение модального окна с предупреждением или выполнение действия
+   * @property {TItemsArr} value - массив присвоенных ресурсу элементов прайслиста
+   * @property {AutocompleteChangeReason} reason - тип действия
+   */
   const confirmCategoryAction = (value: TItemsArr, reason: AutocompleteChangeReason) => {
     const handlerConfig: TListHandlerOptions = { action: reason, key: category, arr: value };
 
