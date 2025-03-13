@@ -10,7 +10,9 @@ import {
 import { Done } from '@mui/icons-material';
 
 import type {
+  TActiveLinkedItem,
   TItemsArr,
+  TItemData,
   TPricelistKeys,
   TResItemContext
 } from '../types';
@@ -59,7 +61,7 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
                 label={data[NAME_KEY]}
                 onClick={() => handleClick({ arr: linkedList, key: category, data })}
                 {...(variant && {variant})}
-                {...( isTogglerActive({ arr: linkedList, data }) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
+                {...( isTogglerActive({ arr: linkedList, [ID_KEY]: data[ID_KEY] } as TActiveLinkedItem) && { color: 'primary', icon: <Done />, ...(sx && {sx}) } )}
               />
             )}
           </Box>

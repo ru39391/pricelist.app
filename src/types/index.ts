@@ -228,7 +228,7 @@ export type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & 
 
 export type TListTogglerData = Omit<Required<TListReducerOptions>, 'type'> & { data: TItemData; };
 
-export type TActiveLinkedItem = Pick<Required<TListReducerOptions>, 'arr'> & Pick<TListTogglerData, 'data'>;
+export type TActiveLinkedItem = Pick<Required<TListReducerOptions>, 'arr'> & Pick<TLinkedData, typeof ID_KEY>;
 
 export type TResItemContext = {
   linkedItemsData: Record<string, TItemsArr>;

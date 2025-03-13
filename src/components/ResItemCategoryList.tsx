@@ -9,6 +9,7 @@ import {
 import useModal from '../hooks/useModal';
 
 import type {
+  TActiveLinkedItem,
   TItemData,
   TItemsArr,
   TListHandlerOptions,
@@ -38,6 +39,7 @@ interface IResItemCategoryList {
   linkedList: TItemsArr;
   existableList: TItemsArr;
   handleChange: TResItemContext['handleListOptions'];
+  isTogglerActive: TResItemContext['isLinkedItemActive'];
 }
 
 const ResItemCategoryList: FC<IResItemCategoryList> = ({
@@ -45,7 +47,8 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   sx,
   linkedList,
   existableList,
-  handleChange
+  handleChange,
+  isTogglerActive
 }) => {
   const { toggleModal } = useModal();
 
@@ -99,7 +102,6 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   };
 
   return (
-    // TODO: настроить disabled
     (existableList.length + linkedList.length) > 0 && <Autocomplete
       multiple
       filterSelectedOptions
@@ -111,6 +113,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
       closeText={REMOVE_TITLE}
       noOptionsText={NO_ITEMS_TITLE}
       getOptionLabel={(option) => handleOptionData(option, NAME_KEY).toString()}
+      getOptionDisabled={(option) => isTogglerActive({ arr: linkedList, [ID_KEY]: option[ID_KEY] } as TActiveLinkedItem)}
       renderInput={(props) => <TextField {...props} label={[TITLES[category]]} />}
       renderOption={(props, option) => <ListItem {...props}>{handleOptionData(option, NAME_KEY)}</ListItem>}
       getOptionKey={(option) => handleOptionData(option, ID_KEY, true)}

@@ -175,7 +175,7 @@ const ResItem: FC = () => {
         sx: { mb: 2.5, backgroundColor: '#fff' },
         linkedList: linkedSubdepts,
         existableList: existableSubdepts
-      }].map((props) => <ResItemCategoryList key={props.category} handleChange={handleListOptions} {...props} />)}
+      }].map((props) => <ResItemCategoryList key={props.category} handleChange={handleListOptions} isTogglerActive={isLinkedItemActive} {...props} />)}
 
       {isDeptTogglerVisible
         ? <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -192,7 +192,6 @@ const ResItem: FC = () => {
             </LoadingButton>
           </Box>
         : <>
-          {/* // TODO: скорректировать именования для configHandler и paramsHandler */}
           <ResItemControllers
             linkedList={linkedGroups}
             existableList={existableGroups}
