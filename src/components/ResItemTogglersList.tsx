@@ -12,7 +12,6 @@ import { Done } from '@mui/icons-material';
 import type {
   TActiveLinkedItem,
   TItemsArr,
-  TItemData,
   TPricelistKeys,
   TResItemContext
 } from '../types';

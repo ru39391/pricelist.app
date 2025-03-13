@@ -8,8 +8,6 @@ import ResItemCategoryList from './ResItemCategoryList';
 import ResItemTogglersList from './ResItemTogglersList';
 import ResLinkedItems from './ResLinkedItems';
 
-import useResLinks from '../hooks/useResLinks';
-import useResLinkz from '../hooks/useResLinks_';
 import useResLinkedItems from '../hooks/useResLinkedItems';
 
 import ResItemContext from '../contexts/ResItemContext';
@@ -30,7 +28,13 @@ import {
   SAVE_TITLE,
   NO_GROUP_TITLE
 } from '../utils/constants';
-import { TItemData, TItemsArr, TPricelistKeys } from '../types';
+
+import {
+  TActiveLinkedItem,
+  TItemData,
+  TItemsArr,
+  TPricelistKeys
+} from '../types';
 
 const ResItem: FC = () => {
   const {
@@ -52,7 +56,6 @@ const ResItem: FC = () => {
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
   const dispatch = useDispatch();
-  const { isLinkedItemActive } = useResLinkz();
   const {
     resLinkedItems,
     resLinkedData,
@@ -87,24 +90,15 @@ const ResItem: FC = () => {
     [linkedDepts, linkedSubdepts]
   );
 
+  /**
+   * Проверяет истинность наличия группы/услуги среди выбранных элементов
+   * @returns {boolean} истинно, если удалось найти элемент в массиве
+   * @property {TItemsArr} arr - массив выбранных элементов
+   * @property {number} item_id - идентификатор элемента
+   */
+  const isLinkedItemActive = (data: TActiveLinkedItem): boolean => Boolean(data.arr.find(item => item[ID_KEY] === data[ID_KEY]));
+
   const filterList = (arr: TItemsArr, data: TItemData, key: TPricelistKeys): TItemsArr => arr.filter((item) => item[key] === data[ID_KEY]);
-
-  // TODO: проверить, нужен ли этот функционал
-  const setLinkedData = useCallback(() => {
-    if(isLinkedDataExist(IS_COMPLEX_DATA_KEY) && isLinkedDataExist(IS_GROUP_IGNORED_KEY)) {
-      return;
-    }
-
-    // TODO: неясный момент - проверить, нужно ли это
-    if(existableGroups.length === 0 && existableItems.length > 0) {
-      handleLinkedListConfig('SET_GROUP_IGNORED');
-    }
-  }, [
-    existableGroups,
-    existableItems,
-    isLinkedDataExist,
-    handleLinkedListConfig
-  ]);
 
   const setLinkedDept = useCallback(() => {
     handleLinkedDepts(isDeptTogglerVisible, linkedDepts);
@@ -114,19 +108,10 @@ const ResItem: FC = () => {
   ]);
 
   const dispatchResLinkedData = useCallback(() => {
-    //console.log({resLinkedData, isLinkedListExist});
     if(resLinkedData) dispatch(handleResLinkedData(resLinkedData));
   }, [
     dispatch,
     resLinkedData
-  ]);
-
-  useEffect(() => {
-    setLinkedData();
-  }, [
-    linkedSubdepts,
-    existableGroups,
-    existableItems
   ]);
 
   useEffect(() => {
@@ -277,8 +262,3 @@ const ResItem: FC = () => {
 };
 
 export default ResItem;
-
-/*
-// TODO: поправить баг "Выбранные категории не содержат услуг"
-https://skrinshoter.ru/vUOAPn8lw7z
-*/

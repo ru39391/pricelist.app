@@ -13,7 +13,6 @@ import {
   ITEM_KEY,
 } from '../utils/constants';
 
-// TODO: привести типы в правильное соответствие: в контексте, компонентах-переключателях и хуке useResLinkz
 const ResItemProvider: FC = () => {
   const {
     existableList,

@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import { useSelector } from '../services/hooks';
 
 import type {
-  TActiveLinkedItem,
   TItemsArr,
   TLinkedListConfig,
   TLinkedListConfigAction,
@@ -50,7 +49,6 @@ interface IResLinks {
   handleLinkedListConfig: TResItemContext['handleLinkedListConfig'];
   handleListOptions: TResItemContext['handleListOptions'];
   toggleLinkedItems: TResItemContext['toggleLinkedItems'];
-  isLinkedItemActive: TResItemContext['isLinkedItemActive'];
 }
 
 const createListReducer = (
@@ -189,7 +187,6 @@ const useResLinkz = (): IResLinks => {
    */
   const handleListOptions = ({ action, key, arr }: TListHandlerOptions): void => {
     //console.log({ action, key, arr });
-    // TODO: вынести все значения AutocompleteChangeReason в константы
     if(action == CLEAR_OPTION_KEY) {
       setLinkedList({ type: REMOVE_ACTION_KEY, key, arr: [] });
       return;
@@ -213,12 +210,10 @@ const useResLinkz = (): IResLinks => {
     const keys: Partial<Record<TPricelistKeys, TPricelistKeys[]>> = {
       [DEPT_KEY]: [SUBDEPT_KEY, GROUP_KEY, ITEM_KEY],
       [SUBDEPT_KEY]: [GROUP_KEY, ITEM_KEY],
-      //[GROUP_KEY]: [ITEM_KEY],
     };
     //console.log({ array, key, categoryKey });
 
     if(array.length === 0 && keys[categoryKey]) {
-      // TODO: установить комплексный выбор, если хотя бы одна специализация содержит услуги
       setLinkedListConfig({});
       keys[categoryKey].forEach(key => handleListOptions({ action: CLEAR_OPTION_KEY, key, arr: [] }));
       return;
@@ -236,8 +231,6 @@ const useResLinkz = (): IResLinks => {
         );
 
         handleListOptions({ action: REMOVE_OPTION_KEY, key, arr });
-
-        if(key === GROUP_KEY && linkedList[TYPES[key]].length === 0) setLinkedListConfig({});
       });
     }
   };
@@ -280,14 +273,6 @@ const useResLinkz = (): IResLinks => {
   };
 
   /**
-   * Проверяет истинность наличия группы/услуги среди выбранных элементов
-   * @returns {boolean} истинно, если удалось найти элемент в массиве
-   * @property {TItemsArr} arr - массив выбранных элементов
-   * @property {number} item_id - идентификатор элемента
-   */
-  const isLinkedItemActive = (data: TActiveLinkedItem): boolean => Boolean(data.arr.find(item => item[ID_KEY] === data[ID_KEY]));
-
-  /**
    * Переключение параметров конфигурации обработки прикреплённых к ресурсу позиций прайслиста
    * @property {TLinkedListConfigAction} type - тип действия
    * @property {TLinkedListConfig} data - объект значений параметров конфигурации
@@ -295,6 +280,21 @@ const useResLinkz = (): IResLinks => {
   const handleLinkedListConfig = (type: TLinkedListConfigAction, data: TLinkedListConfig = null) => {
     console.log({ type, data });
     setLinkedListConfig({ type, data });
+  };
+
+  /**
+   * Автоматическая установка параметра конфигурации "Комплексный выбор", если список доступных для выбора групп пуст
+   * @property {TPriceList<TPricelistTypes, TItemsArr>} data - список доступных для выбора элементов прайслиста
+   */
+  const updateListConfig = (data: TPriceList<TPricelistTypes, TItemsArr>) => {
+    const { groupsList, itemsList } = {
+      groupsList: data[TYPES[GROUP_KEY]],
+      itemsList: data[TYPES[ITEM_KEY]]
+    };
+
+    if(groupsList.length === 0 && itemsList.length > 0) {
+      setLinkedListConfig({ type: 'SET_COMPLEX_DATA' });
+    }
   };
 
   useEffect(() => {
@@ -339,14 +339,20 @@ const useResLinkz = (): IResLinks => {
     linkedList[TYPES[SUBDEPT_KEY]]
   ]);
 
+  useEffect(() => {
+    updateListConfig(existableList);
+  }, [
+    existableList[TYPES[GROUP_KEY]],
+    existableList[TYPES[ITEM_KEY]]
+  ]);
+
   return {
     existableList,
     linkedList,
     linkedListConfig,
     handleLinkedListConfig,
     handleListOptions,
-    toggleLinkedItems,
-    isLinkedItemActive,
+    toggleLinkedItems
   }
 }
 

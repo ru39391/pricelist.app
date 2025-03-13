@@ -92,7 +92,7 @@ const InvisibleInput = styled('input')({
 
 const Parser: FC = () => {
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
-  // TODO: переделать для использования useReducer или вынести значение по умолчанию в переменную
+  // TODO: необязательная доработка - переделать для использования useReducer или вынести значение по умолчанию в переменную
   const [currParamData, setCurrParamData] = useState<Record<string, string> | undefined>({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
 
   const file = useSelector(state => state.file);
