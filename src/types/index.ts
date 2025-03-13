@@ -244,7 +244,7 @@ export type TActiveLinkedItem = Pick<Required<TListReducerOptions>, 'arr'> & Pic
 export type TResItemContext = {
   linkedItemsData: Record<string, TItemsArr>;
   linkedListConfig: TLinkedListConfig;
-  handleLinkedListConfig: (type: TLinkedListConfigAction, data: TLinkedListConfig) => void;
+  handleLinkedListConfig: (type: TLinkedListConfigAction, data?: TLinkedListConfig) => void;
   handleListOptions: (data: TListHandlerOptions) => void;
   toggleLinkedItems: (data: TListTogglerData) => void;
   isLinkedItemActive: (data: TActiveLinkedItem) => boolean;

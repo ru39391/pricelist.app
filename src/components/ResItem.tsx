@@ -198,7 +198,7 @@ const ResItem: FC = () => {
             existableList={existableGroups}
             handleClick={handleListOptions}
             handleConfig={handleLinkedListConfig}
-            paramsHandler={isLinkedDataExist}
+            isConfigParamExist={isLinkedDataExist}
           />
           {linkedSubdepts.map(
             (subdept) => <Box key={subdept[ID_KEY].toString()} sx={{ mb: 1.5, gap: 1, display: 'flex', flexDirection: 'column' }}>

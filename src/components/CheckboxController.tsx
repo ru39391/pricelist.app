@@ -6,7 +6,7 @@ interface ICheckboxController {
   label: string;
   isChecked: boolean;
   isDisabled: boolean;
-  handler: (event: ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const CheckboxController: FC<ICheckboxController> = ({
@@ -14,12 +14,12 @@ const CheckboxController: FC<ICheckboxController> = ({
   label,
   isChecked,
   isDisabled,
-  handler
+  handleChange
 }) => {
   return <FormControlLabel
     label={label}
     sx={{ mb: .25 }}
-    control={<Checkbox id={id} checked={isChecked} disabled={isDisabled} onChange={handler} />}
+    control={<Checkbox id={id} checked={isChecked} disabled={isDisabled} onChange={handleChange} />}
   />
 };
 
