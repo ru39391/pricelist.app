@@ -33,7 +33,8 @@ import {
   TActiveLinkedItem,
   TItemData,
   TItemsArr,
-  TPricelistKeys
+  TPricelistKeys,
+  TResLinkParams
 } from '../types';
 
 const ResItem: FC = () => {
@@ -68,7 +69,7 @@ const ResItem: FC = () => {
   } = useResLinkedItems();
 
   const isLinkedDataExist = useCallback(
-    (param: string): boolean => Boolean(linkedListConfig && linkedListConfig[param]),
+    (param: TResLinkParams): boolean => Boolean(linkedListConfig && linkedListConfig[param]),
     [linkedListConfig]
   );
 
@@ -151,12 +152,12 @@ const ResItem: FC = () => {
   return (
     <>
       {[{
-        category: DEPT_KEY,
+        category: DEPT_KEY as TPricelistKeys,
         sx: { mb: 3, backgroundColor: '#fff' },
         linkedList: linkedDepts,
         existableList: existableDepts
       }, {
-        category: SUBDEPT_KEY,
+        category: SUBDEPT_KEY as TPricelistKeys,
         sx: { mb: 2.5, backgroundColor: '#fff' },
         linkedList: linkedSubdepts,
         existableList: existableSubdepts
@@ -199,7 +200,7 @@ const ResItem: FC = () => {
                           linkedList={linkedItems}
                           category={ITEM_KEY}
                           styles={{ mb: 2 }}
-                          warningStyles={{ mb: 2 }}
+                          warningStyles={{ mb: 2, color: 'text.secondary' }}
                           warningMess="Группа не содержит услуг"
                           caption={<Typography variant="subtitle1" color="textPrimary" component="div" sx={{ mb: .5 }}>{options[NAME_KEY]}</Typography>}
                         />)

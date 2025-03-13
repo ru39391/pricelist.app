@@ -40,7 +40,7 @@ const useCategoryItems = (): ICategoryItems => {
     [TYPES[DEPT_KEY]]: [TYPES[SUBDEPT_KEY], TYPES[GROUP_KEY], TYPES[ITEM_KEY]],
     [TYPES[SUBDEPT_KEY]]: [TYPES[GROUP_KEY], TYPES[ITEM_KEY]],
     [TYPES[GROUP_KEY]]: [TYPES[GROUP_KEY], TYPES[ITEM_KEY]],
-  };
+  } as Record<TPricelistTypes, TPricelistTypes[]>;
   const keysData: TCustomData<TPricelistKeys> =
     Object.values(TYPES).reduce(
       (acc, type, index) => ({
@@ -50,7 +50,10 @@ const useCategoryItems = (): ICategoryItems => {
     );
 
   const handleCategoryItems = () => {
-    const { type, id } = currUrlData;
+    const { type, id } = {
+      type: currUrlData.type as TPricelistTypes,
+      id: currUrlData.id
+    };
 
     const subCategoryArr = type ? categoryData[type] : [TYPES[ITEM_KEY]];
     const subCategoryTypes =

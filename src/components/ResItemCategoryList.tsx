@@ -58,9 +58,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
    * @property {string} key - ключ параметра в объекте
    * @property {boolean} isNumber - является ли значение числом
    */
-  const handleOptionData = <T, >(
-    data: T, key: string, isNumber = false
-  ): number | string => isNumber ? data[key] as number : data[key] as string;
+  const handleOptionData = (data: TItemData, key: string, isNumber = false): number | string => isNumber ? data[key] as number : data[key] as string;
 
   /**
    * Группировка элементов выпадающего списка по категории

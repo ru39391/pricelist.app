@@ -232,13 +232,13 @@ const useResLinkedItems = (): IResLinkedItems => {
     }
 
     const params = [IS_COMPLEX_DATA_KEY, IS_GROUP_IGNORED_KEY, IS_GROUP_USED_KEY].reduce(
-      (acc, key) => ({ ...acc, [key]: false }), {} as Record<TResLinkParams, boolean>
+      (acc, key) => ({ ...acc, [key as TResLinkParams]: false }), {} as Record<TResLinkParams, boolean>
     );
     const data = {
       [ID_KEY]: Number(resId),
       [TYPES[DEPT_KEY]]: JSON.stringify(arr.map(item => item[ID_KEY])),
       config: JSON.stringify(params),
-      ...( [SUBDEPT_KEY, GROUP_KEY, ITEM_KEY].reduce((acc, key) => ({ ...acc, [TYPES[key]]: '[]' }), {} as Record<TPricelistKeys, string>) )
+      ...( [SUBDEPT_KEY, GROUP_KEY, ITEM_KEY].reduce((acc, key) => ({ ...acc, [TYPES[key as TPricelistKeys]]: '[]' }), {} as Record<TPricelistKeys, string>) )
     };
 
     handleUpdResLinkedData(data);

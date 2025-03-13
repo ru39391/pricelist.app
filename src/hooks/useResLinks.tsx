@@ -105,7 +105,7 @@ const listConfigReducer = (
       return setListConfig([true, true]);
 
     default:
-      return action.data || null;
+      return action.data || (!state ? state : null);
   }
 };
 const existableListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
@@ -174,7 +174,6 @@ const useResLinks = (): IResLinks => {
    * @property {TItemsArr} array - массив родительских элементов
    * @property {TPricelistKeys} key - тип дочерних элементов
    * @property {TPricelistKeys} categoryKey - ключ родительской категории
-   */
   const handleResItemsList = ({ array, key, categoryKey }: TLinkedListData): TListReducerOptions => {
     const payload = handleResList({ array, key, categoryKey });
 
@@ -187,6 +186,7 @@ const useResLinks = (): IResLinks => {
       arr: payload.arr?.filter(item => item[GROUP_KEY] === 0)
     };
   };
+   */
 
   /**
    * Устанавливает списки выбранных элементов прайслиста
@@ -224,12 +224,12 @@ const useResLinks = (): IResLinks => {
 
     if(array.length === 0 && keys[categoryKey]) {
       setLinkedListConfig({});
-      keys[categoryKey].forEach(key => handleListOptions({ action: CLEAR_OPTION_KEY, key, arr: [] }));
+      keys[categoryKey]?.forEach(key => handleListOptions({ action: CLEAR_OPTION_KEY, key, arr: [] }));
       return;
     }
 
     if(keys[categoryKey]) {
-      keys[categoryKey].forEach((key) => {
+      keys[categoryKey]?.forEach((key) => {
         const { arr: existableArr } = handleResList({ array, key, categoryKey });
         const arr = linkedList[TYPES[key]].reduce(
           (acc: TItemsArr, linkedItem) => {

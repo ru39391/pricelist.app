@@ -65,7 +65,7 @@ const ResItemTogglersList: FC<IResItemTogglersList> = ({
             )}
           </Box>
         : (warningMess
-            ? <Typography variant="body2" component="div" {...( { color: "textSecondary" } )}  {...(warningStyles && {...warningStyles})}>{warningMess}</Typography>
+            ? <Typography variant="body2" component="div" { ...(warningStyles && { sx: warningStyles })}>{warningMess}</Typography>
             : ''
           )
       }
