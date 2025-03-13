@@ -5,7 +5,7 @@ import CheckboxController from './CheckboxController';
 
 import type {
   TCategorySelectorHandler,
-  TLinkedDataConfigHandler,
+  TLinkedDatahandleConfig,
   TItemsArr
 } from '../types';
 
@@ -13,6 +13,8 @@ import {
   GROUP_KEY,
   ADD_ACTION_KEY,
   REMOVE_ACTION_KEY,
+  CLEAR_OPTION_KEY,
+  SELECT_OPTION_KEY,
   IS_COMPLEX_DATA_KEY,
   IS_GROUP_IGNORED_KEY,
   IS_GROUP_USED_KEY,
@@ -23,7 +25,7 @@ interface IResItemControllers {
   linkedList: TItemsArr;
   existableList: TItemsArr;
   itemsHandler: TCategorySelectorHandler;
-  configHandler: TLinkedDataConfigHandler;
+  handleConfig: TLinkedDatahandleConfig;
   paramsHandler: (param: string) => boolean;
 }
 
@@ -31,18 +33,18 @@ const ResItemControllers: FC<IResItemControllers> = ({
   linkedList,
   existableList,
   handleClick,
-  configHandler,
+  handleConfig,
   paramsHandler,
 }) => {
   const isGroupsControllerChecked = existableList.length === linkedList.length;
   const groupsControllerLabel = isGroupsControllerChecked ? LINKED_RES_PARAMS[REMOVE_ACTION_KEY] : LINKED_RES_PARAMS[ADD_ACTION_KEY];
 
   const toggleGroupsController = () => {
-    const payload = { action: 'selectOption', key: GROUP_KEY, arr: existableList };
+    const payload = { action: SELECT_OPTION_KEY, key: GROUP_KEY, arr: existableList };
 
     handleClick({
       ...payload,
-      ...( isGroupsControllerChecked && { action: 'clear', arr: [] } )
+      ...( isGroupsControllerChecked && { action: CLEAR_OPTION_KEY, arr: [] } )
     })
   };
 
@@ -66,14 +68,14 @@ const ResItemControllers: FC<IResItemControllers> = ({
         label={LINKED_RES_PARAMS[IS_COMPLEX_DATA_KEY]}
         isChecked={paramsHandler(IS_COMPLEX_DATA_KEY) || paramsHandler(IS_GROUP_IGNORED_KEY)}
         isDisabled={paramsHandler(IS_GROUP_IGNORED_KEY)}
-        handler={() => configHandler(!paramsHandler(IS_COMPLEX_DATA_KEY) ? 'SET_COMPLEX_DATA' : 'UNSET_COMPLEX_DATA')}
+        handler={() => handleConfig(!paramsHandler(IS_COMPLEX_DATA_KEY) ? 'SET_COMPLEX_DATA' : 'UNSET_COMPLEX_DATA')}
       />
       <CheckboxController
         id={IS_GROUP_IGNORED_KEY}
         label={LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
         isChecked={paramsHandler(IS_GROUP_IGNORED_KEY)}
         isDisabled={linkedList.length !== 0 || paramsHandler(IS_GROUP_USED_KEY)}
-        handler={() => configHandler(!paramsHandler(IS_GROUP_IGNORED_KEY) ? 'SET_GROUP_IGNORED' : 'UNSET_GROUP_IGNORED')}
+        handler={() => handleConfig(!paramsHandler(IS_GROUP_IGNORED_KEY) ? 'SET_GROUP_IGNORED' : 'UNSET_GROUP_IGNORED')}
       />
       {paramsHandler(IS_GROUP_IGNORED_KEY)
         && <CheckboxController
@@ -81,7 +83,7 @@ const ResItemControllers: FC<IResItemControllers> = ({
           label={LINKED_RES_PARAMS[IS_GROUP_USED_KEY]}
           isChecked={paramsHandler(IS_GROUP_USED_KEY)}
           isDisabled={!paramsHandler(IS_GROUP_IGNORED_KEY)}
-          handler={() => configHandler(!paramsHandler(IS_GROUP_USED_KEY) ? 'SET_GROUP_USED' : 'UNSET_GROUP_USED')}
+          handler={() => handleConfig(!paramsHandler(IS_GROUP_USED_KEY) ? 'SET_GROUP_USED' : 'UNSET_GROUP_USED')}
         />
       }
     </Box>

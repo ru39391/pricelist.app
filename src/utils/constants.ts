@@ -1,9 +1,5 @@
-import type {
-  TCustomData,
-  // TPricelistKeys,
-  // TPricelistTypes,
-  THandledItemKeys
-} from '../types';
+import { AutocompleteChangeReason } from '@mui/material';
+import type { TCustomData, THandledItemKeys } from '../types';
 
 const DEFAULT_DOC_TITLE = 'Управление услугами';
 
@@ -85,6 +81,10 @@ const CHILDREN_KEY = 'children';
 const ADD_ACTION_KEY = 'add';
 const EDIT_ACTION_KEY = 'edit';
 const REMOVE_ACTION_KEY = 'remove';
+
+const CLEAR_OPTION_KEY = 'clear' as AutocompleteChangeReason;
+const SELECT_OPTION_KEY = 'selectOption' as AutocompleteChangeReason;
+const REMOVE_OPTION_KEY = 'removeOption' as AutocompleteChangeReason;
 
 const CREATED_KEY = 'created';
 const UPDATED_KEY = 'updated';
@@ -205,6 +205,9 @@ export {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
+  CLEAR_OPTION_KEY,
+  SELECT_OPTION_KEY,
+  REMOVE_OPTION_KEY,
   ID_KEY,
   NAME_KEY,
   PRICE_KEY,

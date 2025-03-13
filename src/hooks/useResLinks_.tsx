@@ -1,19 +1,22 @@
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { useParams } from 'react-router-dom';
-import { AutocompleteChangeReason } from '@mui/material';
 
 import { useSelector } from '../services/hooks';
 
 import type {
-  TItemData,
+  TActiveLinkedItem,
   TItemsArr,
-  TLinkedData,
-  TLinkedDataConfigAction,
+  TLinkedListConfig,
+  TLinkedListConfigAction,
+  TLinkedListData,
+  TListHandlerOptions,
   TListReducerOptions,
+  TListTogglerData,
   TPriceList,
   TPricelistExtTypes,
   TPricelistKeys,
   TPricelistTypes,
+  TResItemContext,
   TResLinkParams
 } from '../types';
 
@@ -32,19 +35,22 @@ import {
   RESLINKS_KEY,
   ADD_ACTION_KEY,
   REMOVE_ACTION_KEY,
+  SELECT_OPTION_KEY,
+  CLEAR_OPTION_KEY,
+  REMOVE_OPTION_KEY,
   IS_COMPLEX_DATA_KEY,
   IS_GROUP_IGNORED_KEY,
   IS_GROUP_USED_KEY
 } from '../utils/constants';
 
-type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & { action: AutocompleteChangeReason; };
-
 interface IResLinks {
   existableList: TPriceList<TPricelistTypes, TItemsArr>;
   linkedList: TPriceList<TPricelistTypes, TItemsArr>;
-  handleListOptions: (data: TListHandlerOptions) => void;
-  toggleLinkedItems: (data: { arr: TItemsArr; data: TItemData; key: TPricelistKeys; }) => void;
-  isLinkedItemActive: (data: { arr: TItemsArr; } & Pick<TLinkedData, typeof ID_KEY>) => boolean;
+  linkedListConfig: TLinkedListConfig;
+  handleLinkedListConfig: TResItemContext['handleLinkedListConfig'];
+  handleListOptions: TResItemContext['handleListOptions'];
+  toggleLinkedItems: TResItemContext['toggleLinkedItems'];
+  isLinkedItemActive: TResItemContext['isLinkedItemActive'];
 }
 
 const createListReducer = (
@@ -78,37 +84,37 @@ const setListConfig = (values: boolean[], value: boolean = false): Record<TResLi
 }
 
 const listConfigReducer = (
-  state: Record<TResLinkParams, boolean> | undefined,
-  action: { type?: TLinkedDataConfigAction, data?: Record<TResLinkParams, boolean>}
+  state: TLinkedListConfig,
+  action: { type?: TLinkedListConfigAction, data?: TLinkedListConfig}
 ) => {
   switch (action.type) {
     case 'SET_COMPLEX_DATA':
       return setListConfig([true, false]);
-      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: false, [IS_GROUP_USED_KEY]: false };
+
     case 'UNSET_COMPLEX_DATA':
       return setListConfig([false]);
-      // { [IS_COMPLEX_DATA_KEY]: false, [IS_GROUP_IGNORED_KEY]: false, [IS_GROUP_USED_KEY]: false };
+
     case 'SET_GROUP_IGNORED':
       return setListConfig([true, true]);
-      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: true, [IS_GROUP_USED_KEY]: false };
+
     case 'UNSET_GROUP_IGNORED':
       return setListConfig([true, false]);
-      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: false, [IS_GROUP_USED_KEY]: false };
+
     case 'SET_GROUP_USED':
       return setListConfig([true]);
-      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: true, [IS_GROUP_USED_KEY]: true };
+
     case 'UNSET_GROUP_USED':
       return setListConfig([true, true]);
-      // { [IS_COMPLEX_DATA_KEY]: true, [IS_GROUP_IGNORED_KEY]: true, [IS_GROUP_USED_KEY]: false };
+
     default:
-      return action.data || undefined;
+      return action.data || null;
   }
 };
 const existableListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
 const linkedListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
 
 const useResLinkz = (): IResLinks => {
-  const [linkedListConfig, setLinkedListConfig] = useReducer(listConfigReducer, undefined);
+  const [linkedListConfig, setLinkedListConfig] = useReducer(listConfigReducer, null);
   const [existableList, setExistableList] = useReducer(
     existableListReducer,
     { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
@@ -130,11 +136,7 @@ const useResLinkz = (): IResLinks => {
    * @property {TPricelistKeys} key - тип дочерних элементов
    * @property {TPricelistKeys} categoryKey - ключ родительской категории
    */
-  const handleResList = ({ array, key, categoryKey }: {
-    array: TItemsArr;
-    key: TPricelistKeys;
-    categoryKey: TPricelistKeys;
-  }): TListReducerOptions => {
+  const handleResList = ({ array, key, categoryKey }: TLinkedListData): TListReducerOptions => {
     //console.log({ array, key, categoryKey });
 
     if(array.length === 0) {
@@ -166,11 +168,7 @@ const useResLinkz = (): IResLinks => {
    * @property {TPricelistKeys} key - тип дочерних элементов
    * @property {TPricelistKeys} categoryKey - ключ родительской категории
    */
-  const handleResItemsList = ({ array, key, categoryKey }: {
-    array: TItemsArr;
-    key: TPricelistKeys;
-    categoryKey: TPricelistKeys;
-  }): TListReducerOptions => {
+  const handleResItemsList = ({ array, key, categoryKey }: TLinkedListData): TListReducerOptions => {
     const payload = handleResList({ array, key, categoryKey });
 
     if(payload.arr?.length === 0) {
@@ -192,7 +190,7 @@ const useResLinkz = (): IResLinks => {
   const handleListOptions = ({ action, key, arr }: TListHandlerOptions): void => {
     //console.log({ action, key, arr });
     // TODO: вынести все значения AutocompleteChangeReason в константы
-    if(action == 'clear') {
+    if(action == CLEAR_OPTION_KEY) {
       setLinkedList({ type: REMOVE_ACTION_KEY, key, arr: [] });
       return;
     }
@@ -200,7 +198,7 @@ const useResLinkz = (): IResLinks => {
     setLinkedList({
       key,
       type: ADD_ACTION_KEY,
-      arr: action == 'removeOption' ? arr : fetchArray([...linkedList[TYPES[key]], ...arr], ID_KEY)
+      arr: action == REMOVE_OPTION_KEY ? arr : fetchArray([...linkedList[TYPES[key]], ...arr], ID_KEY)
     });
   };
 
@@ -210,11 +208,7 @@ const useResLinkz = (): IResLinks => {
    * @property {TPricelistKeys} key - тип дочерних элементов
    * @property {TPricelistKeys} categoryKey - ключ родительской категории
    */
-  const updateSubcategoryList = (payload: {
-    array: TItemsArr;
-    key: TPricelistKeys;
-    categoryKey: TPricelistKeys;
-  }) => {
+  const updateSubcategoryList = (payload: TLinkedListData) => {
     const { array, categoryKey } = payload;
     const keys: Partial<Record<TPricelistKeys, TPricelistKeys[]>> = {
       [DEPT_KEY]: [SUBDEPT_KEY, GROUP_KEY, ITEM_KEY],
@@ -226,7 +220,7 @@ const useResLinkz = (): IResLinks => {
     if(array.length === 0 && keys[categoryKey]) {
       // TODO: установить комплексный выбор, если хотя бы одна специализация содержит услуги
       setLinkedListConfig({});
-      keys[categoryKey].forEach(key => handleListOptions({ action: 'clear', key, arr: [] }));
+      keys[categoryKey].forEach(key => handleListOptions({ action: CLEAR_OPTION_KEY, key, arr: [] }));
       return;
     }
 
@@ -241,7 +235,7 @@ const useResLinkz = (): IResLinks => {
           }, []
         );
 
-        handleListOptions({ action: 'removeOption', key, arr });
+        handleListOptions({ action: REMOVE_OPTION_KEY, key, arr });
 
         if(key === GROUP_KEY && linkedList[TYPES[key]].length === 0) setLinkedListConfig({});
       });
@@ -254,12 +248,8 @@ const useResLinkz = (): IResLinks => {
    * @property {TItemData} data - данные элемента
    * @property {TPricelistKeys} key - ключ элемента прасйлиста
    */
-  const toggleLinkedItems = ({ arr, data, key }: {
-    arr: TItemsArr;
-    data: TItemData;
-    key: TPricelistKeys;
-  }) => {
-    const payload: TListHandlerOptions = { action: 'selectOption', key, arr: [data] };
+  const toggleLinkedItems = ({ arr, data, key }: TListTogglerData) => {
+    const payload: TListHandlerOptions = { action: SELECT_OPTION_KEY, key, arr: [data] };
 
     if(arr.length === 0) {
       handleListOptions(payload);
@@ -272,7 +262,7 @@ const useResLinkz = (): IResLinks => {
 
     handleListOptions({
       ...payload,
-      ...( linkedList.length === arr.length - 1 && { action: 'removeOption', arr: linkedList } )
+      ...( linkedList.length === arr.length - 1 && { action: REMOVE_OPTION_KEY, arr: linkedList } )
     });
   };
 
@@ -282,11 +272,7 @@ const useResLinkz = (): IResLinks => {
    * @property {TPricelistKeys} key - тип дочерних элементов
    * @property {TPricelistKeys} categoryKey - ключ родительской категории
    */
-  const updateCategoryList = (payload: {
-    array: TItemsArr;
-    key: TPricelistKeys;
-    categoryKey: TPricelistKeys;
-  }) => {
+  const updateCategoryList = (payload: TLinkedListData) => {
     const data = handleResList(payload);
 
     setExistableList(data);
@@ -299,17 +285,14 @@ const useResLinkz = (): IResLinks => {
    * @property {TItemsArr} arr - массив выбранных элементов
    * @property {number} item_id - идентификатор элемента
    */
-  const isLinkedItemActive = (
-    data: { arr: TItemsArr; } & Pick<TLinkedData, typeof ID_KEY>
-  ): boolean => Boolean(data.arr.find(item => item[ID_KEY] === data[ID_KEY]));
+  const isLinkedItemActive = (data: TActiveLinkedItem): boolean => Boolean(data.arr.find(item => item[ID_KEY] === data[ID_KEY]));
 
   /**
    * Переключение параметров конфигурации обработки прикреплённых к ресурсу позиций прайслиста
-   * @property {TLinkedDataConfigAction} type - тип действия
-   * // TODO: создать отдельный тип
-   * @property {Record<TResLinkParams, boolean> | undefined} data - объект значений параметров конфигурации
+   * @property {TLinkedListConfigAction} type - тип действия
+   * @property {TLinkedListConfig} data - объект значений параметров конфигурации
    */
-  const handleDataConfig = (type: TLinkedDataConfigAction, data: Record<TResLinkParams, boolean> | undefined = undefined) => {
+  const handleLinkedListConfig = (type: TLinkedListConfigAction, data: TLinkedListConfig = null) => {
     console.log({ type, data });
     setLinkedListConfig({ type, data });
   };
@@ -360,10 +343,10 @@ const useResLinkz = (): IResLinks => {
     existableList,
     linkedList,
     linkedListConfig,
+    handleLinkedListConfig,
     handleListOptions,
     toggleLinkedItems,
     isLinkedItemActive,
-    handleDataConfig
   }
 }
 

@@ -1,13 +1,10 @@
 import { createContext } from 'react';
 
-import type {
-  TCategorySelectorHandler,
-  TItemsArr,
-  TListReducerOptions,
-  TResItemData
-} from '../types';
+import type { TItemsArr, TResItemContext } from '../types';
 
-import { ACTION_ERROR_MSG, TYPES } from '../utils/constants';
+import { ACTION_ERROR_MSG } from '../utils/constants';
+
+type TResItemContextData = Omit<TResItemContext, 'isLinkedItemActive'>;
 
 const contextData = {
   linkedItemsData: [
@@ -20,14 +17,12 @@ const contextData = {
     'existableGroups',
     'existableItems'
   ].reduce((acc, key) => ({...acc, [key]: [] as TItemsArr}), {} as Record<string, TItemsArr>),
-  linkedDataConfig: null,
-  resLinkHandlers: Object.keys(TYPES).reduce(
-    (acc, key) => ({...acc, [key]: () => console.log(ACTION_ERROR_MSG)}), {} as TCategorySelectorHandler
-  ),
-  handleDataConfig: () => console.log(ACTION_ERROR_MSG),
-  handleListOptions: (data: TListReducerOptions) => console.log({...data, ACTION_ERROR_MSG}),
-} as TResItemData;
+  linkedListConfig: null,
+  handleLinkedListConfig: () => console.log(ACTION_ERROR_MSG),
+  handleListOptions: () => console.log(ACTION_ERROR_MSG),
+  toggleLinkedItems: () => console.log(ACTION_ERROR_MSG)
+} as TResItemContextData;
 
-const ResItemContext = createContext<TResItemData>(contextData);
+const ResItemContext = createContext<TResItemContextData>(contextData);
 
 export default ResItemContext;

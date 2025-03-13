@@ -19,9 +19,9 @@ const ResItemProvider: FC = () => {
     existableList,
     linkedList,
     linkedListConfig,
+    handleLinkedListConfig,
     handleListOptions,
-    toggleLinkedItems,
-    handleDataConfig
+    toggleLinkedItems
   } = useResLinkz();
 
   return (
@@ -36,13 +36,10 @@ const ResItemProvider: FC = () => {
         existableGroups: existableList[TYPES[GROUP_KEY]],
         existableItems: existableList[TYPES[ITEM_KEY]],
       },
-      handleListOptions,
-      toggleLinkedItems,
-
-
       linkedListConfig,
-      // TODO: поменять на handleLinkedListConfig
-      handleDataConfig,
+      handleLinkedListConfig,
+      handleListOptions,
+      toggleLinkedItems
     }}>
       <ResItem />
     </ResItemContext.Provider>

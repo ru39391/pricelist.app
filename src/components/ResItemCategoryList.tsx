@@ -9,9 +9,11 @@ import {
 import useModal from '../hooks/useModal';
 
 import type {
-  TCategorySelectorHandler,
   TItemData,
-  TItemsArr
+  TItemsArr,
+  TListHandlerOptions,
+  TResItemContext,
+  TPricelistKeys
 } from '../types';
 
 import {
@@ -19,6 +21,8 @@ import {
   NAME_KEY,
   CATEGORY_KEY,
   REMOVE_ACTION_KEY,
+  CLEAR_OPTION_KEY,
+  REMOVE_OPTION_KEY,
   TITLES,
   CLEAR_TITLE,
   REMOVE_TITLE,
@@ -29,11 +33,11 @@ import {
 } from '../utils/constants';
 
 interface IResItemCategoryList {
-  category: string;
+  category: TPricelistKeys;
   sx: Record<string, string | number>;
   linkedList: TItemsArr;
   existableList: TItemsArr;
-  handler: TCategorySelectorHandler;
+  handleChange: TResItemContext['handleListOptions'];
 }
 
 const ResItemCategoryList: FC<IResItemCategoryList> = ({
@@ -41,7 +45,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   sx,
   linkedList,
   existableList,
-  handler
+  handleChange
 }) => {
   const { toggleModal } = useModal();
 
@@ -56,25 +60,25 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
   };
 
   const confirmCategoryAction = (value: TItemsArr, reason: AutocompleteChangeReason) => {
-    const handlerConfig = { action: reason, key: category, arr: value };
+    const handlerConfig: TListHandlerOptions = { action: reason, key: category, arr: value };
 
-    if(reason === 'clear' || reason === 'removeOption') {
+    if(reason === CLEAR_OPTION_KEY || reason === REMOVE_OPTION_KEY) {
       toggleModal({
         title: CONFIRM_MSG,
         formController: {
           icon: REMOVE_ACTION_KEY,
           color: 'error',
-          introText: `${REMOVE_CONFIRM_MSG} ${reason === 'clear' ? `${CLEAR_TITLE.toLowerCase()} список элементов?` : `${REMOVE_TITLE.toLowerCase()} элемент из списка?`} ${PARSER_CONFIRM_MSG}`,
-          actionBtnCaption: reason === 'clear' ? CLEAR_TITLE : REMOVE_TITLE,
+          introText: `${REMOVE_CONFIRM_MSG} ${reason === CLEAR_OPTION_KEY ? `${CLEAR_TITLE.toLowerCase()} список элементов?` : `${REMOVE_TITLE.toLowerCase()} элемент из списка?`} ${PARSER_CONFIRM_MSG}`,
+          actionBtnCaption: reason === CLEAR_OPTION_KEY ? CLEAR_TITLE : REMOVE_TITLE,
           disabled: false,
           actionHandler: () => {
-            handler(handlerConfig);
+            handleChange(handlerConfig);
             toggleModal(null);
           }
         }
       });
     } else {
-      handler(handlerConfig);
+      handleChange(handlerConfig);
     }
   };
 

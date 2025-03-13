@@ -45,7 +45,7 @@ const ResItem: FC = () => {
       existableItems,
     },
     linkedListConfig,
-    handleDataConfig,
+    handleLinkedListConfig,
     handleListOptions,
     toggleLinkedItems
   } = useContext(ResItemContext);
@@ -97,13 +97,13 @@ const ResItem: FC = () => {
 
     // TODO: неясный момент - проверить, нужно ли это
     if(existableGroups.length === 0 && existableItems.length > 0) {
-      handleDataConfig('SET_GROUP_IGNORED');
+      handleLinkedListConfig('SET_GROUP_IGNORED');
     }
   }, [
     existableGroups,
     existableItems,
     isLinkedDataExist,
-    handleDataConfig
+    handleLinkedListConfig
   ]);
 
   const setLinkedDept = useCallback(() => {
@@ -175,7 +175,7 @@ const ResItem: FC = () => {
         sx: { mb: 2.5, backgroundColor: '#fff' },
         linkedList: linkedSubdepts,
         existableList: existableSubdepts
-      }].map((props) => <ResItemCategoryList key={props.category} handler={handleListOptions} {...props} />)}
+      }].map((props) => <ResItemCategoryList key={props.category} handleChange={handleListOptions} {...props} />)}
 
       {isDeptTogglerVisible
         ? <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -197,7 +197,7 @@ const ResItem: FC = () => {
             linkedList={linkedGroups}
             existableList={existableGroups}
             handleClick={handleListOptions}
-            configHandler={handleDataConfig}
+            handleConfig={handleLinkedListConfig}
             paramsHandler={isLinkedDataExist}
           />
           {linkedSubdepts.map(

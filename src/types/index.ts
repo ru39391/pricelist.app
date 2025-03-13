@@ -1,3 +1,5 @@
+import { AutocompleteChangeReason } from '@mui/material';
+
 import {
   ID_KEY,
   NAME_KEY,
@@ -133,32 +135,12 @@ export type TResourceKeys = keyof TResourceData;
 export type TLinkedData = {
   [key in typeof ID_KEY | typeof NAME_KEY]: key extends typeof ID_KEY ? number : string;
 };
-/*
-{
-  [ID_KEY]: number;
-  [NAME_KEY]: string;
-};
-*/
 
 export type TLinkedItemData = Record<typeof DEPT_KEY | typeof SUBDEPT_KEY, number>;
-/*
-{
-  [DEPT_KEY]: number;
-  [SUBDEPT_KEY]: number;
-};
-*/
 
 export type TLinkedItem = TLinkedData & TLinkedItemData & {
   [key in typeof PRICE_KEY | typeof INDEX_KEY | typeof GROUP_KEY | typeof IS_VISIBLE_KEY]: number;
 };
-/*
-{
-  [PRICE_KEY]: number;
-  [INDEX_KEY]: number;
-  [GROUP_KEY]: number;
-  [IS_VISIBLE_KEY]: number;
-};
-*/
 
 export type TLinkedItemKeys = keyof TLinkedItem;
 
@@ -170,33 +152,16 @@ export type TLinkedPricelist = {
 };
 
 export type TLinkedGroup = TLinkedData & TLinkedItemData & Pick<TLinkedPricelist, typeof TYPES[typeof ITEM_KEY]>;
-/*
-{
-  pricelist: TLinkedItem[];
-};
-*/
 
 export type TLinkedGroupKeys = keyof TLinkedGroup;
 
 export type TLinkedSubdept = TLinkedData
   & Record<typeof DEPT_KEY, number>
   & Pick<TLinkedPricelist, typeof TYPES[typeof ITEM_KEY] | typeof TYPES[typeof GROUP_KEY]>;
-/*
-{
-  [DEPT_KEY]: number;
-  groups: TLinkedGroup[];
-  pricelist: TLinkedItem[];
-};
-*/
 
 export type TLinkedSubdeptKeys = keyof TLinkedSubdept;
 
 export type TLinkedDept = TLinkedData & Pick<TLinkedPricelist, typeof TYPES[typeof SUBDEPT_KEY]>;
-/*
-{
-  subdepts: TLinkedSubdept[];
-};
-*/
 
 export type TLinkedDeptKeys = keyof TLinkedDept;
 
@@ -212,24 +177,6 @@ export type TLinkedResData = {
   key?: string;
 } & Partial<TResLinkedAction>;
 
-export type TCategorySelectorHandler = TCustomData<(payload: TLinkedResData) => void>;
-
-export type TLinkedDataConfigAction = 'SET_COMPLEX_DATA'
-  | 'UNSET_COMPLEX_DATA'
-  | 'SET_GROUP_IGNORED'
-  | 'UNSET_GROUP_IGNORED'
-  | 'SET_GROUP_USED'
-  | 'UNSET_GROUP_USED';
-
-export type TLinkedDataConfigHandler = (type: TLinkedDataConfigAction, data?: Record<string, boolean> | null) => void;
-
-export type TResItemData = {
-  linkedItemsData: Record<string, TItemsArr>;
-  linkedDataConfig: Record<string, boolean> | null;
-  resLinkHandlers: TCategorySelectorHandler;
-  handleDataConfig: TLinkedDataConfigHandler;
-};
-
 export type TUrlData = {
   type: TPricelistTypes | string;
   id: number | null;
@@ -243,15 +190,6 @@ export type TParserData = {
 export type TFilterData = Partial<{
   [key in typeof NAME_KEY | typeof PARENT_KEY | typeof TEMPLATE_KEY | typeof IS_PARENT_KEY | typeof UPDATED_KEY]: key extends typeof NAME_KEY ? string : number;
 }>;
-/*
-{
-  [NAME_KEY]?: string;
-  [PARENT_KEY]?: number;
-  [TEMPLATE_KEY]?: number;
-  [IS_PARENT_KEY]?: number;
-  [UPDATED_KEY]?: number;
-};
-*/
 
 export type TFilterKeys = keyof TFilterData;
 
@@ -264,8 +202,50 @@ export type TFormController = {
   actionHandler: () => void;
 } & Partial<Record<'icon' | 'color' | 'introText', string>>;
 
+// useResLinks
+export type TCategorySelectorHandler = TCustomData<(payload: TLinkedResData) => void>;
+
+export type TLinkedListConfigAction = 'SET_COMPLEX_DATA'
+  | 'UNSET_COMPLEX_DATA'
+  | 'SET_GROUP_IGNORED'
+  | 'UNSET_GROUP_IGNORED'
+  | 'SET_GROUP_USED'
+  | 'UNSET_GROUP_USED';
+
+export type TLinkedDataConfigHandler = (type: TLinkedListConfigAction, data?: Record<string, boolean> | null) => void;
+
+export type TLinkedListData = {
+  array: TItemsArr;
+  key: TPricelistKeys;
+  categoryKey: TPricelistKeys;
+};
+
 export type TListReducerOptions = Partial<{
   type: TActionKeys;
   key: TPricelistKeys;
   arr: TItemsArr;
 }>;
+
+export type TLinkedListConfig = Record<TResLinkParams, boolean> | null;
+
+export type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & { action: AutocompleteChangeReason; };
+
+export type TListTogglerData = Omit<Required<TListReducerOptions>, 'type'> & { data: TItemData; };
+/*
+{
+  arr: TItemsArr;
+  data: TItemData;
+  key: TPricelistKeys;
+};
+*/
+
+export type TActiveLinkedItem = Pick<Required<TListReducerOptions>, 'arr'> & Pick<TLinkedData, typeof ID_KEY>;
+
+export type TResItemContext = {
+  linkedItemsData: Record<string, TItemsArr>;
+  linkedListConfig: TLinkedListConfig;
+  handleLinkedListConfig: (type: TLinkedListConfigAction, data: TLinkedListConfig) => void;
+  handleListOptions: (data: TListHandlerOptions) => void;
+  toggleLinkedItems: (data: TListTogglerData) => void;
+  isLinkedItemActive: (data: TActiveLinkedItem) => boolean;
+};

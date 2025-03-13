@@ -24,7 +24,7 @@ import type {
   TCustomData,
   TItemsArr,
   TItemData,
-  TLinkedDataConfigAction,
+  TLinkedListConfigAction,
   TLinkedDataConfigHandler,
   TLinkedResData,
   TPriceList,
@@ -176,12 +176,10 @@ const useResLinks = (): IResLinks => {
     }
   );
 
-  /*
   const existableData: TPriceList<TPricelistTypes, TItemsArr> = useMemo(
     () => setResData([existableDepts, existableSubdepts, existableGroups, existableItems]),
     [existableDepts, existableSubdepts, existableGroups, existableItems]
   );
-  */
 
   const resLinkData: TPriceList<TPricelistTypes, TItemsArr> = useMemo(
     () => setResData([linkedDepts, linkedSubdepts, linkedGroups, linkedItems]),
@@ -374,8 +372,6 @@ const useResLinks = (): IResLinks => {
   const setResLinks = () => {
     const data = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
 
-    //console.log({data});
-
     if(!data) {
       return;
     }
@@ -385,7 +381,6 @@ const useResLinks = (): IResLinks => {
     setLinkedDataConfig({ data: JSON.parse(data.config as string) });
 
     Object.values(TYPES).forEach((key, index) => {
-      //console.log(pricelist[key].filter(item => JSON.parse(data[key]).includes(item[ID_KEY])));
       resLinkHandlers[Object.keys(TYPES)[index] as TPricelistKeys]({
         items: pricelist[key].filter(item => JSON.parse(data[key] as string).includes(item[ID_KEY]))
       })
