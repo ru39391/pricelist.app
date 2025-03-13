@@ -2,7 +2,7 @@ import { FC } from 'react';
 
 import ResItem from './ResItem';
 
-import useResLinkz from '../hooks/useResLinks_';
+import useResLinks from '../hooks/useResLinks';
 import ResItemContext from '../contexts/ResItemContext';
 
 import {
@@ -21,7 +21,7 @@ const ResItemProvider: FC = () => {
     handleLinkedListConfig,
     handleListOptions,
     toggleLinkedItems
-  } = useResLinkz();
+  } = useResLinks();
 
   return (
     <ResItemContext.Provider value={{
