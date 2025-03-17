@@ -20,6 +20,8 @@ const SAVE_TITLE = 'Сохранить';
 const APPLY_TITLE = 'Применить обновления';
 const ADD_CATEGORY_TITLE = 'Добавить раздел';
 const EDIT_ITEM_TITLE = 'Изменить данные';
+const EDIT_RESOURCE = 'Редактировать ресурс';
+const VIEW_RESOURCE = 'Просмотр страницы';
 const NO_GROUP_TITLE = 'Без группы';
 
 const REMOVE_CONFIRM_MSG = 'Вы действительно хотите';
@@ -180,6 +182,8 @@ export {
   APPLY_TITLE,
   ADD_CATEGORY_TITLE,
   EDIT_ITEM_TITLE,
+  EDIT_RESOURCE,
+  VIEW_RESOURCE,
   NO_GROUP_TITLE,
   REMOVE_CONFIRM_MSG,
   PARSER_CONFIRM_MSG,

@@ -3,12 +3,12 @@ import { NavLink } from 'react-router-dom';
 import {
   Box,
   Link,
-  Tooltip,
   Typography,
-  Breadcrumbs,
-  IconButton
+  Breadcrumbs
 } from '@mui/material';
-import { Add, EditOutlined } from '@mui/icons-material';
+import { Add, Edit, EditOutlined, RemoveRedEye } from '@mui/icons-material';
+
+import TooltipIconBtn from './TooltipIconBtn';
 
 import useModal from '../hooks/useModal';
 import useCurrentData from '../hooks/useCurrentData';
@@ -22,7 +22,10 @@ import {
   EDIT_ITEM_TITLE,
   ADD_CATEGORY_TITLE,
   ADD_ACTION_KEY,
-  EDIT_ACTION_KEY
+  EDIT_ACTION_KEY,
+  EDIT_RESOURCE,
+  VIEW_RESOURCE,
+  SITE_URL
 } from '../utils/constants';
 import { TItemData, TPricelistTypes, TActionKeys } from '../types';
 
@@ -70,31 +73,29 @@ const Header: FC = () => {
         }}
       >
         <Typography variant="h5">{title}</Typography>
-        {currentFormData.id && currentFormData.type !== RES_KEY
-          && <Tooltip
-            placement="top"
-            title={EDIT_ITEM_TITLE}
-          >
-            <IconButton
-              sx={{ p: 1, color: 'text.secondary' }}
-              onClick={editCategory}
-            >
-              <EditOutlined fontSize="medium" />
-            </IconButton>
-          </Tooltip>
-        }
-        {currentFormData.type !== RES_KEY
-          && <Tooltip
-            placement="top"
-            title={ADD_CATEGORY_TITLE}
-          >
-            <IconButton
-              sx={{ p: 0, color: 'text.secondary' }}
-              onClick={addCategory}
-            >
-              <Add fontSize="large" />
-            </IconButton>
-          </Tooltip>
+        {currentFormData.type === RES_KEY
+          ? [{
+              icon: <RemoveRedEye />,
+              title: VIEW_RESOURCE,
+              url: `${SITE_URL}${currentCategory.uri}`,
+              isTargetBlank: true
+            }, {
+              icon: <Edit />,
+              title: EDIT_RESOURCE,
+              url: `${SITE_URL}manager/?a=resource/update&id=${currentCategory.id.toString()}`,
+              isTargetBlank: true
+            }].map((props, index) => <TooltipIconBtn key={index.toString()} isIconExist={Boolean(currentFormData.id)} {...props} />)
+          : [{
+              sx: { p: 1, color: 'text.secondary' },
+              icon: <EditOutlined fontSize="medium" />,
+              title: EDIT_ITEM_TITLE,
+              onClick: editCategory
+            }, {
+              sx: { p: 0, color: 'text.secondary' },
+              icon: <Add fontSize="large" />,
+              title: ADD_CATEGORY_TITLE,
+              onClick: addCategory
+            }].map((props, index) => <TooltipIconBtn key={index.toString()} isIconExist={Boolean(currentFormData.id)} {...props} />)
         }
       </Box>
       <Breadcrumbs

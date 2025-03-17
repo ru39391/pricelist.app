@@ -287,7 +287,7 @@ const Parser: FC = () => {
               sx={{ mb: 2, width: '100%' }}
               component="label"
               variant="contained"
-              disabled={isFileUploading}
+              disabled={isFileUploading || Boolean(comparedFileData)}
               startIcon={<CloudUpload />}
             >
               Загрузить файл
@@ -373,7 +373,7 @@ const Parser: FC = () => {
                   id="demo-select-small"
                   value={currParamData ? currParamData.key : IS_GROUP_IGNORED_KEY}
                   label={currParamData ? currParamData.value : LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
-                  disabled={Boolean(tableData)}
+                  disabled={Boolean(comparedFileData)}
                   onChange={({ target }) => handleCurrParamData(target.value)}
                 >
                   {[
