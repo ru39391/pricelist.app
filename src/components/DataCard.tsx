@@ -125,7 +125,11 @@ const DataCard: FC = () => {
         return;
       }
 
-      dispatch(handlePricelistData({ ...formHandlerData, action: REMOVE_ACTION_KEY }));
+      dispatch(handlePricelistData({
+        ...formHandlerData,
+        items: formHandlerData.items.map(item => ({ [ID_KEY]: item[ID_KEY] })),
+        action: REMOVE_ACTION_KEY
+      }));
     }, [
       dispatch,
       formData,
