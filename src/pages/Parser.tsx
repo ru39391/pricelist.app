@@ -91,6 +91,7 @@ const InvisibleInput = styled('input')({
 });
 
 const Parser: FC = () => {
+  const [counter, setCounter] = useState<number>(0);
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
   // TODO: необязательная доработка - переделать для использования useReducer или вынести значение по умолчанию в переменную
   const [currParamData, setCurrParamData] = useState<Record<string, string> | undefined>({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
@@ -244,6 +245,20 @@ const Parser: FC = () => {
     dispatch
   ]);
 
+  const handleCounter = useCallback(
+    () => {
+      if(!fileDataNav.length) {
+        setCounter(0);
+        return;
+      }
+
+      const value = fileDataNav.reduce((acc, { counter }) => acc + counter, 0);
+
+      setCounter(value);
+    },
+    [fileDataNav]
+  );
+
   useEffect(() => {
     compareFileData(
       setDataItems(),
@@ -264,6 +279,7 @@ const Parser: FC = () => {
       category: currCategory,
       subCategory: currSubCategory
     });
+    handleCounter();
   }, [
     fileDataNav
   ]);
@@ -287,14 +303,14 @@ const Parser: FC = () => {
               sx={{ mb: 2, width: '100%' }}
               component="label"
               variant="contained"
-              disabled={isFileUploading || Boolean(comparedFileData)}
+              disabled={isFileUploading || counter > 0}
               startIcon={<CloudUpload />}
             >
               Загрузить файл
               <InvisibleInput type="file" accept=".xlsx, .xls" onChange={uploadFile} />
             </Button>
             {/* // TODO: возможно, вынести в отдельный компонент */}
-            {fileDataNav.map(({ key, caption, counter, data }) =>
+            {counter > 0 && fileDataNav.map(({ key, caption, counter, data }) =>
               (<Fragment key={key}>
                 <ListItemButton selected={true} sx={{ py: 0.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
