@@ -3,6 +3,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useMemo,
   useState
 } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -91,7 +92,6 @@ const InvisibleInput = styled('input')({
 });
 
 const Parser: FC = () => {
-  const [counter, setCounter] = useState<number>(0);
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
   // TODO: необязательная доработка - переделать для использования useReducer или вынести значение по умолчанию в переменную
   const [currParamData, setCurrParamData] = useState<Record<string, string> | undefined>({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
@@ -224,8 +224,6 @@ const Parser: FC = () => {
     const items = comparedFileData ? comparedFileData[currCategory][currSubCategory] : [];
     const data = items.length ? items.find((item: TItemData) => item[ID_KEY] === values[ID_KEY]) : {};
 
-    //console.log({data, values});
-
     toggleModal({ title: `${title} «${values[NAME_KEY]}»` });
     dispatch(setFormData({
       data: {
@@ -245,16 +243,15 @@ const Parser: FC = () => {
     dispatch
   ]);
 
-  const handleCounter = useCallback(
+  const isFileDataExist = useMemo(
     () => {
       if(!fileDataNav.length) {
-        setCounter(0);
-        return;
+        return fileDataNav.length > 0;
       }
 
       const value = fileDataNav.reduce((acc, { counter }) => acc + counter, 0);
 
-      setCounter(value);
+      return value > 0;
     },
     [fileDataNav]
   );
@@ -268,6 +265,7 @@ const Parser: FC = () => {
     file
   ]);
 
+  // TODO: настроить сброс comparedFileData при успешном сохранении данных обработанного документа
   useEffect(() => {
     updateFileDataNav(comparedFileData);
   }, [
@@ -279,7 +277,6 @@ const Parser: FC = () => {
       category: currCategory,
       subCategory: currSubCategory
     });
-    handleCounter();
   }, [
     fileDataNav
   ]);
@@ -303,14 +300,14 @@ const Parser: FC = () => {
               sx={{ mb: 2, width: '100%' }}
               component="label"
               variant="contained"
-              disabled={isFileUploading || counter > 0}
+              disabled={isFileUploading || isFileDataExist}
               startIcon={<CloudUpload />}
             >
               Загрузить файл
               <InvisibleInput type="file" accept=".xlsx, .xls" onChange={uploadFile} />
             </Button>
             {/* // TODO: возможно, вынести в отдельный компонент */}
-            {counter > 0 && fileDataNav.map(({ key, caption, counter, data }) =>
+            {isFileDataExist && fileDataNav.map(({ key, caption, counter, data }) =>
               (<Fragment key={key}>
                 <ListItemButton selected={true} sx={{ py: 0.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -389,7 +386,7 @@ const Parser: FC = () => {
                   id="demo-select-small"
                   value={currParamData ? currParamData.key : IS_GROUP_IGNORED_KEY}
                   label={currParamData ? currParamData.value : LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
-                  disabled={Boolean(comparedFileData)}
+                  disabled={isFileDataExist}
                   onChange={({ target }) => handleCurrParamData(target.value)}
                 >
                   {[
