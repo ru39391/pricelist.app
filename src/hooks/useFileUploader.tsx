@@ -137,7 +137,7 @@ const useFileUploader = (): IFileUploaderHook => {
               : Number(VIEWINCOMPLEX_ONLY) || 0,
             [IS_COMPLEX_KEY]: Number(ISCOMPLEX) || 0,
             [COMPLEX_KEY]: JSON.stringify(ids),
-            [IS_VISIBLE_KEY]: Number(VIEWINWEB) || 1,
+            [IS_VISIBLE_KEY]: Number(VIEWINWEB),// || 1,
             [INDEX_KEY]: Number(SORTIROVKA_SPEC)
           }
         }
