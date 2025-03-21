@@ -1,9 +1,10 @@
-import { FILE_UPLOADING_ERROR_MSG } from '../../utils/constants';
+import { ID_KEY, FILE_UPLOADING_ERROR_MSG } from '../../utils/constants';
 import {
   getFileUploading,
   getFileUploadingSucceed,
   getFileUploadingFailed,
-  removeItems
+  removeItems,
+  resetList
 } from '../slices/file-slice';
 import { setFormHidden } from '../slices/form-slice';
 import type { TPricelistData, TParserData, TItemsArr } from '../../types';
@@ -66,7 +67,25 @@ const removeFileItems = ({ type, items }: TParserData): TAppThunk<void> => async
   }
 };
 
+const resetFileList = (): TAppThunk<void> => async (dispatch: TAppDispatch) => {
+  dispatch(getFileUploading({ isLoading: true }));
+
+  try {
+    const { isSucceed } = await validateParserData([{ [ID_KEY]: 1 }]);
+
+    if(isSucceed) {
+      dispatch(resetList());
+      dispatch(setFormHidden());
+    }
+  } catch(error) {
+    dispatch(getFileUploadingFailed({ errorMsg: FILE_UPLOADING_ERROR_MSG }));
+  } finally {
+    dispatch(getFileUploading({ isLoading: false }));
+  }
+};
+
 export {
   handleFile,
-  removeFileItems
+  removeFileItems,
+  resetFileList
 }

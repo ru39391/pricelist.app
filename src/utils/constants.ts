@@ -1,9 +1,5 @@
-import type {
-  TCustomData,
-  TPricelistKeys,
-  TPricelistTypes,
-  THandledItemKeys
-} from '../types';
+import { AutocompleteChangeReason } from '@mui/material';
+import type { TCustomData, THandledItemKeys } from '../types';
 
 const DEFAULT_DOC_TITLE = 'Управление услугами';
 
@@ -24,6 +20,8 @@ const SAVE_TITLE = 'Сохранить';
 const APPLY_TITLE = 'Применить обновления';
 const ADD_CATEGORY_TITLE = 'Добавить раздел';
 const EDIT_ITEM_TITLE = 'Изменить данные';
+const EDIT_RESOURCE = 'Редактировать ресурс';
+const VIEW_RESOURCE = 'Просмотр страницы';
 const NO_GROUP_TITLE = 'Без группы';
 
 const REMOVE_CONFIRM_MSG = 'Вы действительно хотите';
@@ -48,6 +46,9 @@ const REMOVE_ITEM_ERROR_MSG = 'При удалении элементов про
 
 const ACTION_ERROR_MSG = 'Передан некорректный тип обработчика';
 const DATA_ERROR_MSG = 'Переданы некорректные данные: проверьте, правильно ли заполнены поля формы';
+
+const NOT_CREATED_KEY = 'Ещё не создан';
+const NOT_UPDATED_KEY = 'Обновления не производились';
 
 const INDEX_KEY = 'index';
 const ID_KEY = 'item_id';
@@ -82,6 +83,10 @@ const CHILDREN_KEY = 'children';
 const ADD_ACTION_KEY = 'add';
 const EDIT_ACTION_KEY = 'edit';
 const REMOVE_ACTION_KEY = 'remove';
+
+const CLEAR_OPTION_KEY = 'clear' as AutocompleteChangeReason;
+const SELECT_OPTION_KEY = 'selectOption' as AutocompleteChangeReason;
+const REMOVE_OPTION_KEY = 'removeOption' as AutocompleteChangeReason;
 
 const CREATED_KEY = 'created';
 const UPDATED_KEY = 'updated';
@@ -126,12 +131,13 @@ const HANDLED_ITEMS_CAPTIONS: Record<THandledItemKeys, string> = {
   [REMOVED_KEY]: 'Удалённые записи',
 };
 
-const TYPES: Record<TPricelistKeys, TPricelistTypes> = {
+// : Record<TPricelistKeys, TPricelistTypes>
+const TYPES = {
   [DEPT_KEY]: `${DEPT_KEY}s`,
   [SUBDEPT_KEY]: `${SUBDEPT_KEY}s`,
   [GROUP_KEY]: `${GROUP_KEY}s`,
   [ITEM_KEY]: 'pricelist'
-};
+} as const;
 
 const LINKED_RES_PARAMS: TCustomData<string> = {
   [IS_COMPLEX_DATA_KEY]: 'Комплексный выбор',
@@ -164,6 +170,8 @@ export {
   FILE_UPLOADING_ERROR_MSG,
   ACTION_ERROR_MSG,
   DATA_ERROR_MSG,
+  NOT_CREATED_KEY,
+  NOT_UPDATED_KEY,
   PARSER_TITLE,
   CMS_TITLE,
   ADD_TITLE,
@@ -174,6 +182,8 @@ export {
   APPLY_TITLE,
   ADD_CATEGORY_TITLE,
   EDIT_ITEM_TITLE,
+  EDIT_RESOURCE,
+  VIEW_RESOURCE,
   NO_GROUP_TITLE,
   REMOVE_CONFIRM_MSG,
   PARSER_CONFIRM_MSG,
@@ -199,6 +209,9 @@ export {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
+  CLEAR_OPTION_KEY,
+  SELECT_OPTION_KEY,
+  REMOVE_OPTION_KEY,
   ID_KEY,
   NAME_KEY,
   PRICE_KEY,

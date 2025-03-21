@@ -14,6 +14,7 @@ import {
 import { Close } from '@mui/icons-material';
 
 import DeleteIconBtn from './DeleteIconBtn';
+import ModalControllers from './ModalControllers';
 
 import useModal from '../hooks/useModal';
 import useUrlHandler from '../hooks/useUrlHandler';
@@ -47,7 +48,8 @@ const Modal: FC<IModal> = ({ fc, payload }) => {
     formData,
     formTitle,
     formDesc,
-    isParserData
+    isParserData,
+    formController
   } = useSelector(state => state.form);
 
   const { currUrlData } = useUrlHandler();
@@ -133,6 +135,7 @@ const Modal: FC<IModal> = ({ fc, payload }) => {
       <DialogContent>
         {formDesc && <DialogContentText>{formDesc}</DialogContentText>}
         {modalContent}
+        {formController && <ModalControllers {...formController} />}
       </DialogContent>
     </Dialog>
   )

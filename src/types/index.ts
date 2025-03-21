@@ -1,10 +1,14 @@
+import { AutocompleteChangeReason } from '@mui/material';
+
 import {
   ID_KEY,
   NAME_KEY,
   PRICE_KEY,
+  INDEX_KEY,
   DEPT_KEY,
   SUBDEPT_KEY,
   GROUP_KEY,
+  RESLINKS_KEY,
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
@@ -17,6 +21,8 @@ import {
   IS_COMPLEX_DATA_KEY,
   IS_GROUP_USED_KEY,
   IS_GROUP_IGNORED_KEY,
+  IS_VISIBLE_KEY,
+  TYPES,
   ITEM_KEY
 } from '../utils/constants';
 
@@ -26,11 +32,13 @@ export type TPricelistStateKeys = keyof TPricelistState;
 
 // TODO: провести рефакторинг файла
 // TODO: разобраться с заменой TPricelistTypes и TPricelistExtTypes на более гибкий вариант, например, keyof TPricelistState
-export type TPricelistKeys = typeof DEPT_KEY | typeof SUBDEPT_KEY | typeof GROUP_KEY | typeof ITEM_KEY;
+export type TPricelistKeys = keyof typeof TYPES;
+//typeof DEPT_KEY | typeof SUBDEPT_KEY | typeof GROUP_KEY | typeof ITEM_KEY;
 
-export type TPricelistTypes = 'depts' | 'subdepts' | 'groups' | 'pricelist';
+export type TPricelistTypes = typeof TYPES[TPricelistKeys];
+//'depts' | 'subdepts' | 'groups' | 'pricelist';
 
-export type TPricelistExtTypes = TPricelistTypes | 'reslinks';
+export type TPricelistExtTypes = TPricelistTypes | typeof RESLINKS_KEY;
 
 export type TActionKeys = typeof ADD_ACTION_KEY | typeof EDIT_ACTION_KEY | typeof REMOVE_ACTION_KEY;
 
@@ -42,15 +50,16 @@ export type TCustomData<T> = {
   [key: string]: T;
 };
 
-export type TPriceList<T> = {
-  [key in TPricelistTypes]: T;
-};
-
+// TODO: отказаться от TCustomData
 export type TItemData = TCustomData<string | number>;
 
 export type TItemsArr = TItemData[];
 
-// TODO: разобраться с заменой TPricelistData на Record<TPricelistExtTypes, TItemsArr>;
+export type TPriceList<K extends TPricelistTypes | TPricelistExtTypes, T> = {
+  [key in K]: T;
+};
+
+// TODO: разобраться с заменой TPricelistData на TPriceList<TPricelistExtTypes, TItemsArr>;
 export type TPricelistData =  TCustomData<TItemsArr>;
 
 export type TPricelistResponse = {
@@ -63,17 +72,17 @@ export type TResponseItems = {
   success: boolean;
   message?: string;
   counter: TCustomData<number>;
-  succeed?: TItemsArr;
-  failed?: TItemsArr;
+  //succeed?: TItemsArr;
+  //failed?: TItemsArr;
   inValid: TItemsArr;
-};
+} & Partial<Record<'succeed' | 'failed', TItemsArr>>;
 
 export type TResponseDefault = {
   success: boolean;
-  data?: TResponseItems;
-  errors?: TResponseItems;
+  //data?: TResponseItems;
+  //errors?: TResponseItems;
   meta: TCustomData<string | number>;
-};
+} & Partial<Record<'data' | 'errors', TResponseItems>>;
 
 export type TErrorResponseData = {
   data: TResponseDefault;
@@ -111,52 +120,48 @@ type TResDate = {
 export type TResourceData = {
   id: number;
   isParent: boolean;
-  name: string;
-  uri: string;
+  //name: string;
+  //uri: string;
   parent: TResParent;
   template: TResTemplate;
-  publishedon: TResDate;
-  editedon: TResDate;
-};
+  //publishedon: TResDate;
+  //editedon: TResDate;
+} & Record<'name' | 'uri', string> & Record<'publishedon' | 'editedon', TResDate>;
 
 export type TLinkedResourceData = TResourceData & { isLinked: boolean; };
 
 export type TResourceKeys = keyof TResourceData;
 
 export type TLinkedData = {
-  [ID_KEY]: number;
-  [NAME_KEY]: string;
+  [key in typeof ID_KEY | typeof NAME_KEY]: key extends typeof ID_KEY ? number : string;
 };
 
-export type TLinkedItemData = {
-  [DEPT_KEY]: number;
-  [SUBDEPT_KEY]: number;
-};
+export type TLinkedItemData = Record<typeof DEPT_KEY | typeof SUBDEPT_KEY, number>;
 
 export type TLinkedItem = TLinkedData & TLinkedItemData & {
-  [PRICE_KEY]: number;
-  [GROUP_KEY]: number;
+  [key in typeof PRICE_KEY | typeof INDEX_KEY | typeof GROUP_KEY | typeof IS_VISIBLE_KEY]: number;
 };
 
 export type TLinkedItemKeys = keyof TLinkedItem;
 
-export type TLinkedGroup = TLinkedData & TLinkedItemData & {
-  pricelist: TLinkedItem[];
+export type TLinkedPricelist = {
+  [key in TPricelistTypes]: key extends typeof TYPES[typeof ITEM_KEY]
+    ? TLinkedItem[] : key extends typeof TYPES[typeof GROUP_KEY]
+    ? TLinkedGroup[] : key extends typeof TYPES[typeof SUBDEPT_KEY]
+    ? TLinkedSubdept[] : never;
 };
+
+export type TLinkedGroup = TLinkedData & TLinkedItemData & Pick<TLinkedPricelist, typeof TYPES[typeof ITEM_KEY]>;
 
 export type TLinkedGroupKeys = keyof TLinkedGroup;
 
-export type TLinkedSubdept = TLinkedData & {
-  [DEPT_KEY]: number;
-  groups: TLinkedGroup[];
-  pricelist: TLinkedItem[];
-};
+export type TLinkedSubdept = TLinkedData
+  & Record<typeof DEPT_KEY, number>
+  & Pick<TLinkedPricelist, typeof TYPES[typeof ITEM_KEY] | typeof TYPES[typeof GROUP_KEY]>;
 
 export type TLinkedSubdeptKeys = keyof TLinkedSubdept;
 
-export type TLinkedDept = TLinkedData & {
-  subdepts: TLinkedSubdept[];
-};
+export type TLinkedDept = TLinkedData & Pick<TLinkedPricelist, typeof TYPES[typeof SUBDEPT_KEY]>;
 
 export type TLinkedDeptKeys = keyof TLinkedDept;
 
@@ -164,6 +169,13 @@ export type TResLinkedAction = {
   action: string;
   data: TItemData;
 };
+
+export type TLinkedResData = {
+  //action?: string;
+  //data?: TItemData;
+  items?: TItemsArr;
+  key?: string;
+} & Partial<TResLinkedAction>;
 
 export type TUrlData = {
   type: TPricelistTypes | string;
@@ -175,12 +187,54 @@ export type TParserData = {
   items: TItemsArr;
 };
 
-export type TFilterData = {
-  [NAME_KEY]?: string;
-  [PARENT_KEY]?: number;
-  [TEMPLATE_KEY]?: number;
-  [IS_PARENT_KEY]?: number;
-  [UPDATED_KEY]?: number;
-};
+export type TFilterData = Partial<{
+  [key in typeof NAME_KEY | typeof PARENT_KEY | typeof TEMPLATE_KEY | typeof IS_PARENT_KEY | typeof UPDATED_KEY]: key extends typeof NAME_KEY ? string : number;
+}>;
 
 export type TFilterKeys = keyof TFilterData;
+
+export type TFormController = {
+  //icon?: string;
+  //color?: string;
+  //introText?: string;
+  actionBtnCaption: string;
+  disabled: boolean;
+  actionHandler: () => void;
+} & Partial<Record<'icon' | 'color' | 'introText', string>>;
+
+// useResLinks
+export type TLinkedListConfigAction = 'SET_COMPLEX_DATA'
+  | 'UNSET_COMPLEX_DATA'
+  | 'SET_GROUP_IGNORED'
+  | 'UNSET_GROUP_IGNORED'
+  | 'SET_GROUP_USED'
+  | 'UNSET_GROUP_USED';
+
+export type TLinkedListData = {
+  array: TItemsArr;
+  key: TPricelistKeys;
+  categoryKey: TPricelistKeys;
+};
+
+export type TListReducerOptions = Partial<{
+  type: TActionKeys;
+  key: TPricelistKeys;
+  arr: TItemsArr;
+}>;
+
+export type TLinkedListConfig = Record<TResLinkParams, boolean> | null;
+
+export type TListHandlerOptions = Omit<Required<TListReducerOptions>, 'type'> & { action: AutocompleteChangeReason; };
+
+export type TListTogglerData = Omit<Required<TListReducerOptions>, 'type'> & { data: TItemData; };
+
+export type TActiveLinkedItem = Pick<Required<TListReducerOptions>, 'arr'> & Pick<TLinkedData, typeof ID_KEY>;
+
+export type TResItemContext = {
+  linkedItemsData: Record<string, TItemsArr>;
+  linkedListConfig: TLinkedListConfig;
+  handleLinkedListConfig: (type: TLinkedListConfigAction, data?: TLinkedListConfig) => void;
+  handleListOptions: (data: TListHandlerOptions) => void;
+  toggleLinkedItems: (data: TListTogglerData) => void;
+  isLinkedItemActive: (data: TActiveLinkedItem) => boolean;
+};

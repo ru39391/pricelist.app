@@ -1,344 +1,411 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useReducer } from 'react';
 import { useParams } from 'react-router-dom';
-
-import {
-  RESLINKS_KEY,
-  ID_KEY,
-  NAME_KEY,
-  CATEGORY_KEY,
-  LABEL_KEY,
-  DEPT_KEY,
-  SUBDEPT_KEY,
-  GROUP_KEY,
-  ITEM_KEY,
-  TYPES,
-  IS_COMPLEX_DATA_KEY,
-  IS_GROUP_IGNORED_KEY
-} from '../utils/constants';
 
 import { useSelector } from '../services/hooks';
 
 import type {
-  TCustomData,
   TItemsArr,
-  TItemData,
+  TLinkedListConfig,
+  TLinkedListConfigAction,
+  TLinkedListData,
+  TListHandlerOptions,
+  TListReducerOptions,
+  TListTogglerData,
+  TPriceList,
   TPricelistExtTypes,
-  TPricelistKeys
+  TPricelistKeys,
+  TPricelistTypes,
+  TResItemContext,
+  TResLinkParams
 } from '../types';
 
-import { sortStrArray, fetchArray, getMatchedItems } from '../utils';
+import { sortArrValues, fetchArray } from '../utils';
 
-type TLinkedResData = {
-  action?: string;
-  data?: TItemData;
-  items?: TItemsArr;
-  key?: string;
-};
+import {
+  TYPES,
+  ID_KEY,
+  ITEM_KEY,
+  NAME_KEY,
+  DEPT_KEY,
+  SUBDEPT_KEY,
+  GROUP_KEY,
+  LABEL_KEY,
+  CATEGORY_KEY,
+  RESLINKS_KEY,
+  ADD_ACTION_KEY,
+  REMOVE_ACTION_KEY,
+  SELECT_OPTION_KEY,
+  CLEAR_OPTION_KEY,
+  REMOVE_OPTION_KEY,
+  IS_COMPLEX_DATA_KEY,
+  IS_GROUP_IGNORED_KEY,
+  IS_GROUP_USED_KEY
+} from '../utils/constants';
 
 interface IResLinks {
-  existableDepts: TItemsArr;
-  existableSubdepts: TItemsArr;
-  existableGroups: TItemsArr;
-  existableItems: TItemsArr;
-  linkedDepts: TItemsArr;
-  linkedSubdepts: TItemsArr;
-  linkedGroups: TItemsArr;
-  linkedItems: TItemsArr;
-  linkedDataConfig: TCustomData<boolean> | null;
-  resLinkHandlers: TCustomData<(payload: TLinkedResData) => void>;
-  isLinkedItemActive: (arr: TItemsArr, data: TItemData) => boolean;
-  handleDataConfig: (data: TCustomData<boolean>) => void;
+  existableList: TPriceList<TPricelistTypes, TItemsArr>;
+  linkedList: TPriceList<TPricelistTypes, TItemsArr>;
+  linkedListConfig: TLinkedListConfig;
+  handleLinkedListConfig: TResItemContext['handleLinkedListConfig'];
+  handleListOptions: TResItemContext['handleListOptions'];
+  toggleLinkedItems: TResItemContext['toggleLinkedItems'];
 }
 
-// TODO: отыскать вероятные места применения useCallback и useMemo
+const createListReducer = (
+  state: TPriceList<TPricelistTypes, TItemsArr>,
+  action: TListReducerOptions
+) => {
+  switch (action.type) {
+    case ADD_ACTION_KEY:
+      return {
+        ...state,
+        ...( action.key && { [TYPES[action.key]]: action.arr || [] } )
+      };
+    case REMOVE_ACTION_KEY:
+      return {
+        ...state,
+        ...( action.key && { [TYPES[action.key]]: [] } )
+      };
+    default:
+      return { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] };
+  }
+};
+
+const setListConfig = (values: boolean[], value: boolean = false): Record<TResLinkParams, boolean> => {
+  const keys: TResLinkParams[] = [IS_COMPLEX_DATA_KEY, IS_GROUP_IGNORED_KEY, IS_GROUP_USED_KEY];
+
+  const data = values.length === 1
+    ? keys.reduce((acc, key) => ({ ...acc, [key]: values[0] }), {} as Record<TResLinkParams, boolean>)
+    : [...values, value].reduce((acc, item, index) => ({ ...acc, [keys[index]]: item }), {} as Record<TResLinkParams, boolean>);
+
+  return data;
+}
+
+const listConfigReducer = (
+  state: TLinkedListConfig,
+  action: { type?: TLinkedListConfigAction, data?: TLinkedListConfig}
+) => {
+  switch (action.type) {
+    case 'SET_COMPLEX_DATA':
+      return setListConfig([true, false]);
+
+    case 'UNSET_COMPLEX_DATA':
+      return setListConfig([false]);
+
+    case 'SET_GROUP_IGNORED':
+      return setListConfig([true, true]);
+
+    case 'UNSET_GROUP_IGNORED':
+      return setListConfig([true, false]);
+
+    case 'SET_GROUP_USED':
+      return setListConfig([true]);
+
+    case 'UNSET_GROUP_USED':
+      return setListConfig([true, true]);
+
+    default:
+      return action.data || (!state ? state : null);
+  }
+};
+const existableListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
+const linkedListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
+
+
+/**
+ * Формирование структуры элементов прайслиста, доступных для привязки к ресурсу
+ *
+ * Используемые состояния:
+ * TODO: составить список
+ */
 const useResLinks = (): IResLinks => {
-  const [existableDepts, setExistableDepts] = useState<TItemsArr>([]);
-  const [existableSubdepts, setExistableSubdepts] = useState<TItemsArr>([]);
-  const [existableGroups, setExistableGroups] = useState<TItemsArr>([]);
-  const [existableItems, setExistableItems] = useState<TItemsArr>([]);
-
-  const [linkedDepts, setLinkedDepts] = useState<TItemsArr>([]);
-  const [linkedSubdepts, setLinkedSubdepts] = useState<TItemsArr>([]);
-  const [linkedGroups, setLinkedGroups] = useState<TItemsArr>([]);
-  const [linkedItems, setLinkedItems] = useState<TItemsArr>([]);
-
-  const [linkedDataConfig, setLinkedDataConfig] = useState<TCustomData<boolean> | null>(null);
+  const [linkedListConfig, setLinkedListConfig] = useReducer(listConfigReducer, null);
+  const [existableList, setExistableList] = useReducer(
+    existableListReducer,
+    { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
+  );
+  const [linkedList, setLinkedList] = useReducer(
+    linkedListReducer,
+    { [TYPES[DEPT_KEY]]: [], [TYPES[SUBDEPT_KEY]]: [], [TYPES[GROUP_KEY]]: [], [TYPES[ITEM_KEY]]: [] }
+  );
 
   const { id: resId } = useParams();
 
-  const pricelist: TCustomData<TItemsArr>  = useSelector(
-    ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce((acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {}
+  const pricelist = useSelector(
+    ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce(
+      (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as TPriceList<TPricelistExtTypes, TItemsArr>
   ));
 
-  const setResData = (arr: TItemsArr[]): TCustomData<TItemsArr> => arr.reduce(
-    (acc, item, index) => ({ ...acc, [Object.keys(TYPES)[index]]: item }), {}
-  );
+  /**
+   * Возвращает списки элементов прайслиста в зависимости от их родительских категорий
+   * @returns TListReducerOptions - данные для сохранения в локальном состоянии
+   * @property {TItemsArr} array - массив родительских элементов
+   * @property {TPricelistKeys} key - тип дочерних элементов
+   * @property {TPricelistKeys} categoryKey - ключ родительской категории
+   */
+  const handleResList = ({ array, key, categoryKey }: TLinkedListData): TListReducerOptions => {
+    //console.log({ array, key, categoryKey });
 
-  const handleSortedArr = (
-    arr: TItemsArr,
-    childrenArr: TItemsArr,
-    categoryKey: TPricelistKeys
-  ): TItemsArr => childrenArr.map(
-    (item) => {
-      const category = arr.find(data => item[categoryKey] === data[ID_KEY]);
-
-      return {
-        ...item,
-        [LABEL_KEY]: item[NAME_KEY],
-        [CATEGORY_KEY]: category ? category[NAME_KEY] : ''
-      };
+    if(array.length === 0) {
+      return { type: REMOVE_ACTION_KEY, key, arr: [] };
     }
-  );
 
-  const existableData: TCustomData<TItemsArr> = setResData([existableDepts, existableSubdepts, existableGroups, existableItems]);
+    const arr: TItemsArr = array.length === 1
+      ? pricelist[TYPES[key]].filter(item => item[categoryKey] === array[0][ID_KEY])
+      : sortArrValues([...pricelist[TYPES[key]]], NAME_KEY).reduce(
+          (acc, item) => {
+            const category = array.find(data => data[ID_KEY] === item[categoryKey]);
 
-  const resLinkData: TCustomData<TItemsArr> = setResData([linkedDepts, linkedSubdepts, linkedGroups, linkedItems]);
+            return category ? [...acc, {...item, [CATEGORY_KEY]: category[NAME_KEY], [LABEL_KEY]: item[NAME_KEY]}] : acc;
+          },
+          [] as TItemsArr
+        );
 
-  const existableDataHandlers = [
-    setExistableDepts,
-    setExistableSubdepts,
-    setExistableGroups,
-    setExistableItems
-  ].reduce((acc, handler, index) => ({
-    ...acc,
-    [Object.keys(TYPES)[index]]: (arr: TItemsArr) => handler(
-      sortStrArray(
-        handleSortedArr(
-          pricelist[Object.values(TYPES)[index]],
-          arr,
-          Object.keys(TYPES)[index] as TPricelistKeys
-        ),
-        CATEGORY_KEY
-      )
-    )
-  }), {} as Record<TPricelistKeys, (arr: TItemsArr) => void>);
-
-  const resLinkHandlers = [
-    setLinkedDepts,
-    setLinkedSubdepts,
-    setLinkedGroups,
-    setLinkedItems
-  ].reduce((acc, handler, index) => ({
-    ...acc,
-    [Object.keys(TYPES)[index]]: (payload: TLinkedResData) => handler(
-      handleLinkedItems(
-        resLinkData[Object.keys(TYPES)[index]],
-        {
-          ...payload,
-          key: Object.keys(TYPES)[index]
-        }
-      )
-    )
-  }), {} as Record<TPricelistKeys, (payload: TLinkedResData) => void>);
-
-  const handleDataConfig = (data: TCustomData<boolean>) => {
-    setLinkedDataConfig(linkedDataConfig ? { ...linkedDataConfig, ...data } : { ...data });
-  }
-
-  /**
-   * Проверка наличия объекта в массиве привязанных к ресурсу элементов
-   * @returns {boolean}
-   */
-  const isLinkedItemActive = (arr: TItemsArr, data: TItemData): boolean => arr.map(item => item[ID_KEY]).includes(data[ID_KEY]);
-
-  /**
-   * Обновляет массив подкатегории при удалении прикреплённого к ресурсу элемента
-   * @property {object[]} arr - массив текущих элементов, прикреплённых к ресурсу
-   * @property {object[]} items - массив передаваемых элементов
-   * @property {string} key - ключ подкатегории
-   * @property {string} action - тип действия
-   */
-  const handleExistableItems = (
-    { arr, items }: TCustomData<TItemsArr>,
-    { key, action }: { key: TPricelistKeys | string; action: string; }
-  ) => {
-    const isOptionRemoved = [
+    return {
       key,
-      key !== DEPT_KEY,
-      action === 'removeOption'
-    ].reduce((acc, item) => acc && Boolean(item), true);
-
-    if(!isOptionRemoved) {
-      return;
-    }
-
-    existableDataHandlers[key as TPricelistKeys](
-      sortStrArray(
-        fetchArray(
-          [
-            ...existableData[key as TPricelistKeys],
-            ...arr.filter(item => !items.map(data => data[ID_KEY]).includes(item[ID_KEY]))
-          ],
-          ID_KEY
-        ),
-        NAME_KEY
-      )
-    );
+      type: ADD_ACTION_KEY,
+      arr: arr.length === 1 ? [{...arr[0], [CATEGORY_KEY]: array[0][NAME_KEY], [LABEL_KEY]: arr[0][NAME_KEY]}] : sortArrValues(arr, CATEGORY_KEY)
+    };
   };
 
   /**
-   * Возвращает массив элементов для установки нового состояния
-   * @returns {object[]} массив подходящих элементов
-   * @property {object[]} arr - массив текущих элементов, прикреплённых к ресурсу
-   * @property {object[]} items - массив передаваемых элементов
-   * @property {object} data
-   * @property {string} key - ключ подкатегории
-   * @property {string} action - тип действия
-   */
-  const handleLinkedItems = (arr: TItemsArr, { action, data, items, key }: TLinkedResData): TItemsArr => {
-    handleExistableItems(
-      { arr, items: items || [] },
-      { key: key || '', action: action || '' }
-    );
+   * Возвращает список услуг, вложенных непосредственно в специализацию
+   * @returns TListReducerOptions - данные для сохранения в локальном состоянии
+   * @property {TItemsArr} array - массив родительских элементов
+   * @property {TPricelistKeys} key - тип дочерних элементов
+   * @property {TPricelistKeys} categoryKey - ключ родительской категории
+  const handleResItemsList = ({ array, key, categoryKey }: TLinkedListData): TListReducerOptions => {
+    const payload = handleResList({ array, key, categoryKey });
 
-    if(!data) {
-      return items && Array.isArray(items) ? [...items] : [];
+    if(payload.arr?.length === 0) {
+      return payload;
     }
 
-    return isLinkedItemActive(arr, data)
-      ? [...arr].filter(item => item[ID_KEY] !== data[ID_KEY])
-      : [...arr, data];
+    return {
+      ...payload,
+      arr: payload.arr?.filter(item => item[GROUP_KEY] === 0)
+    };
+  };
+   */
+
+  /**
+   * Устанавливает списки выбранных элементов прайслиста
+   * @property {TItemsArr} array - массив элементов
+   * @property {TPricelistKeys} key - тип элементов
+   * @property {AutocompleteChangeReason} action - тип взаимодействия с выпадающим списком
+   */
+  const handleListOptions = ({ action, key, arr }: TListHandlerOptions): void => {
+    //console.log({ action, key, arr });
+    if(action == CLEAR_OPTION_KEY) {
+      setLinkedList({ type: REMOVE_ACTION_KEY, key, arr: [] });
+      return;
+    }
+
+    setLinkedList({
+      key,
+      type: ADD_ACTION_KEY,
+      arr: action == REMOVE_OPTION_KEY ? arr : fetchArray([...linkedList[TYPES[key]], ...arr], ID_KEY)
+    });
   };
 
   /**
-   * Формирует массив дочерних элементов выбранных категорий
-   * @returns {object[]} массив подходящих элементов
-   * @property {object[]} arr - массив объектов родительской категории
-   * @property {TPricelistKeys} categoryKey - ключ параметра категории, напр. DEPT_KEY
-   * @property {TPricelistKeys} currentKey - ключ параметра дочернего элемента, напр. SUBDEPT_KEY
-   * @property {TPricelistKeys} extendedKey - ключ для выборки услуг, вложенных напрямую в специализацию, напр. GROUP_KEY
+   * Обновляет список привязанных элементов при изменении родительских категорий
+   * @property {TItemsArr} array - массив родительских элементов
+   * @property {TPricelistKeys} key - тип дочерних элементов
+   * @property {TPricelistKeys} categoryKey - ключ родительской категории
    */
-  const filterItems = (
-    arr: TItemsArr,
-    categoryKey: TPricelistKeys,
-    currentKey: TPricelistKeys,
-    extendedKey: TPricelistKeys | null = null
-  ): TItemsArr => {
-    if(!arr.length) {
-      resLinkHandlers[currentKey]({ items: [] });
+  const updateSubcategoryList = (payload: TLinkedListData) => {
+    const { array, categoryKey } = payload;
+    const keys: Partial<Record<TPricelistKeys, TPricelistKeys[]>> = {
+      [DEPT_KEY]: [SUBDEPT_KEY, GROUP_KEY, ITEM_KEY],
+      [SUBDEPT_KEY]: [GROUP_KEY, ITEM_KEY],
+    };
+    //console.log({ array, key, categoryKey });
 
-      return [];
+    if(array.length === 0 && keys[categoryKey]) {
+      setLinkedListConfig({});
+      keys[categoryKey]?.forEach(key => handleListOptions({ action: CLEAR_OPTION_KEY, key, arr: [] }));
+      return;
     }
 
-    const subCategoryItems: TItemsArr = sortStrArray(
-      getMatchedItems(
-        arr,
-        [ITEM_KEY, GROUP_KEY].includes(currentKey)
-          ? pricelist[TYPES[currentKey]]
-          : pricelist[TYPES[currentKey]].filter(
-              item => !resLinkData[currentKey].map(data => data[ID_KEY]).includes(item[ID_KEY])
-            ),
-        categoryKey
-      ),
-      NAME_KEY
-    );
+    if(keys[categoryKey]) {
+      keys[categoryKey]?.forEach((key) => {
+        const { arr: existableArr } = handleResList({ array, key, categoryKey });
+        const arr = linkedList[TYPES[key]].reduce(
+          (acc: TItemsArr, linkedItem) => {
+            const data = existableArr?.find(item => item[ID_KEY] === linkedItem[ID_KEY]);
 
-    resLinkHandlers[currentKey]({
-      items: getMatchedItems(arr, resLinkData[currentKey], categoryKey)
+            return data ? [...acc, data] : acc;
+          }, []
+        );
+
+        handleListOptions({ action: REMOVE_OPTION_KEY, key, arr });
+      });
+    }
+  };
+
+  /**
+   * Обновляет список привязанных групп и услуг
+   * @property {TItemsArr} array - массив выбранных элементов
+   * @property {TItemData} data - данные элемента
+   * @property {TPricelistKeys} key - ключ элемента прасйлиста
+   */
+  const toggleLinkedItems = ({ arr, data, key }: TListTogglerData) => {
+    const payload: TListHandlerOptions = { action: SELECT_OPTION_KEY, key, arr: [data] };
+
+    if(arr.length === 0) {
+      handleListOptions(payload);
+      return;
+    }
+
+    const linkedList = arr.filter(item => item[ID_KEY] !== data[ID_KEY]);
+    // нет в arr: linkedList.length === arr.length
+    // есть в arr: linkedList.length === arr.length - 1
+
+    handleListOptions({
+      ...payload,
+      ...( linkedList.length === arr.length - 1 && { action: REMOVE_OPTION_KEY, arr: linkedList } )
     });
-
-    return sortStrArray(
-      extendedKey
-        ? handleSortedArr(arr, subCategoryItems, categoryKey).filter(item => item[extendedKey] === 0)
-        : handleSortedArr(arr, subCategoryItems, categoryKey),
-      CATEGORY_KEY
-    );
   };
 
-  const updateComplexDataConfig = () => {
-    if(linkedDataConfig !== null && linkedDataConfig[IS_COMPLEX_DATA_KEY]) {
-      setLinkedDataConfig({ [IS_COMPLEX_DATA_KEY]: true });
-    } else {
-      setLinkedDataConfig(null);
-    }
-  }
+  /**
+   * Устанавливает в локальное хранилище список привязанных элементов
+   * @property {TItemsArr} array - массив родительских элементов
+   * @property {TPricelistKeys} key - тип дочерних элементов
+   * @property {TPricelistKeys} categoryKey - ключ родительской категории
+   */
+  const updateCategoryList = (payload: TLinkedListData) => {
+    const data = handleResList(payload);
 
-  const updateLinkedDataConfig = () => {
-    if(linkedDataConfig !== null && linkedDataConfig[IS_COMPLEX_DATA_KEY] !== undefined) {
-      setLinkedItems([]);
-    }
+    setExistableList(data);
+    updateSubcategoryList(payload);
+  };
 
-    if(linkedDataConfig !== null && linkedDataConfig[IS_GROUP_IGNORED_KEY]) {
-      setExistableItems(
-        filterItems(linkedSubdepts, SUBDEPT_KEY, ITEM_KEY)
-      );
-    } else {
-      setExistableItems(
-        filterItems(linkedSubdepts, SUBDEPT_KEY, ITEM_KEY, GROUP_KEY)
-      );
+  /**
+   * Переключение параметров конфигурации обработки прикреплённых к ресурсу позиций прайслиста
+   * @property {TLinkedListConfigAction} type - тип действия
+   * @property {TLinkedListConfig} data - объект значений параметров конфигурации
+   */
+  const handleLinkedListConfig = (type: TLinkedListConfigAction, data: TLinkedListConfig = null) => {
+    //console.log({ type, data });
+    setLinkedListConfig({ type, data });
+  };
+
+  /**
+   * Автоматическая установка параметра конфигурации "Комплексный выбор", если список доступных для выбора групп пуст
+   * @property {TPriceList<TPricelistTypes, TItemsArr>} data - список доступных для выбора элементов прайслиста
+   */
+  const updateListConfig = (data: TPriceList<TPricelistTypes, TItemsArr>) => {
+    const { groupsList, itemsList } = {
+      groupsList: data[TYPES[GROUP_KEY]],
+      itemsList: data[TYPES[ITEM_KEY]]
+    };
+
+    if(groupsList.length === 0 && itemsList.length > 0) {
+      handleLinkedListConfig('SET_COMPLEX_DATA');
     }
   };
 
-  const setResLinks = () => {
-    const data = pricelist[RESLINKS_KEY].find(item => item[ID_KEY] === Number(resId));
+  /**
+   * Сохранение в состояние компонента ресурса данных ранее привязанных элементов прайслиста
+   * @property {TItemsArr} arr - массив данных привязанных к ресурсам позиций
+   */
+  const setCurrentLinkedList = (arr: TItemsArr) => {
+    const data = arr.find(item => item[ID_KEY] === Number(resId));
 
     if(!data) {
       return;
     }
 
-    setLinkedDataConfig(JSON.parse(data.config as string));
+    const keys: TPricelistKeys[] = [DEPT_KEY, SUBDEPT_KEY, GROUP_KEY, ITEM_KEY];
+    const params: TLinkedListConfig = JSON.parse(data.config.toString());
+    const { config, isConfigSet }: {
+      config: Record<TResLinkParams, boolean>;
+      isConfigSet: boolean;
+    } = {
+      config: params || setListConfig([false]),
+      isConfigSet: Boolean(params && Object.values(params).reduce((acc: boolean, item: boolean) => acc || item, false))
+    };
 
-    Object.values(TYPES).forEach((key, index) => {
-      //console.log(pricelist[key].filter(item => JSON.parse(data[key]).includes(item[ID_KEY])));
-      resLinkHandlers[Object.keys(TYPES)[index] as TPricelistKeys]({
-        items: pricelist[key].filter(item => JSON.parse(data[key] as string).includes(item[ID_KEY]))
-      })
+    if(isConfigSet) {
+      setLinkedListConfig({ data: config });
+    }
+
+    keys.forEach((key) => {
+      const arr = JSON.parse(data[TYPES[key]].toString()).map(
+        (value: number) => pricelist[TYPES[key]].find(item => item[ID_KEY] === value)
+      );
+
+      setLinkedList({ key, type: ADD_ACTION_KEY, arr });
+
+      if(key === ITEM_KEY && arr.length > 0 && !isConfigSet) {
+        handleLinkedListConfig('SET_COMPLEX_DATA');
+      }
     });
-  }
+  };
 
   useEffect(() => {
-    setExistableDepts(pricelist[TYPES[DEPT_KEY]]);
+    // при получении данных прайслиста, устанавливаем список доступных для выбора отделений
+    setExistableList({
+      type: ADD_ACTION_KEY,
+      key: DEPT_KEY,
+      arr: pricelist[TYPES[DEPT_KEY]]
+    });
   }, [
     pricelist[TYPES[DEPT_KEY]]
   ]);
 
   useEffect(() => {
-    setExistableSubdepts(
-      filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)
-    );
-    setLinkedDataConfig(null);
-    // console.log({linkedDepts, subdepts: filterItems(linkedDepts, DEPT_KEY, SUBDEPT_KEY)});
+    // при изменении выбранных отделений устанавливаем список доступных для выбора специализаций
+    // при изменении выбранных отделений изменяем список выбранных специализаций
+    updateCategoryList({
+      array: linkedList[TYPES[DEPT_KEY]],
+      key: SUBDEPT_KEY,
+      categoryKey: DEPT_KEY,
+    });
   }, [
-    linkedDepts
+    linkedList[TYPES[DEPT_KEY]]
   ]);
 
   useEffect(() => {
-    setExistableGroups(
-      filterItems(linkedSubdepts, SUBDEPT_KEY, GROUP_KEY)
-    );
-    setExistableItems(
-      filterItems(linkedSubdepts, SUBDEPT_KEY, ITEM_KEY, GROUP_KEY)
-    );
-    updateComplexDataConfig();
+    // при изменении выбранных специализаций устанавливаем список доступных для выбора групп
+    // при изменении выбранных специализаций изменяем список выбранных групп
+    updateCategoryList({
+      array: linkedList[TYPES[SUBDEPT_KEY]],
+      key: GROUP_KEY,
+      categoryKey: SUBDEPT_KEY,
+    });
+    // при изменении выбранных специализаций устанавливаем список доступных для выбора услуг
+    // при изменении выбранных специализаций изменяем список выбранных услуг
+    updateCategoryList({
+      array: linkedList[TYPES[SUBDEPT_KEY]],
+      key: ITEM_KEY,
+      categoryKey: SUBDEPT_KEY,
+    });
   }, [
-    linkedSubdepts
+    linkedList[TYPES[SUBDEPT_KEY]]
   ]);
 
   useEffect(() => {
-    updateLinkedDataConfig();
+    updateListConfig(existableList);
   }, [
-    linkedDataConfig
+    existableList[TYPES[GROUP_KEY]],
+    existableList[TYPES[ITEM_KEY]]
   ]);
 
   useEffect(() => {
-    setResLinks();
+    setCurrentLinkedList(pricelist[RESLINKS_KEY]);
   }, [
     pricelist[RESLINKS_KEY]
   ]);
 
   return {
-    existableDepts,
-    existableSubdepts,
-    existableGroups,
-    existableItems,
-    linkedDepts,
-    linkedSubdepts,
-    linkedGroups,
-    linkedItems,
-    linkedDataConfig,
-    resLinkHandlers,
-    isLinkedItemActive,
-    handleDataConfig
+    existableList,
+    linkedList,
+    linkedListConfig,
+    handleLinkedListConfig,
+    handleListOptions,
+    toggleLinkedItems
   }
 }
 

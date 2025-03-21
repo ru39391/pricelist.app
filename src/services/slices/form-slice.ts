@@ -5,7 +5,8 @@ import type {
   TItemData,
   TItemsArr,
   TActionKeys,
-  TPricelistTypes
+  TPricelistTypes,
+  TFormController
 } from '../../types';
 
 import { DEPT_KEY, SUBDEPT_KEY, GROUP_KEY } from '../../utils/constants';
@@ -27,6 +28,7 @@ export type TFormAction = {
     values?: TItemData | null;
     items?: TCustomData<TItemsArr>;
     isParserData?: boolean;
+    formController?: TFormController;
   };
 };
 
@@ -40,6 +42,7 @@ export type TFormState = {
   currDeptsList: TItemsArr;
   currSubdeptsList: TItemsArr;
   currGroupsList: TItemsArr;
+  formController?: TFormController;
 };
 
 const initialState: TFormState = {
@@ -52,6 +55,7 @@ const initialState: TFormState = {
   currDeptsList: [],
   currSubdeptsList: [],
   currGroupsList: [],
+  formController: undefined
 };
 
 const formSlice = createSlice({
@@ -64,6 +68,7 @@ const formSlice = createSlice({
       formTitle: action.payload.title || '',
       formDesc: action.payload.desc || '',
       isParserData: Boolean(action.payload.isParserData) || false,
+      formController: action.payload.formController || undefined
     }),
     setFormHidden: (state) => ({
       ...state,
@@ -72,7 +77,8 @@ const formSlice = createSlice({
       formDesc: '',
       formData: null,
       isParserData: false,
-      formValues: {}
+      formValues: {},
+      formController: undefined
     }),
     setFormData: (state, action: TFormAction) => ({
       ...state,

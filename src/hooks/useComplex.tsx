@@ -26,7 +26,7 @@ import {
   ITEM_KEY,
   TYPES
 } from '../utils/constants';
-import { sortStrArray } from '../utils';
+import { sortArrValues } from '../utils';
 
 type TComplexData = {
   [COMPLEX_KEY]: string;
@@ -62,7 +62,7 @@ const useComplex = (): IComplex => {
   const fetchComplexItems = () => {
     const complexItemsArr: TItemsArr = pricelist[TYPES[ITEM_KEY]].filter((item: TItemData) => item[IS_COMPLEX_ITEM_KEY] === 1);
 
-    setComplexItems(sortStrArray(complexItemsArr, NAME_KEY));
+    setComplexItems(sortArrValues(complexItemsArr, NAME_KEY));
   }
 
   const handleComplexItemsPrice = (arr: TItemsArr = []): number => {
@@ -97,7 +97,7 @@ const useComplex = (): IComplex => {
       );
 
     const summ = handleComplexItemsPrice(arr);
-    setCurrComplexItems(sortStrArray(arr, NAME_KEY));
+    setCurrComplexItems(sortArrValues(arr, NAME_KEY));
 
     dispatch(
       setFormValues({
@@ -137,7 +137,7 @@ const useComplex = (): IComplex => {
     );
 
     handleComplexItemsPrice(currComplexItemsArr);
-    setCurrComplexItems(sortStrArray(currComplexItemsArr, NAME_KEY));
+    setCurrComplexItems(sortArrValues(currComplexItemsArr, NAME_KEY));
   }
 
   const removeComplexItem = (data: TCustomData<number>) => {

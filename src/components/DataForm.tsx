@@ -6,10 +6,9 @@ import {
   FormControlLabel,
   Checkbox
 } from '@mui/material';
-import { Delete } from '@mui/icons-material';
 
 import Selecter from './Selecter';
-import ModalFooter from './ModalFooter';
+import ModalControllers from './ModalControllers';
 import ComplexItemsList from './ComplexItemsList';
 
 import useForm from '../hooks/useForm';
@@ -270,8 +269,8 @@ const DataForm: FC = () => {
   ]);
 
   if(formData && formData.action === REMOVE_ACTION_KEY) {
-    return <ModalFooter
-      icon={<Delete />}
+    return <ModalControllers
+      icon={REMOVE_ACTION_KEY}
       color='error'
       disabled={false}
       actionBtnCaption={REMOVE_TITLE}
@@ -347,7 +346,7 @@ const DataForm: FC = () => {
               </>
             )}
           </Box>
-          <ModalFooter
+          <ModalControllers
             disabled={isDisabled}
             actionBtnCaption={SAVE_TITLE}
             actionHandler={handlersData[formData.action]}

@@ -9,7 +9,8 @@ import type {
   TCustomData,
   TItemData,
   TItemsArr,
-  TPricelistKeys
+  TPricelistKeys,
+  TPricelistTypes
 } from '../types';
 
 import {
@@ -36,7 +37,7 @@ interface IForm {
   requiredFormFields: string[];
   textFieldValues: TCustomData<string> | null;
   handleTextFields: (data: TCustomData<number | undefined>) => void;
-  setDataParams: ({ type, data }: { type: string; data: TItemData }) => TItemsArr;
+  setDataParams: ({ type, data }: { type: TPricelistTypes; data: TItemData }) => TItemsArr;
 }
 
 const useForm = (): IForm => {
@@ -65,7 +66,7 @@ const useForm = (): IForm => {
   };
   const requiredFormFields = [NAME_KEY, PRICE_KEY];
 
-  const setDataParams = ({ type, data }: { type: string; data: TItemData }): TItemsArr => {
+  const setDataParams = ({ type, data }: { type: TPricelistTypes; data: TItemData }): TItemsArr => {
     const keys = [
       ...formFields[type],
       ...selecterFields[type],
@@ -87,14 +88,14 @@ const useForm = (): IForm => {
     const currKeys = Object.keys(formValues)
       .filter(
         key => [
-          ...formFields[type as string],
-          ...selecterFields[type as string],
-          ...togglerFields[type as string]
+          ...formFields[type],
+          ...selecterFields[type],
+          ...togglerFields[type]
         ].includes(key)
       );
     const currRequiredFields = requiredFormFields
       .filter(
-        key => [...formFields[type as string]].includes(key)
+        key => [...formFields[type]].includes(key)
       );
     const editedValues: TItemData = currKeys
       .reduce(

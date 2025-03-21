@@ -1,12 +1,9 @@
 import { FC } from 'react';
-import { NavLink } from 'react-router-dom';
 import {
   ButtonGroup,
   Card,
   CardActions,
   CardContent,
-  IconButton,
-  Tooltip,
   Typography
 } from '@mui/material';
 import {
@@ -14,6 +11,8 @@ import {
   RemoveRedEye,
   Settings
 } from '@mui/icons-material';
+
+import TooltipIconBtn from './TooltipIconBtn';
 
 import {
   TITLES,
@@ -23,7 +22,9 @@ import {
   PARENT_KEY,
   TEMPLATE_KEY,
   IS_PARENT_KEY,
-  SITE_URL
+  SITE_URL,
+  EDIT_RESOURCE,
+  VIEW_RESOURCE
 } from '../utils/constants';
 
 import type { TLinkedResourceData } from '../types';
@@ -52,15 +53,22 @@ const ResCard: FC<IResCard> = ({ item }) => {
       </CardContent>
       <CardActions>
       <ButtonGroup aria-label="outlined primary button group">
-        <Tooltip placement="top" title="Просмотр страницы">
-          <IconButton href={`${SITE_URL}${item.uri}`} target="_blank"><RemoveRedEye /></IconButton>
-        </Tooltip>
-        <Tooltip placement="top" title="Изменить список услуг">
-          <IconButton component={NavLink} to={`/${RES_KEY}/${item[RES_ID_KEY].toString()}`}><Settings /></IconButton>
-        </Tooltip>
-        <Tooltip placement="top" title="Редактировать ресурс">
-          <IconButton href={`${SITE_URL}manager/?a=resource/update&id=${item[RES_ID_KEY].toString()}`} target="_blank"><Edit /></IconButton>
-        </Tooltip>
+        {[{
+          icon: <RemoveRedEye />,
+          title: VIEW_RESOURCE,
+          url: `${SITE_URL}${item.uri}`,
+          isTargetBlank: true
+        }, {
+          icon: <Settings />,
+          title: 'Изменить список услуг',
+          url: `/${RES_KEY}/${item[RES_ID_KEY].toString()}`,
+          isNavLink: true
+        }, {
+          icon: <Edit />,
+          title: EDIT_RESOURCE,
+          url: `${SITE_URL}manager/?a=resource/update&id=${item[RES_ID_KEY].toString()}`,
+          isTargetBlank: true
+        }].map((props, index) => <TooltipIconBtn key={index.toString()} isIconExist={true} {...props} />)}
       </ButtonGroup>
       </CardActions>
     </Card>

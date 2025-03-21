@@ -11,7 +11,9 @@ import type { TLinkedItem } from '../types';
 import {
   ID_KEY,
   NAME_KEY,
-  PRICE_KEY
+  PRICE_KEY,
+  INDEX_KEY,
+  IS_VISIBLE_KEY
 } from '../utils/constants';
 
 interface IListRow {
@@ -35,8 +37,26 @@ const ListRow: FC<IListRow> = ({
           key={item[ID_KEY].toString()}
           sx={{ py: 0 }}
         >
-          <ListItemText primary={item[NAME_KEY]} />
-          <Typography variant="body2" color="textSecondary" component="div">{item[PRICE_KEY].toString()} руб.</Typography>
+          <ListItemText
+            primary={
+              item[IS_VISIBLE_KEY]
+                ? `${item[INDEX_KEY].toString()}. ${item[NAME_KEY]}`
+                : <Typography color="textSecondary">{`${item[INDEX_KEY].toString()}. ${item[NAME_KEY]}`}</Typography>
+            }
+            {...(
+              !item[IS_VISIBLE_KEY] && { sx: { textDecoration: 'line-through' } }
+            )}
+          />
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            component="div"
+            {...(
+              !item[IS_VISIBLE_KEY] && { sx: { textDecoration: 'line-through' } }
+            )}
+          >
+            {item[PRICE_KEY].toString()} руб.
+          </Typography>
         </ListItem>
       )}</List>
     </>

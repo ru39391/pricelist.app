@@ -9,7 +9,7 @@ import {
 import { useDispatch } from '../services/hooks';
 import { setFormVisible, setFormHidden } from '../services/slices/form-slice';
 
-import type { TCustomData } from '../types';
+import type { TCustomData, TFormController } from '../types';
 
 type TModalData = {
   fc: FunctionComponent | undefined;
@@ -20,6 +20,7 @@ type TModalPayloadData = {
   title: string;
   desc?: string;
   isParserData?: boolean;
+  formController?: TFormController;
 };
 
 interface IModal {
@@ -34,7 +35,12 @@ const useModal = ({ fc, payload }:TModalData = { fc: undefined, payload: { data:
 
   const toggleModal = (data: TModalPayloadData | null): void => {
     data
-      ? dispatch(setFormVisible({ title: data.title, desc: data.desc || '', isParserData: Boolean(data.isParserData) }))
+      ? dispatch(setFormVisible({
+          title: data.title,
+          desc: data.desc || '',
+          isParserData: Boolean(data.isParserData),
+          formController: data.formController || undefined
+        }))
       : dispatch(setFormHidden());
   }
 

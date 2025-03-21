@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { sortStrArray } from '../utils';
+import { sortArrValues } from '../utils';
 import { GridValidRowModel, GridColDef } from '@mui/x-data-grid';
 import {
   ID_KEY,
@@ -38,7 +38,7 @@ type TTableData = {
 
 interface ITableData {
   tableData: TTableData | null;
-  handleTableData: (data: TCategoryData, fileData: TPricelistData | null) => void;
+  handleTableData: (data: TCategoryData | null, fileData?: TPricelistData | null) => void;
 }
 
 const useTableData = (): ITableData => {
@@ -73,6 +73,8 @@ const useTableData = (): ITableData => {
       return null;
     }
 
+    //console.log({ arr, data, fileData });
+
     const keys = [
       ROW_INDEX_KEY,
       ID_KEY,
@@ -87,7 +89,7 @@ const useTableData = (): ITableData => {
       IS_VISIBLE_KEY
     ];
     const items = fileData || data;
-    const rows: GridValidRowModel[] = sortStrArray([...arr], NAME_KEY)
+    const rows: GridValidRowModel[] = sortArrValues([...arr], NAME_KEY)
       .reduce((acc: GridValidRowModel[], item: GridValidRowModel, index) => !item ? [] : [...acc, {
         [ROW_INDEX_KEY]: index + 1,
         ...Object.keys(item).reduce((acc, key, index) => ({ ...acc, [key]: Object.values(item)[index] }), {}),
@@ -106,6 +108,7 @@ const useTableData = (): ITableData => {
         headerName: CAPTIONS[item],
         flex: CAPTIONS[item].length > 4 ? 1 : 0,
         width: CAPTIONS[item].length > 4 ? 'auto' : 100,
+        resizable: true,
       } as GridColDef<GridValidRowModel>));
 
     return {
@@ -115,9 +118,15 @@ const useTableData = (): ITableData => {
   }
 
   const handleTableData = (
-    {data, category, params}: TCategoryData,
+    payload: TCategoryData | null,
     fileData: TPricelistData | null = null
   ): void => {
+    if(!payload) {
+      setTableData(null);
+      return;
+    }
+
+    const {data, category, params} = payload;
     //console.log({data, category, params});
     const key = params !== null ? Object.keys(params)[0] : null;
     const id = params !== null && key !== null ? params[key] : null;

@@ -1,14 +1,13 @@
 import { FC, Suspense, lazy } from 'react';
 
-//import ResItem from '../components/ResItem';
 import Wrapper from '../components/Wrapper';
 
-const ResItem = lazy(() => import('../components/ResItem'));
+const ResItemProvider = lazy(() => import('../components/ResItemProvider'));
 
 const Resource: FC = () => {
   return (
     <Wrapper>
-      <Suspense><ResItem /></Suspense>
+      <Suspense><ResItemProvider /></Suspense>
     </Wrapper>
   )
 };

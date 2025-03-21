@@ -33,50 +33,48 @@ const AlertError: FC = () => {
   }
 
   return (
-    <>
-      {alertMsg && <Snackbar
+    alertMsg && <Snackbar
+      sx={{
+        display: 'flex',
+        alignItems: 'center'
+      }}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'right'
+      }}
+      open
+      autoHideDuration={2000}
+      message={alertMsg}
+      onClose={closeAlert}
+      key={alertType || 'info'}
+    >
+      <Alert
         sx={{
+          width: '100%',
           display: 'flex',
           alignItems: 'center'
         }}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        open
-        autoHideDuration={2000}
-        message={alertMsg}
-        onClose={closeAlert}
-        key={alertType || 'info'}
+        severity={alertType || 'info'}
+        variant={alertType ? 'filled' : 'standard'}
       >
-        <Alert
+        <Box
           sx={{
-            width: '100%',
             display: 'flex',
             alignItems: 'center'
           }}
-          severity={alertType || 'info'}
-          variant={alertType ? 'filled' : 'standard'}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center'
-            }}
+          <Box sx={{ mr: 3 }}>{alertMsg}</Box>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={closeAlert}
           >
-            <Box sx={{ mr: 3 }}>{alertMsg}</Box>
-            <IconButton
-              size="small"
-              aria-label="close"
-              color="inherit"
-              onClick={closeAlert}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-          </Box>
-        </Alert>
-      </Snackbar>}
-    </>
+            <Close fontSize="small" />
+          </IconButton>
+        </Box>
+      </Alert>
+    </Snackbar>
   )
 };
 

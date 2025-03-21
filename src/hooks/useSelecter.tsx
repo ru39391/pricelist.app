@@ -10,7 +10,7 @@ import type {
   TPricelistKeys
 } from '../types';
 
-import { sortStrArray } from '../utils';
+import { sortArrValues } from '../utils';
 import {
   ID_KEY,
   NAME_KEY,
@@ -74,14 +74,14 @@ const useSelecter = (): ISelecter => {
     arr: TItemsArr,
     key: string,
     id: number
-  ): TItemsArr => sortStrArray([...arr.filter((item) => item[key] === id)], NAME_KEY);
+  ): TItemsArr => sortArrValues([...arr.filter((item) => item[key] === id)], NAME_KEY);
 
   const handleFormData = (type: TPricelistKeys): TItemData | null => formData
     ? handleSelectedItem({ type, [ID_KEY]: formData.data[type] as number })
     : null;
 
   const handleDeptsList = () => {
-    const arr = sortStrArray([...pricelist[TYPES[DEPT_KEY]]], NAME_KEY);
+    const arr = sortArrValues([...pricelist[TYPES[DEPT_KEY]]], NAME_KEY);
 
     setDeptsList(arr);
   }

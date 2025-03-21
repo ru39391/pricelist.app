@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import type { TUrlData } from '../types';
+import type { TUrlData, TPricelistTypes } from '../types';
 
 interface IUrlHandler {
   currUrlData: TUrlData;
@@ -20,12 +20,12 @@ const useUrlHandler = (): IUrlHandler => {
 
   const handleCurrUrl = (): void => {
     const urlArr = pathname.split('/');
-    const type = urlArr[1];
+    const type = urlArr[1] as TPricelistTypes;
     const id = urlArr[urlArr.length - 1] === type
       ? null
       : Number(urlArr[urlArr.length - 1]);
 
-    setCurrUrlData({ type, id });
+    setCurrUrlData({ type, id } as { type: TPricelistTypes; id: number; });
   };
 
   useEffect(() => {

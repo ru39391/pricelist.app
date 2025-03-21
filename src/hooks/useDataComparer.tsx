@@ -20,17 +20,20 @@ import {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
-  ID_KEY
+  ID_KEY,
+  ITEM_KEY,
+  TYPES
 } from '../utils/constants';
 
 type TFileHandlerData = {
   keys: string[];
   items: TItemsArr[];
+  param?: keyof TItemData;
 }
 
 interface IDataComparer {
   comparedFileData: Record<THandledItemKeys, TPricelistData> | null;
-  compareFileData: (data: TPricelistData | null) => void;
+  compareFileData: (data: TPricelistData | null, param?: keyof TItemData) => void;
 }
 
 const useDataComparer = (): IDataComparer => {
@@ -71,15 +74,17 @@ const useDataComparer = (): IDataComparer => {
   const handleUpdatedItems = ({
     ids,
     items,
-    currItems
+    currItems,
+    param
   }: {
     ids: number[];
     items: TItemsArr;
     currItems: TItemsArr;
+    param?: keyof TItemData
   }) => {
     const fileItems = items.filter(item => ids.includes(item[ID_KEY] as number));
 
-    return fileItems.reduce((acc: TItemsArr, item) => {
+    const handledFileItems = fileItems.reduce((acc: TItemsArr, item) => {
       const currItem = currItems.find(data => {
         const {
           itemId,
@@ -92,25 +97,30 @@ const useDataComparer = (): IDataComparer => {
         return itemId === currItemId;
       });
 
-      const isEqual = currItem
-        ? Object.keys(item).every(key => item[key] === currItem[key])
-        : true;
+      const isParamExist = param
+        ? currItem && item[param] === currItem[param]
+        : currItem && Object.keys(item).every(key => item[key] === currItem[key])
+      const isEqual = currItem ? isParamExist : true;
 
       return isEqual
         ? acc
         : [...acc, item];
     }, []);
+
+    return handledFileItems;
   };
 
   const handleItems = (
     {
       key,
       keys,
-      items
+      items,
+      param
     }: {
       key: THandledItemKeys;
       keys: string[];
       items: TItemsArr[];
+      param?: keyof TItemData;
     }
   ): TPricelistData => keys.reduce((acc, item, index) => {
     const { ids, arr } = setItemIds({ key: item as TPricelistTypes, arr: items[index] })[key];
@@ -118,19 +128,28 @@ const useDataComparer = (): IDataComparer => {
     return {
       ...acc,
       [item]: key === UPDATED_KEY
-        ? handleUpdatedItems({ ids, items: items[index], currItems: arr })
+        ? handleUpdatedItems({
+            ids,
+            items: items[index],
+            currItems: arr,
+            ...( item === TYPES[ITEM_KEY] && param && { param } )
+          })
         : arr.filter(data => !ids.includes(data[ID_KEY] as number))
     };
   }, {});
 
   const handlers = {
     [CREATED_KEY]: ({keys, items}: TFileHandlerData) => handleItems({key: CREATED_KEY, keys, items}),
-    [UPDATED_KEY]: ({keys, items}: TFileHandlerData) => handleItems({key: UPDATED_KEY, keys, items}),
+    [UPDATED_KEY]: ({keys, items, param}: TFileHandlerData) => handleItems({key: UPDATED_KEY, keys, items, param}),
     [REMOVED_KEY]: ({keys, items}: TFileHandlerData) => handleItems({key: REMOVED_KEY, keys, items})
   };
 
-  const compareFileData = (data: TPricelistData | null): void => {
+  const compareFileData = (
+    data: TPricelistData | null,
+    param: keyof TItemData | undefined = undefined
+  ): void => {
     if(!data) {
+      setComparedFileData(null);
       return;
     }
 
@@ -138,7 +157,7 @@ const useDataComparer = (): IDataComparer => {
 
     setComparedFileData(
       Object.keys(handlers).reduce((acc, key, index) => (
-        { ...acc, [key]: Object.values(handlers)[index]({keys, items}) }
+        { ...acc, [key]: Object.values(handlers)[index]({keys, items, param}) }
       ), {} as Record<THandledItemKeys, TPricelistData>)
     );
   };

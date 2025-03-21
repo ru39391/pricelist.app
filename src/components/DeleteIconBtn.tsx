@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo } from 'react';
+import { FC } from 'react';
 import { IconButton } from '@mui/material';
 import { DeleteOutlined } from '@mui/icons-material';
 
@@ -15,8 +15,8 @@ interface IDeleteIconBtn {
 }
 
 const DeleteIconBtn: FC<IDeleteIconBtn> = ({ formData, urlData, openModal }) => {
-  const isParserData = useMemo(() => urlData.type === PARSER_KEY, [urlData]);
-  const isIconVisible = useMemo(() => {
+  const isParserData = urlData.type === PARSER_KEY;
+  const isIconVisible = () => {
     if(!formData) {
       return Boolean(formData);
     }
@@ -24,12 +24,8 @@ const DeleteIconBtn: FC<IDeleteIconBtn> = ({ formData, urlData, openModal }) => 
     const { action, type } = formData;
 
     return isParserData || (action === EDIT_ACTION_KEY && type !== urlData.type)
-  }, [
-    isParserData,
-    formData,
-    urlData
-  ]);
-  const openConfirmModal = useCallback(() => {
+  };
+  const openConfirmModal = () => {
     if(!formData) {
       return;
     }
@@ -37,12 +33,9 @@ const DeleteIconBtn: FC<IDeleteIconBtn> = ({ formData, urlData, openModal }) => 
     const { data, type } = formData;
 
     openModal({ data, type, isParserData });
-  }, [
-    isParserData,
-    formData
-  ]);
+  };
 
-  if(!isIconVisible) {
+  if(!isIconVisible()) {
     return '';
   }
 

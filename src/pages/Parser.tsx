@@ -1,8 +1,10 @@
 import {
   FC,
   Fragment,
-  useState,
-  useEffect
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
 } from 'react';
 import { NavLink } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -12,16 +14,20 @@ import {
   Breadcrumbs,
   Button,
   Collapse,
+  FormControl,
   Grid,
+  InputLabel,
   Link,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  MenuItem,
+  Select,
   Typography
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { CloudUpload, FolderOpen, Sync } from '@mui/icons-material';
+import { CloudUpload, DeleteOutlined, FolderOpen, Sync } from '@mui/icons-material';
 
 import Layout from '../components/Layout';
 
@@ -33,6 +39,7 @@ import useDataComparer from '../hooks/useDataComparer';
 import useFileDataNav from '../hooks/useFileDataNav';
 
 import { useSelector, useDispatch } from '../services/hooks';
+import { resetFileList } from '../services/actions/file';
 import { setFormData } from '../services/slices/form-slice';
 
 import type {
@@ -56,12 +63,22 @@ import {
   NO_FILE_ITEMS_TITLE,
   FILE_ITEMS_TITLE,
   APPLY_TITLE,
+  CLEAR_TITLE,
   ADD_TITLE,
   REMOVE_TITLE,
   EDIT_ITEM_TITLE,
   ID_KEY,
+  INDEX_KEY,
   NAME_KEY,
-  TYPES
+  PRICE_KEY,
+  ROW_INDEX_KEY,
+  CREATEDON_KEY,
+  UPDATEDON_KEY,
+  QUANTITY_KEY,
+  TYPES,
+  CAPTIONS,
+  LINKED_RES_PARAMS,
+  IS_GROUP_IGNORED_KEY
 } from '../utils/constants';
 
 const InvisibleInput = styled('input')({
@@ -76,6 +93,8 @@ const InvisibleInput = styled('input')({
 
 const Parser: FC = () => {
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
+  // TODO: необязательная доработка - переделать для использования useReducer или вынести значение по умолчанию в переменную
+  const [currParamData, setCurrParamData] = useState<Record<string, string> | undefined>({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
 
   const file = useSelector(state => state.file);
   const { isFileUploading } = file;
@@ -102,6 +121,33 @@ const Parser: FC = () => {
       title: REMOVE_TITLE
     }
   };
+  const categoryKeys = Object.entries(CAPTIONS).reduce((acc: Record<string, string>[], item) => {
+    const [key, value] = item;
+
+    if([ID_KEY, CREATEDON_KEY, UPDATEDON_KEY, QUANTITY_KEY].includes(key)) {
+      return acc;
+    } else {
+      return [
+        ...acc,
+        {
+          value,
+          ...( key === ROW_INDEX_KEY ? { key: INDEX_KEY } : { key } )
+        }
+      ];
+    }
+
+  }, []);
+
+  const handleCurrParamData = (key: string) => {
+    if(key === IS_GROUP_IGNORED_KEY) {
+      setCurrParamData(undefined);
+      return;
+    }
+
+    const value = categoryKeys.find(item => item.key === key);
+
+    setCurrParamData(value);
+  }
 
   const setDataItems = (): TPricelistData | null => {
     const data:TPricelistData = Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: file[type]}), {});
@@ -120,6 +166,7 @@ const Parser: FC = () => {
     }
   ): void => {
     if(!comparedFileData) {
+      handleTableData(null);
       return;
     }
 
@@ -189,12 +236,36 @@ const Parser: FC = () => {
     }));
   }
 
+  const resetFileData =  useCallback(() => {
+    dispatch(resetFileList());
+    setCurrParamData({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
+  }, [
+    dispatch
+  ]);
+
+  const isFileDataExist = useMemo(
+    () => {
+      if(!fileDataNav.length) {
+        return fileDataNav.length > 0;
+      }
+
+      const value = fileDataNav.reduce((acc, { counter }) => acc + counter, 0);
+
+      return value > 0;
+    },
+    [fileDataNav]
+  );
+
   useEffect(() => {
-    compareFileData(setDataItems());
+    compareFileData(
+      setDataItems(),
+      currParamData ? currParamData.key : undefined
+    );
   }, [
     file
   ]);
 
+  // TODO: настроить сброс comparedFileData при успешном сохранении данных обработанного документа
   useEffect(() => {
     updateFileDataNav(comparedFileData);
   }, [
@@ -226,36 +297,22 @@ const Parser: FC = () => {
             }}
           >
             <Button
-              sx={{
-                mb: 2,
-                width: '100%',
-              }}
+              sx={{ mb: 2, width: '100%' }}
               component="label"
               variant="contained"
-              disabled={isFileUploading}
+              disabled={isFileUploading || isFileDataExist}
               startIcon={<CloudUpload />}
             >
               Загрузить файл
               <InvisibleInput type="file" accept=".xlsx, .xls" onChange={uploadFile} />
             </Button>
-            {fileDataNav.map(({ key, caption, counter, data }) =>
+            {/* // TODO: возможно, вынести в отдельный компонент */}
+            {isFileDataExist && fileDataNav.map(({ key, caption, counter, data }) =>
               (<Fragment key={key}>
-                <ListItemButton
-                  selected={true}
-                  sx={{ py: 0.5 }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
+                <ListItemButton selected={true} sx={{ py: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
-                    <ListItemText
-                      primary={caption}
-                      sx={{ mr: 3 }}
-                    />
+                    <ListItemText primary={caption} sx={{ mr: 3 }} />
                     <Badge badgeContent={counter} color="primary" />
                   </Box>
                 </ListItemButton>
@@ -266,11 +323,7 @@ const Parser: FC = () => {
                       <ListItemButton
                         key={categoryTypes[item.key as string]}
                         selected={currCategory === key as THandledItemKeys && currSubCategory === item.key as string}
-                        sx={{
-                          pl: 6,
-                          color: 'grey.600',
-                          fontSize: 14,
-                        }}
+                        sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
                         onClick={() => selectFileCategory({category: key as THandledItemKeys, subCategory: item.key as TPricelistTypes })}
                       >
                         <ListItemText
@@ -287,21 +340,9 @@ const Parser: FC = () => {
             )}
           </Box>
         </Grid>
-        <Grid
-          item
-          xs={9}
-          sx={{
-            pl: 3,
-            pr: 2,
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
+        <Grid item xs={9} sx={{ pl: 3, pr: 2, display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h5" sx={{ mb: 1 }}>{DEFAULT_DOC_TITLE}</Typography>
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ mb: 4, typography: 'subtitle2' }}
-          >
+          <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 4, typography: 'subtitle2' }}>
             <Link
               component={NavLink}
               to="/"
@@ -330,32 +371,67 @@ const Parser: FC = () => {
             }}
           >
             <Typography sx={{ typography: 'body1' }}>{tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}</Typography>
-            {tableData && tableData.rows.length > 0
-              ? <Button
-                variant="outlined"
-                startIcon={<Sync />}
-                onClick={() => setConfirmModalVisible({currCategory, currSubCategory})}
-              >
-                {APPLY_TITLE}
-              </Button>
-              : ''
-            }
+            <Box
+              sx={{
+                gap: '0 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end'
+              }}
+            >
+              <FormControl sx={{ minWidth: 200, backgroundColor: '#fff' }} size="small">
+                <InputLabel id="demo-select-small-label">Изменения</InputLabel>
+                <Select
+                  labelId="demo-select-small-label"
+                  id="demo-select-small"
+                  value={currParamData ? currParamData.key : IS_GROUP_IGNORED_KEY}
+                  label={currParamData ? currParamData.value : LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
+                  disabled={isFileDataExist}
+                  onChange={({ target }) => handleCurrParamData(target.value)}
+                >
+                  {[
+                    ...categoryKeys,
+                    { key: IS_GROUP_IGNORED_KEY, value: LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY] }
+                  ].map(({ key, value }) => <MenuItem key={key} value={key}>{value}</MenuItem>)}
+                </Select>
+              </FormControl>
+              {tableData && tableData.rows.length > 0
+                ? <>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Sync />}
+                      onClick={() => setConfirmModalVisible({currCategory, currSubCategory})}
+                    >
+                      {APPLY_TITLE}
+                    </Button>
+                    <Button
+                      color="error"
+                      variant="outlined"
+                      startIcon={<DeleteOutlined />}
+                      onClick={resetFileData}
+                    >
+                      {CLEAR_TITLE}
+                    </Button>
+                  </>
+                : ''
+              }
+            </Box>
           </Box>
 
           {tableData !== null
             ? <DataGrid
-              sx={{
-                border: 0,
-                flexGrow: 1,
-                height: 'auto',
-                boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)',
-                bgcolor: 'background.default',
-              }}
-              columns={tableData ? tableData.cols : []}
-              rows={tableData ? tableData.rows : []}
-              // TODO: необязательная доработка - возможность удалять группы записей
-              onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
-            />
+                sx={{
+                  border: 0,
+                  flexGrow: 1,
+                  height: 'auto',
+                  boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)',
+                  bgcolor: 'background.default',
+                }}
+                columns={tableData ? tableData.cols : []}
+                rows={tableData ? tableData.rows : []}
+                // TODO: необязательная доработка - возможность удалять группы записей
+                onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
+              />
             : ''
           }
         </Grid>
