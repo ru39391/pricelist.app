@@ -43,6 +43,7 @@ type TFileHandlerData = {
 }
 
 interface IDataComparer {
+  comparedItems: TComparedItems,
   comparedFileData: Record<THandledItemKeys, TPricelistData> | null;
   compareFileData: (data: TPricelistData | null) => void;
 }
@@ -123,7 +124,7 @@ const useDataComparer = (): IDataComparer => {
     }
 
     const excludedKeys = [ROW_INDEX_KEY, ID_KEY, NAME_KEY, PRICE_KEY, IS_VISIBLE_KEY, IS_NAME_IMMUTABLE_KEY, CREATEDON_KEY, UPDATEDON_KEY, QUANTITY_KEY];
-    const actions = {
+    const actions: Record<string, TComparedItemsAction> = {
       [NAME_KEY]: 'SET_NAME_DATA',
       [PRICE_KEY]: 'SET_PRICE_DATA',
       [IS_VISIBLE_KEY]: 'SET_VISIBLE_DATA'
@@ -131,7 +132,7 @@ const useDataComparer = (): IDataComparer => {
 
     for (const key in actions) {
       if(item[key] !== currItem[key]) {
-        setComparedItems({ type: actions[key], data: item });
+        setComparedItems({ type: actions[key as keyof TComparedItems], data: item });
       }
     }
 
@@ -273,6 +274,7 @@ const useDataComparer = (): IDataComparer => {
   ]);
 
   return {
+    comparedItems,
     comparedFileData,
     compareFileData
   }

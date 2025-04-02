@@ -14,16 +14,12 @@ import {
   Breadcrumbs,
   Button,
   Collapse,
-  FormControl,
   Grid,
-  InputLabel,
   Link,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  MenuItem,
-  Select,
   Typography
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
@@ -206,6 +202,7 @@ const Parser: FC = () => {
 
   const isFileDataExist = useMemo(
     () => {
+      console.log({fileDataNav});
       if(!fileDataNav.length) {
         return fileDataNav.length > 0;
       }

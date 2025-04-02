@@ -244,6 +244,4 @@ export type TComparedItemsAction = 'SET_NAME_DATA'
   | 'SET_VISIBLE_DATA'
   | 'SET_ITEMS_DATA';
 
-export type TComparedItems = {
-  [key in typeof NAME_KEY | typeof PRICE_KEY | typeof IS_VISIBLE_KEY | typeof ITEM_KEY]: TItemsArr;
-};
+export type TComparedItems = Record<typeof NAME_KEY | typeof PRICE_KEY | typeof IS_VISIBLE_KEY | typeof ITEM_KEY, TItemsArr>;
