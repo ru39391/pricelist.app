@@ -120,9 +120,10 @@ const useFileUploader = (): IFileUploaderHook => {
           SPRICE,
           VIEWINCOMPLEX_ONLY,
           ISCOMPLEX,
-          VIEWINWEB,
+          INVISINPRICE,
           SORTIROVKA_SPEC
         }, _, array) => {
+          const isItemHidden = Number(INVISINPRICE) || 0;
           const { ids, complexItemIds, summ } = handleComplex(array, complexItemsArr, Number(SCHID));
 
           return {
@@ -137,7 +138,7 @@ const useFileUploader = (): IFileUploaderHook => {
               : Number(VIEWINCOMPLEX_ONLY) || 0,
             [IS_COMPLEX_KEY]: Number(ISCOMPLEX) || 0,
             [COMPLEX_KEY]: JSON.stringify(ids),
-            [IS_VISIBLE_KEY]: Number(VIEWINWEB),// || 1,
+            [IS_VISIBLE_KEY]: Number(!isItemHidden),
             [INDEX_KEY]: Number(SORTIROVKA_SPEC)
           }
         }
