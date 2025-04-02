@@ -68,17 +68,8 @@ import {
   REMOVE_TITLE,
   EDIT_ITEM_TITLE,
   ID_KEY,
-  INDEX_KEY,
   NAME_KEY,
-  PRICE_KEY,
-  ROW_INDEX_KEY,
-  CREATEDON_KEY,
-  UPDATEDON_KEY,
-  QUANTITY_KEY,
-  TYPES,
-  CAPTIONS,
-  LINKED_RES_PARAMS,
-  IS_GROUP_IGNORED_KEY
+  TYPES
 } from '../utils/constants';
 
 const InvisibleInput = styled('input')({
@@ -93,8 +84,6 @@ const InvisibleInput = styled('input')({
 
 const Parser: FC = () => {
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
-  // TODO: необязательная доработка - переделать для использования useReducer или вынести значение по умолчанию в переменную
-  const [currParamData, setCurrParamData] = useState<Record<string, string> | undefined>({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
 
   const file = useSelector(state => state.file);
   const { isFileUploading } = file;
@@ -121,33 +110,6 @@ const Parser: FC = () => {
       title: REMOVE_TITLE
     }
   };
-  const categoryKeys = Object.entries(CAPTIONS).reduce((acc: Record<string, string>[], item) => {
-    const [key, value] = item;
-
-    if([ID_KEY, CREATEDON_KEY, UPDATEDON_KEY, QUANTITY_KEY].includes(key)) {
-      return acc;
-    } else {
-      return [
-        ...acc,
-        {
-          value,
-          ...( key === ROW_INDEX_KEY ? { key: INDEX_KEY } : { key } )
-        }
-      ];
-    }
-
-  }, []);
-
-  const handleCurrParamData = (key: string) => {
-    if(key === IS_GROUP_IGNORED_KEY) {
-      setCurrParamData(undefined);
-      return;
-    }
-
-    const value = categoryKeys.find(item => item.key === key);
-
-    setCurrParamData(value);
-  }
 
   const setDataItems = (): TPricelistData | null => {
     const data:TPricelistData = Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: file[type]}), {});
@@ -238,7 +200,6 @@ const Parser: FC = () => {
 
   const resetFileData =  useCallback(() => {
     dispatch(resetFileList());
-    setCurrParamData({key: PRICE_KEY, value: CAPTIONS[PRICE_KEY]});
   }, [
     dispatch
   ]);
@@ -258,15 +219,14 @@ const Parser: FC = () => {
 
   useEffect(() => {
     compareFileData(
-      setDataItems(),
-      currParamData ? currParamData.key : undefined
+      setDataItems()
     );
   }, [
     file
   ]);
 
-  // TODO: настроить сброс comparedFileData при успешном сохранении данных обработанного документа
   useEffect(() => {
+    console.log({comparedFileData});
     updateFileDataNav(comparedFileData);
   }, [
     comparedFileData
@@ -379,22 +339,6 @@ const Parser: FC = () => {
                 justifyContent: 'flex-end'
               }}
             >
-              <FormControl sx={{ minWidth: 200, backgroundColor: '#fff' }} size="small">
-                <InputLabel id="demo-select-small-label">Изменения</InputLabel>
-                <Select
-                  labelId="demo-select-small-label"
-                  id="demo-select-small"
-                  value={currParamData ? currParamData.key : IS_GROUP_IGNORED_KEY}
-                  label={currParamData ? currParamData.value : LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY]}
-                  disabled={isFileDataExist}
-                  onChange={({ target }) => handleCurrParamData(target.value)}
-                >
-                  {[
-                    ...categoryKeys,
-                    { key: IS_GROUP_IGNORED_KEY, value: LINKED_RES_PARAMS[IS_GROUP_IGNORED_KEY] }
-                  ].map(({ key, value }) => <MenuItem key={key} value={key}>{value}</MenuItem>)}
-                </Select>
-              </FormControl>
               {tableData && tableData.rows.length > 0
                 ? <>
                     <Button

@@ -111,7 +111,6 @@ const listConfigReducer = (
 const existableListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
 const linkedListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
 
-
 /**
  * Формирование структуры элементов прайслиста, доступных для привязки к ресурсу
  *
