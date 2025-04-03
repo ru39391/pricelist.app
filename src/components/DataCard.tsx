@@ -32,6 +32,7 @@ import {
   NOT_UPDATED_KEY,
   SAVE_TITLE,
   EDIT_TITLE,
+  EDIT_ITEM_TITLE,
   REMOVE_TITLE,
   CAPTIONS,
   CONFIRM_MSG,
@@ -242,7 +243,7 @@ const DataCard: FC = () => {
           actionBtnCaption={
             formData && formData.action === REMOVE_ACTION_KEY
               ? REMOVE_TITLE
-              : formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE
+              : formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_ITEM_TITLE
           }
           introText={
             formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: ${formData && 1}. ${CONFIRM_MSG}`

@@ -146,28 +146,30 @@ const Parser: FC = () => {
     );
   };
 
-  const setConfirmModalVisible = (
-    {
-      currCategory,
-      currSubCategory
-    }:{
-      currCategory: THandledItemKeys;
-      currSubCategory: TPricelistTypes;
+  const setConfirmModalVisible = () => {
+    let desc = '';
+
+    if(comparedFileData) {
+      for (const key in comparedFileData) {
+        const itemCounters = Object.keys(comparedFileData[key]).reduce(
+          (acc, item, index) => `${acc}${index > 0 ? ', ' : ''}${categoryTypes && categoryTypes[item].toLowerCase()} - ${Object.values(comparedFileData[key as THandledItemKeys])[index].length.toString()}`,
+          ''
+        );
+
+        desc = `${desc}${HANDLED_ITEMS_CAPTIONS[key]}: ${itemCounters}. `;
+      }
     }
-  ): void => {
-    const { key, title }: TCustomData<string> = params[currCategory];
 
     toggleModal({
-      title: `${title} ${categoryTypes && categoryTypes[currSubCategory].toLowerCase()}`,
-      desc: `Вы собираетесь ${title.toLowerCase()} ${categoryTypes && categoryTypes[currSubCategory].toLowerCase()}. Общее количество обновляемых записей: ${tableData ? tableData.rows.length : 0}`,
+      title: `Вы собираетесь ${EDIT_ITEM_TITLE.toLowerCase()}`,
+      desc,
       isParserData: true
     });
     dispatch(setFormData({
       data: {
         isFormHidden: true,
-        action: key as TActionKeys,
+        action: EDIT_ACTION_KEY,
         type: currSubCategory,
-        items: comparedFileData ? comparedFileData[currCategory][currSubCategory] : [],
         data: {}
       }
     }));
@@ -323,7 +325,7 @@ const Parser: FC = () => {
                     <Button
                       variant="outlined"
                       startIcon={<Sync />}
-                      onClick={() => setConfirmModalVisible({currCategory, currSubCategory})}
+                      onClick={() => setConfirmModalVisible()}
                     >
                       {APPLY_TITLE}
                     </Button>
