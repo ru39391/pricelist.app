@@ -87,27 +87,7 @@ const formSlice = createSlice({
     setFormValues: (state, action: TFormAction) => ({
       ...state,
       formValues: action.payload.values || {}
-    }),
-    /*
-    setSelectedItems(state, action: TFormAction) {
-      const keys: TCustomData<string> = {
-        [DEPT_KEY]: 'currDeptsList',
-        [SUBDEPT_KEY]: 'currSubdeptsList',
-        [GROUP_KEY]: 'currGroupsList'
-      };
-      const { arr, type } = action.payload.items
-        ? {
-          arr: Object.values(action.payload.items)[0],
-          type: keys[Object.keys(action.payload.items)[0]],
-        }
-        : { arr: [], type: '' };
-
-      return {
-        ...state,
-        ...( type && { [type]: arr } )
-      }
-    },
-    */
+    })
   }
 });
 
@@ -120,5 +100,4 @@ export const {
   setFormHidden,
   setFormData,
   setFormValues,
-  //setSelectedItems
 } = formSlice.actions;

@@ -12,7 +12,7 @@ import { TFormData } from '../services/slices/form-slice';
 
 import { handlePricelistData } from '../services/actions/pricelist';
 
-import type { TCustomData, TItemData } from '../types';
+import type { TCustomData, TItemData, TItemsArr } from '../types';
 
 import {
   ID_KEY,
@@ -28,6 +28,9 @@ import {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
+  CREATED_KEY,
+  UPDATED_KEY,
+  REMOVED_KEY,
   NOT_CREATED_KEY,
   NOT_UPDATED_KEY,
   SAVE_TITLE,
@@ -36,7 +39,7 @@ import {
   REMOVE_TITLE,
   CAPTIONS,
   CONFIRM_MSG,
-  TYPES
+  TYPES,
 } from '../utils/constants';
 
 const DataCard: FC = () => {
@@ -58,12 +61,29 @@ const DataCard: FC = () => {
   }), [
     formData
   ]);
-  const formHandlerData = useMemo(() => ({
-    type: formData ? formData.type : null,
-    items: formData && formData.items
-      ? formData.items
-      : formData && formData.data ? [{...formData.data}] : []
-  }), [
+  const formHandlerData = useMemo(() => {
+    if(!formData) {
+      return {
+        type: null,
+        items: [] as TItemsArr
+      };
+    }
+
+    const keys = {
+      [ADD_ACTION_KEY]: CREATED_KEY,
+      [EDIT_ACTION_KEY]: UPDATED_KEY,
+      [REMOVE_ACTION_KEY]: REMOVED_KEY
+    };
+    const { action, data, items, type } = formData;
+    const arr: TItemsArr = items && action && items[keys[action]] ? items[keys[action]][type] : [];
+
+    return {
+      type,
+      items: Array.isArray(arr) && arr.length > 0
+        ? arr
+        : data ? [{...data}] : []
+    }
+  }, [
     formData
   ]);
   const dates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string> = useMemo(() => {
@@ -249,7 +269,7 @@ const DataCard: FC = () => {
             formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: ${formData && 1}. ${CONFIRM_MSG}`
           }
           disabled={false}
-          handleClick={() => console.log({ formData })}
+          {...( formData && formData.action === REMOVE_ACTION_KEY ? { handleClick: handlersData[formData.action] } : { handleClick: () => console.log({ formData }) } )}
         />
       : ''
   )
