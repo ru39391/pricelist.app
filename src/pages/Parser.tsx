@@ -26,6 +26,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { CloudUpload, DeleteOutlined, FolderOpen, Sync } from '@mui/icons-material';
 
 import Layout from '../components/Layout';
+import ParserSidebar from '../components/ParserSidebar';
 
 import useModal from '../hooks/useModal';
 import useTableData from '../hooks/useTableData';
@@ -39,12 +40,13 @@ import { resetFileList } from '../services/actions/file';
 import { setFormData } from '../services/slices/form-slice';
 
 import type {
+  TActionKeys,
   TCustomData,
-  TPricelistData,
-  TItemData,
-  TPricelistTypes,
+  TFileCategoryData,
   THandledItemKeys,
-  TActionKeys
+  TItemData,
+  TPricelistData,
+  TPricelistTypes,
 } from '../types';
 
 import {
@@ -114,15 +116,12 @@ const Parser: FC = () => {
     return Object.values(data).length === dataItems.length ? null : data;
   };
 
-  const selectFileCategory = (
-    {
+  const selectFileCategory = ({ category, subCategory }: TFileCategoryData): void => {
+    console.log({
       category,
       subCategory
-    }: {
-      category: THandledItemKeys;
-      subCategory: TPricelistTypes;
-    }
-  ): void => {
+    });
+
     if(!comparedFileData) {
       handleTableData(null);
       return;
@@ -263,6 +262,11 @@ const Parser: FC = () => {
               Загрузить файл
               <InvisibleInput type="file" accept=".xlsx, .xls" onChange={uploadFile} />
             </Button>
+            <ParserSidebar
+              isSidebarVisible={isFileDataExist}
+              navData={fileDataNav}
+              handleClick={selectFileCategory}
+            />
             {/* // TODO: возможно, вынести в отдельный компонент */}
             {isFileDataExist && fileDataNav.map(({ key, caption, counter, data }) =>
               (<Fragment key={key}>

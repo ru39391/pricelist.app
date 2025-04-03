@@ -1,20 +1,13 @@
 import { useState } from 'react';
 
 import type {
-  TPricelistData,
   TCustomData,
-  TItemsArr,
-  THandledItemKeys
+  TFileDataNav,
+  THandledItemKeys,
+  TPricelistData
 } from '../types';
 
 import { HANDLED_ITEMS_CAPTIONS } from '../utils/constants';
-
-type TFileDataNav = {
-  key: string;
-  caption: string;
-  counter: number;
-  data: TItemsArr
-}[];
 
 interface IFileDataNav {
   fileDataNav: TFileDataNav;
