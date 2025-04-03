@@ -267,12 +267,6 @@ const useDataComparer = (): IDataComparer => {
     comparedFileData
   ]);
 
-  useEffect(() => {
-    console.log(comparedItems);
-  }, [
-    comparedItems
-  ]);
-
   return {
     comparedItems,
     comparedFileData,

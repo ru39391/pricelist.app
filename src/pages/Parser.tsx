@@ -1,6 +1,5 @@
 import {
   FC,
-  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -9,21 +8,15 @@ import {
 import { NavLink } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import {
-  Badge,
   Box,
   Breadcrumbs,
   Button,
-  Collapse,
   Grid,
   Link,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Typography
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { CloudUpload, DeleteOutlined, FolderOpen, Sync } from '@mui/icons-material';
+import { CloudUpload, DeleteOutlined, Sync } from '@mui/icons-material';
 
 import Layout from '../components/Layout';
 import ParserSidebar from '../components/ParserSidebar';
@@ -69,7 +62,8 @@ import {
   ID_KEY,
   NAME_KEY,
   TYPES,
-  ITEM_KEY
+  ITEM_KEY,
+  PRICE_KEY
 } from '../utils/constants';
 
 const InvisibleInput = styled('input')({
@@ -124,15 +118,18 @@ const Parser: FC = () => {
       return;
     }
 
-    if(category === currCategory && subCategory === currSubCategory) {
+    /*
+    if(category === currCategory && subCategory === currSubCategory && !arr) {
       return;
     }
-    console.log({ category, subCategory });
+    */
 
     const data = category === UPDATED_KEY && subCategory === TYPES[ITEM_KEY]
       ? {
           ...comparedFileData[category],
-          [TYPES[ITEM_KEY]]: Array.isArray(arr) ? arr : fetchArray(Object.values(comparedItems).flat(), ID_KEY)
+          [TYPES[ITEM_KEY]]: Array.isArray(arr)
+            ? arr
+            : fetchArray([...comparedItems[NAME_KEY], ...comparedItems[PRICE_KEY]], ID_KEY)
         }
       : comparedFileData[category];
 
@@ -211,7 +208,6 @@ const Parser: FC = () => {
 
   const isFileDataExist = useMemo(
     () => {
-      console.log({fileDataNav});
       if(!fileDataNav.length) {
         return fileDataNav.length > 0;
       }
@@ -276,43 +272,11 @@ const Parser: FC = () => {
               isSidebarVisible={isFileDataExist}
               navData={fileDataNav}
               subNavData={comparedItems}
+              subNavCounter={tableData ? tableData.rows.length : 0}
               currCategory={currCategory}
               currSubCategory={currSubCategory}
               handleClick={selectFileCategory}
             />}
-            <hr />
-            {/* // TODO: возможно, вынести в отдельный компонент */}
-            {isFileDataExist && fileDataNav.map(({ key, caption, counter, data }) =>
-              (<Fragment key={key}>
-                <ListItemButton selected={true} sx={{ py: 0.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
-                    <ListItemText primary={caption} sx={{ mr: 3 }} />
-                    <Badge badgeContent={counter} color="primary" />
-                  </Box>
-                </ListItemButton>
-                {categoryTypes && counter > 0 && <Collapse in={true} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    {data.map(
-                      (item) =>
-                      <ListItemButton
-                        key={categoryTypes[item.key as string]}
-                        selected={currCategory === key as THandledItemKeys && currSubCategory === item.key as string}
-                        sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
-                        onClick={() => selectFileCategory({category: key as THandledItemKeys, subCategory: item.key as TPricelistTypes })}
-                      >
-                        <ListItemText
-                          disableTypography
-                          primary={categoryTypes[item.key as string]}
-                          sx={{ m: 0, mr: 2, flexGrow: 0 }}
-                        />
-                        <Badge badgeContent={item.counter as number} color="default" showZero />
-                      </ListItemButton>
-                    )}
-                  </List>
-                </Collapse>}
-              </Fragment>)
-            )}
           </Box>
         </Grid>
         <Grid item xs={9} sx={{ pl: 3, pr: 2, display: 'flex', flexDirection: 'column' }}>

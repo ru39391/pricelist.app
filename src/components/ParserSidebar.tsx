@@ -20,16 +20,17 @@ import type {
 
 import {
   CAPTIONS,
-  ITEM_KEY,
-  NO_GROUP_TITLE,
   TYPES,
-  UPDATED_KEY
+  ITEM_KEY,
+  UPDATED_KEY,
+  NO_GROUP_TITLE,
 } from '../utils/constants';
 
 interface IParserSidebar {
   isSidebarVisible: boolean;
   navData: TFileDataNav;
   subNavData: TComparedItems;
+  subNavCounter: number;
   currCategory: THandledItemKeys;
   currSubCategory: TPricelistTypes;
   handleClick: (data: TFileCategoryData) => void;
@@ -39,6 +40,7 @@ const ParserSidebar: FC<IParserSidebar> = ({
   isSidebarVisible,
   navData,
   subNavData,
+  subNavCounter,
   currCategory,
   currSubCategory,
   handleClick
@@ -88,7 +90,7 @@ const ParserSidebar: FC<IParserSidebar> = ({
             ([key, arr]) =>
             <ListItemButton
               key={key}
-              selected={false}
+              selected={currCategory === UPDATED_KEY && currSubCategory === TYPES[ITEM_KEY] && subNavCounter === arr.length}
               sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
               onClick={() => handleClick({ category: UPDATED_KEY, subCategory: TYPES[ITEM_KEY], arr })}
             >
