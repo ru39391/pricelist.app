@@ -9,26 +9,33 @@ import {
 import { FolderOpen } from '@mui/icons-material';
 
 import type {
+  TComparedItems,
   TFileDataNav,
   TFileCategoryData,
   THandledItemKeys,
   TPricelistTypes
 } from '../types';
 
-import { TYPES } from '../utils/constants';
+import { CAPTIONS } from '../utils/constants';
 
 interface IParserSidebar {
   isSidebarVisible: boolean;
   navData: TFileDataNav;
+  subNavData: TComparedItems;
+  currCategory: THandledItemKeys;
+  currSubCategory: TPricelistTypes;
   handleClick: (data: TFileCategoryData) => void;
 }
 
 const ParserSidebar: FC<IParserSidebar> = ({
   isSidebarVisible,
   navData,
+  subNavData,
+  currCategory,
+  currSubCategory,
   handleClick
 }) => {
-  const navItems = [navData[0], navData[navData.length - 1]].map((item) => {
+  const navItems = [navData[0], navData[navData.length - 1], navData[1]].map((item) => {
     const { key, counter } = item.data[item.data.length - 1];
 
     return {
@@ -41,24 +48,32 @@ const ParserSidebar: FC<IParserSidebar> = ({
     };
   });
 
-  return isSidebarVisible && navItems.map(
-    ({
-      key,
-      caption,
-      counter,
-      data
-    }) => <ListItemButton
-      key={key}
-      selected={true}
-      sx={{ py: 0.5 }}
-      onClick={() => handleClick(data)}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
-        <ListItemText primary={caption} sx={{ mr: 3 }} />
-        <Badge badgeContent={counter} color="primary" />
-      </Box>
-    </ListItemButton>
+  if(!isSidebarVisible) {
+    return '';
+  }
+
+  return (
+    <>
+      {navItems.map(
+        ({
+          key,
+          caption,
+          counter,
+          data
+        }) => <ListItemButton
+          key={key}
+          selected={data.category === currCategory && data.subCategory === currSubCategory}
+          sx={{ py: 0.5 }}
+          onClick={() => handleClick(data)}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
+            <ListItemText primary={caption} sx={{ mr: 3 }} />
+            <Badge badgeContent={counter} color="primary" />
+          </Box>
+        </ListItemButton>
+      )}
+    </>
   );
 };
 

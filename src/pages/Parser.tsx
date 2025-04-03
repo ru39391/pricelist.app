@@ -49,6 +49,7 @@ import type {
   TPricelistTypes,
 } from '../types';
 
+import { fetchArray } from '../utils';
 import {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
@@ -67,7 +68,8 @@ import {
   EDIT_ITEM_TITLE,
   ID_KEY,
   NAME_KEY,
-  TYPES
+  TYPES,
+  ITEM_KEY
 } from '../utils/constants';
 
 const InvisibleInput = styled('input')({
@@ -89,7 +91,7 @@ const Parser: FC = () => {
   const dispatch = useDispatch();
   const { toggleModal } = useModal();
   const { uploadFile } = useFileUploader();
-  const { comparedFileData, compareFileData } = useDataComparer();
+  const { comparedItems, comparedFileData, compareFileData } = useDataComparer();
   const { currSubCategory, categoryTypes, setCurrSubCategory } = useCategoryItems();
   const { fileDataNav, updateFileDataNav } = useFileDataNav();
   const { tableData, handleTableData } = useTableData();
@@ -117,21 +119,29 @@ const Parser: FC = () => {
   };
 
   const selectFileCategory = ({ category, subCategory }: TFileCategoryData): void => {
-    console.log({
-      category,
-      subCategory
-    });
+    console.log({ category, subCategory });
+    if(category === currCategory && subCategory === currSubCategory) {
+      //return;
+    }
 
     if(!comparedFileData) {
       handleTableData(null);
       return;
     }
 
+    const data = category === UPDATED_KEY && subCategory === TYPES[ITEM_KEY]
+      ? {
+          ...comparedFileData[category],
+          [TYPES[ITEM_KEY]]: fetchArray(Object.values(comparedItems).flat(), ID_KEY)
+        }
+      : comparedFileData[category];
+
     setCurrCategory(category);
     setCurrSubCategory(subCategory);
+
     handleTableData(
       {
-        data: comparedFileData[category],
+        data,
         category: subCategory,
         params: null
       },
@@ -262,11 +272,15 @@ const Parser: FC = () => {
               Загрузить файл
               <InvisibleInput type="file" accept=".xlsx, .xls" onChange={uploadFile} />
             </Button>
-            <ParserSidebar
+            {fileDataNav.length > 0 && <ParserSidebar
               isSidebarVisible={isFileDataExist}
               navData={fileDataNav}
+              subNavData={comparedItems}
+              currCategory={currCategory}
+              currSubCategory={currSubCategory}
               handleClick={selectFileCategory}
-            />
+            />}
+            <hr />
             {/* // TODO: возможно, вынести в отдельный компонент */}
             {isFileDataExist && fileDataNav.map(({ key, caption, counter, data }) =>
               (<Fragment key={key}>
