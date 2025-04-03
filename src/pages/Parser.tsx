@@ -170,6 +170,7 @@ const Parser: FC = () => {
         isFormHidden: true,
         action: EDIT_ACTION_KEY,
         type: currSubCategory,
+        items: comparedFileData || undefined,
         data: {}
       }
     }));

@@ -33,10 +33,8 @@ export type TPricelistStateKeys = keyof TPricelistState;
 // TODO: провести рефакторинг файла
 // TODO: разобраться с заменой TPricelistTypes и TPricelistExtTypes на более гибкий вариант, например, keyof TPricelistState
 export type TPricelistKeys = keyof typeof TYPES;
-//typeof DEPT_KEY | typeof SUBDEPT_KEY | typeof GROUP_KEY | typeof ITEM_KEY;
 
 export type TPricelistTypes = typeof TYPES[TPricelistKeys];
-//'depts' | 'subdepts' | 'groups' | 'pricelist';
 
 export type TPricelistExtTypes = TPricelistTypes | typeof RESLINKS_KEY;
 
@@ -72,15 +70,11 @@ export type TResponseItems = {
   success: boolean;
   message?: string;
   counter: TCustomData<number>;
-  //succeed?: TItemsArr;
-  //failed?: TItemsArr;
   inValid: TItemsArr;
 } & Partial<Record<'succeed' | 'failed', TItemsArr>>;
 
 export type TResponseDefault = {
   success: boolean;
-  //data?: TResponseItems;
-  //errors?: TResponseItems;
   meta: TCustomData<string | number>;
 } & Partial<Record<'data' | 'errors', TResponseItems>>;
 
@@ -120,12 +114,8 @@ type TResDate = {
 export type TResourceData = {
   id: number;
   isParent: boolean;
-  //name: string;
-  //uri: string;
   parent: TResParent;
   template: TResTemplate;
-  //publishedon: TResDate;
-  //editedon: TResDate;
 } & Record<'name' | 'uri', string> & Record<'publishedon' | 'editedon', TResDate>;
 
 export type TLinkedResourceData = TResourceData & { isLinked: boolean; };
@@ -171,8 +161,6 @@ export type TResLinkedAction = {
 };
 
 export type TLinkedResData = {
-  //action?: string;
-  //data?: TItemData;
   items?: TItemsArr;
   key?: string;
 } & Partial<TResLinkedAction>;
@@ -194,12 +182,9 @@ export type TFilterData = Partial<{
 export type TFilterKeys = keyof TFilterData;
 
 export type TFormController = {
-  //icon?: string;
-  //color?: string;
-  //introText?: string;
   actionBtnCaption: string;
   disabled: boolean;
-  actionHandler: () => void;
+  handleClick: () => void;
 } & Partial<Record<'icon' | 'color' | 'introText', string>>;
 
 // useResLinks
@@ -238,6 +223,9 @@ export type TResItemContext = {
   toggleLinkedItems: (data: TListTogglerData) => void;
   isLinkedItemActive: (data: TActiveLinkedItem) => boolean;
 };
+
+// comparedFileData
+export type TComparedFileData = Record<THandledItemKeys, TPricelistData>;
 
 export type TComparedItemsAction = 'SET_NAME_DATA'
   | 'SET_PRICE_DATA'

@@ -3,6 +3,7 @@ import { useSelector } from '../services/hooks';
 
 import type {
   TActionKeys,
+  TComparedFileData,
   TComparedItems,
   TComparedItemsAction,
   TCustomData,
@@ -44,7 +45,7 @@ type TFileHandlerData = {
 
 interface IDataComparer {
   comparedItems: TComparedItems,
-  comparedFileData: Record<THandledItemKeys, TPricelistData> | null;
+  comparedFileData: TComparedFileData | null;
   compareFileData: (data: TPricelistData | null) => void;
 }
 
@@ -80,7 +81,7 @@ const comparedItemsReducer = (
 };
 
 const useDataComparer = (): IDataComparer => {
-  const [comparedFileData, setComparedFileData] = useState<Record<THandledItemKeys, TPricelistData> | null>(null);
+  const [comparedFileData, setComparedFileData] = useState<TComparedFileData | null>(null);
   const [comparedItems, setComparedItems] = useReducer(
     comparedItemsReducer,
     { [NAME_KEY]: [], [PRICE_KEY]: [], [IS_VISIBLE_KEY]: [], [ITEM_KEY]: [] }
@@ -222,7 +223,7 @@ const useDataComparer = (): IDataComparer => {
     setComparedFileData(
       Object.keys(handlers).reduce((acc, key, index) => (
         { ...acc, [key]: Object.values(handlers)[index]({keys, items}) }
-      ), {} as Record<THandledItemKeys, TPricelistData>)
+      ), {} as TComparedFileData)
     );
   };
 

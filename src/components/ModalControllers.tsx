@@ -17,7 +17,7 @@ interface IModalControllers {
   introText?: string;
   disabled: boolean;
   isParserData?: boolean;
-  actionHandler: () => void;
+  handleClick: () => void;
 }
 
 const ModalControllers: FC<IModalControllers> = ({
@@ -27,7 +27,7 @@ const ModalControllers: FC<IModalControllers> = ({
   introText,
   disabled,
   isParserData,
-  actionHandler
+  handleClick
 }) => {
   const { isPricelistLoading } = useSelector(state => state.pricelist);
 
@@ -47,7 +47,7 @@ const ModalControllers: FC<IModalControllers> = ({
           startIcon={(icon && icon === REMOVE_ACTION_KEY && <Delete />) || <Check />}
           loading={isPricelistLoading}
           disabled={disabled}
-          onClick={actionHandler}
+          onClick={handleClick}
         >
           {actionBtnCaption}
         </LoadingButton>

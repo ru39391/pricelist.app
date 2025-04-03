@@ -88,7 +88,7 @@ const ResItemCategoryList: FC<IResItemCategoryList> = ({
           introText: `${REMOVE_CONFIRM_MSG} ${reason === CLEAR_OPTION_KEY ? `${CLEAR_TITLE.toLowerCase()} список элементов?` : `${REMOVE_TITLE.toLowerCase()} элемент из списка?`} ${PARSER_CONFIRM_MSG}`,
           actionBtnCaption: reason === CLEAR_OPTION_KEY ? CLEAR_TITLE : REMOVE_TITLE,
           disabled: false,
-          actionHandler: () => {
+          handleClick: () => {
             handleChange(handlerConfig);
             toggleModal(null);
           }

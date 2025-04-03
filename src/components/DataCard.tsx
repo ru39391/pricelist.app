@@ -229,7 +229,7 @@ const DataCard: FC = () => {
           color='success'
           disabled={false}
           actionBtnCaption={formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
-          actionHandler={handlersData[formData.action]}
+          handleClick={handlersData[formData.action]}
         />
       </>
     );
@@ -249,7 +249,7 @@ const DataCard: FC = () => {
             formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: ${formData && 1}. ${CONFIRM_MSG}`
           }
           disabled={false}
-          actionHandler={handlersData[formData.action]}
+          handleClick={() => console.log({ formData })}
         />
       : ''
   )

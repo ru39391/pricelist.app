@@ -285,7 +285,7 @@ const DataForm: FC = () => {
       actionBtnCaption={REMOVE_TITLE}
       introText={subCategoryCounter ? `${NOT_EMPTY_CATEGORY}${subCategoryCounter}` : CONFIRM_MSG}
       isParserData={isParserData}
-      actionHandler={isParserData ? removeFileData : handlersData[formData.action]}
+      handleClick={isParserData ? removeFileData : handlersData[formData.action]}
     />;
   }
 
@@ -361,7 +361,7 @@ const DataForm: FC = () => {
           <ModalControllers
             disabled={isDisabled}
             actionBtnCaption={SAVE_TITLE}
-            actionHandler={handlersData[formData.action]}
+            handleClick={handlersData[formData.action]}
           />
         </>
       }
