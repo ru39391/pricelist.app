@@ -173,11 +173,12 @@ const DataCard: FC = () => {
 
     const { items } = formData;
     const dataKeys = Object.entries(actionKeys).reverse().reduce((acc, item) => ({ ...acc,  [item[1]]: item[0] }), {} as Record<string, string>);
+    let pricelistDataThunks: TPricelistDataThunk[] = [];
 
     if(items) {
       for (const key in dataKeys) {
         const handledItemKey = key as THandledItemKeys;
-        const pricelistDataThunks = Object.entries(items[handledItemKey]).reduce(
+        pricelistDataThunks = [...pricelistDataThunks, ...Object.entries(items[handledItemKey]).reduce(
           (acc, item) => {
             const data = {
               type: item[0] as TPricelistExtTypes,
@@ -187,10 +188,10 @@ const DataCard: FC = () => {
             return data.items.length > 0 ? [...acc, { ...data, action: dataKeys[key] }] : acc
           },
           [] as TPricelistDataThunk[]
-        );
-
-        pricelistDataThunks.forEach(item => dispatch(handlePricelistData(item)));
+        )];
       }
+
+      pricelistDataThunks.forEach(item => dispatch(handlePricelistData(item)));
     }
   }, [
     dispatch,
