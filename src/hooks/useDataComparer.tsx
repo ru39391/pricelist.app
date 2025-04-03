@@ -82,13 +82,16 @@ const comparedItemsReducer = (
 
 const useDataComparer = (): IDataComparer => {
   const [comparedFileData, setComparedFileData] = useState<TComparedFileData | null>(null);
+  // TODO: настроить корректный сброс comparedItems при обновлении навигации
   const [comparedItems, setComparedItems] = useReducer(
     comparedItemsReducer,
     { [NAME_KEY]: [], [PRICE_KEY]: [], [IS_VISIBLE_KEY]: [], [ITEM_KEY]: [] }
   );
 
-  const pricelist = useSelector(state => state.pricelist);
-  const { response } = pricelist;
+  const { pricelist, response } = useSelector(({ pricelist }) => ({
+    pricelist,
+    response: pricelist.response
+  }));
 
   const setItemIds = (
     {
