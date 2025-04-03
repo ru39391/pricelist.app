@@ -12,7 +12,12 @@ import { TFormData } from '../services/slices/form-slice';
 
 import { handlePricelistData } from '../services/actions/pricelist';
 
-import type { TCustomData, TItemData, TItemsArr } from '../types';
+import type {TComparedFileData,TPricelistExtTypes,
+  TCustomData,
+  TItemsArr,
+  TItemData,
+  TPricelistDataThunk
+} from '../types';
 
 import {
   ID_KEY,
@@ -55,6 +60,11 @@ const DataCard: FC = () => {
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
+  const actionKeys = {
+    [ADD_ACTION_KEY]: CREATED_KEY,
+    [EDIT_ACTION_KEY]: UPDATED_KEY,
+    [REMOVE_ACTION_KEY]: REMOVED_KEY
+  };
   const complexKeys: string[] = [IS_VISIBLE_KEY, IS_COMPLEX_ITEM_KEY, IS_COMPLEX_KEY];
   const complexData: TCustomData<string> = useMemo(() => ({
     [COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''
@@ -69,13 +79,8 @@ const DataCard: FC = () => {
       };
     }
 
-    const keys = {
-      [ADD_ACTION_KEY]: CREATED_KEY,
-      [EDIT_ACTION_KEY]: UPDATED_KEY,
-      [REMOVE_ACTION_KEY]: REMOVED_KEY
-    };
     const { action, data, items, type } = formData;
-    const arr: TItemsArr = items && action && items[keys[action]] ? items[keys[action]][type] : [];
+    const arr: TItemsArr = items && action && items[actionKeys[action]] ? items[actionKeys[action]][type] : [];
 
     return {
       type,
@@ -157,6 +162,36 @@ const DataCard: FC = () => {
       formHandlerData
     ]),
   };
+
+  const dispatchTableData = useCallback(() => {
+    if(!formData) {
+      return;
+    }
+
+    const { items } = formData;
+    const dataKeys = Object.entries(actionKeys).reverse().reduce((acc, item) => ({ ...acc,  [item[1]]: item[0] }), {} as Record<string, string>);
+
+    if(items) {
+      for (const key in dataKeys) {
+        const pricelistDataThunks = Object.entries(items[key]).reduce(
+          (acc, item) => {
+            const data = {
+              type: item[0] as TPricelistExtTypes,
+              items: item[1] as TItemsArr
+            };
+
+            return data.items.length > 0 ? [...acc, { ...data, action: dataKeys[key] }] : acc
+          },
+          [] as TPricelistDataThunk[]
+        );
+
+        pricelistDataThunks.forEach(item => dispatch(handlePricelistData(item)));
+      }
+    }
+  }, [
+    dispatch,
+    formData
+  ]);
 
   const handleCurrFormData = useCallback((formData: TFormData | null) => {
     if(!formData) {
@@ -269,7 +304,7 @@ const DataCard: FC = () => {
             formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: ${formData && 1}. ${CONFIRM_MSG}`
           }
           disabled={false}
-          {...( formData && formData.action === REMOVE_ACTION_KEY ? { handleClick: handlersData[formData.action] } : { handleClick: () => console.log({ formData }) } )}
+          handleClick={formData && formData.action === REMOVE_ACTION_KEY ? handlersData[formData.action] : dispatchTableData}
         />
       : ''
   )

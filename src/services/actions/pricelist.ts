@@ -16,13 +16,13 @@ import {
 
 import type {
   TCustomData,
-  TItemData,
-  TItemsArr,
-  TResponseData,
-  TResponseItems,
-  TResponseDefault,
   TErrorResponse,
-  TPricelistExtTypes
+  TItemsArr,
+  TItemData,
+  TPricelistDataThunk,
+  TResponseData,
+  TResponseDefault,
+  TResponseItems,
 } from '../../types';
 import type { TAppThunk, TAppDispatch } from '../../services/store';
 import type { TPricelistAction } from '../slices/pricelist-slice';
@@ -101,7 +101,7 @@ const fetchPricelistData = (): TAppThunk<void> => async (dispatch: TAppDispatch)
   }
 };
 
-const handlePricelistData = ({ action, type, items }: { action: string; type: TPricelistExtTypes | null; items: TItemsArr; }): TAppThunk<void> => async (dispatch: TAppDispatch) => {
+const handlePricelistData = ({ action, type, items }: TPricelistDataThunk): TAppThunk<void> => async (dispatch: TAppDispatch) => {
   if(!action) {
     dispatch(getPricelistFailed({ alertMsg: ACTION_ERROR_MSG }));
     return;
