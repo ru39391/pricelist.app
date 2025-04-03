@@ -2,6 +2,8 @@ import { FC } from 'react';
 import {
   Badge,
   Box,
+  Collapse,
+  List,
   ListItemButton,
   ListItemIcon,
   ListItemText
@@ -16,7 +18,13 @@ import type {
   TPricelistTypes
 } from '../types';
 
-import { CAPTIONS } from '../utils/constants';
+import {
+  CAPTIONS,
+  ITEM_KEY,
+  NO_GROUP_TITLE,
+  TYPES,
+  UPDATED_KEY
+} from '../utils/constants';
 
 interface IParserSidebar {
   isSidebarVisible: boolean;
@@ -60,7 +68,8 @@ const ParserSidebar: FC<IParserSidebar> = ({
           caption,
           counter,
           data
-        }) => <ListItemButton
+        }) =>
+        <ListItemButton
           key={key}
           selected={data.category === currCategory && data.subCategory === currSubCategory}
           sx={{ py: 0.5 }}
@@ -73,6 +82,26 @@ const ParserSidebar: FC<IParserSidebar> = ({
           </Box>
         </ListItemButton>
       )}
+      <Collapse in={true} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          {Object.entries(subNavData).map(
+            ([key, arr]) =>
+            <ListItemButton
+              key={key}
+              selected={false}
+              sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
+              onClick={() => handleClick({ category: UPDATED_KEY, subCategory: TYPES[ITEM_KEY], arr })}
+            >
+              <ListItemText
+                disableTypography
+                primary={CAPTIONS[key] || NO_GROUP_TITLE}
+                sx={{ m: 0, mr: 2, flexGrow: 0 }}
+              />
+              <Badge badgeContent={arr.length} color="default" showZero />
+            </ListItemButton>
+          )}
+        </List>
+      </Collapse>
     </>
   );
 };

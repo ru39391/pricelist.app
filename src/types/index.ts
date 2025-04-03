@@ -256,4 +256,5 @@ export type TFileDataNav = {
 export type TFileCategoryData = {
   category: THandledItemKeys;
   subCategory: TPricelistTypes;
+  arr?: TItemsArr;
 };

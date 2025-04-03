@@ -118,21 +118,21 @@ const Parser: FC = () => {
     return Object.values(data).length === dataItems.length ? null : data;
   };
 
-  const selectFileCategory = ({ category, subCategory }: TFileCategoryData): void => {
-    console.log({ category, subCategory });
-    if(category === currCategory && subCategory === currSubCategory) {
-      //return;
-    }
-
+  const selectFileCategory = ({ category, subCategory, arr }: TFileCategoryData): void => {
     if(!comparedFileData) {
       handleTableData(null);
       return;
     }
 
+    if(category === currCategory && subCategory === currSubCategory) {
+      return;
+    }
+    console.log({ category, subCategory });
+
     const data = category === UPDATED_KEY && subCategory === TYPES[ITEM_KEY]
       ? {
           ...comparedFileData[category],
-          [TYPES[ITEM_KEY]]: fetchArray(Object.values(comparedItems).flat(), ID_KEY)
+          [TYPES[ITEM_KEY]]: Array.isArray(arr) ? arr : fetchArray(Object.values(comparedItems).flat(), ID_KEY)
         }
       : comparedFileData[category];
 
