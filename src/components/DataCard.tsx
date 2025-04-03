@@ -166,6 +166,7 @@ const DataCard: FC = () => {
     ]),
   };
 
+  // TODO: не следует ли создать отдельный хук для методов этого компонента?
   const dispatchTableData = useCallback(() => {
     if(!formData) {
       return;
@@ -178,19 +179,22 @@ const DataCard: FC = () => {
     if(items) {
       for (const key in dataKeys) {
         const handledItemKey = key as THandledItemKeys;
+        // TODO: настроть исключение элементов с неизменяемыми названиями
         pricelistDataThunks = [...pricelistDataThunks, ...Object.entries(items[handledItemKey]).reduce(
           (acc, item) => {
-            const data = {
+            const payload = {
               type: item[0] as TPricelistExtTypes,
-              items: item[1] as TItemsArr
+              items: dataKeys[key] === REMOVE_ACTION_KEY ? item[1].map(data => ({ [ID_KEY]: data[ID_KEY] } as TItemData)) : item[1] as TItemsArr
             };
 
-            return data.items.length > 0 ? [...acc, { ...data, action: dataKeys[key] }] : acc
+            return payload.items.length > 0 ? [...acc, { ...payload, action: dataKeys[key] }] : acc
           },
           [] as TPricelistDataThunk[]
         )];
       }
 
+      // TODO: баг некорректных данных при удалении https://skrinshoter.ru/sUxqRTu8zNM - отправлять минимум данных
+      // TODO: настроить корректное отображение всплывающих сообщений по мере ответа сервера
       pricelistDataThunks.forEach(item => dispatch(handlePricelistData(item)));
     }
   }, [

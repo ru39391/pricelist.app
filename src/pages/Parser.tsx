@@ -322,8 +322,12 @@ const Parser: FC = () => {
                 justifyContent: 'flex-end'
               }}
             >
-              {tableData && tableData.rows.length > 0
-                ? <>
+              {comparedFileData !== null
+                && <>
+                    {/*
+                      // TODO: блокировать кнопки, пока данные обрабатываются сервером
+                      // TODO: возможно, перенести кнопку в сайдбар
+                    */}
                     <Button
                       variant="outlined"
                       startIcon={<Sync />}
@@ -340,13 +344,13 @@ const Parser: FC = () => {
                       {CLEAR_TITLE}
                     </Button>
                   </>
-                : ''
               }
             </Box>
           </Box>
 
-          {tableData !== null
-            ? <DataGrid
+          {/* // TODO: настроить сброс данных таблицы после успешного ответа сервера */}
+          {comparedFileData !== null && tableData !== null
+            && <DataGrid
                 sx={{
                   border: 0,
                   flexGrow: 1,
@@ -359,7 +363,6 @@ const Parser: FC = () => {
                 // TODO: необязательная доработка - возможность удалять группы записей
                 onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
               />
-            : ''
           }
         </Grid>
       </Layout>
