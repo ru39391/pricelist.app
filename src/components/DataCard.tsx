@@ -193,7 +193,6 @@ const DataCard: FC = () => {
         )];
       }
 
-      // TODO: баг некорректных данных при удалении https://skrinshoter.ru/sUxqRTu8zNM - отправлять минимум данных
       // TODO: настроить корректное отображение всплывающих сообщений по мере ответа сервера
       pricelistDataThunks.forEach(item => dispatch(handlePricelistData(item)));
     }

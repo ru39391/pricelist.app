@@ -27,7 +27,6 @@ import {
 } from '../utils/constants';
 
 interface IParserSidebar {
-  isSidebarVisible: boolean;
   navData: TFileDataNav;
   subNavData: TComparedItems;
   subNavCounter: number;
@@ -37,7 +36,6 @@ interface IParserSidebar {
 }
 
 const ParserSidebar: FC<IParserSidebar> = ({
-  isSidebarVisible,
   navData,
   subNavData,
   subNavCounter,
@@ -57,10 +55,6 @@ const ParserSidebar: FC<IParserSidebar> = ({
       }
     };
   });
-
-  if(!isSidebarVisible) {
-    return '';
-  }
 
   return (
     <>
@@ -90,7 +84,7 @@ const ParserSidebar: FC<IParserSidebar> = ({
             ([key, arr]) =>
             <ListItemButton
               key={key}
-              selected={currCategory === UPDATED_KEY && currSubCategory === TYPES[ITEM_KEY] && subNavCounter === arr.length}
+              selected={currCategory === UPDATED_KEY && currSubCategory === TYPES[ITEM_KEY] && subNavCounter === arr.length && arr.length > 0}
               sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
               onClick={() => handleClick({ category: UPDATED_KEY, subCategory: TYPES[ITEM_KEY], arr })}
             >

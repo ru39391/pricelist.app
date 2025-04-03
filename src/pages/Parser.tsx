@@ -79,8 +79,15 @@ const InvisibleInput = styled('input')({
 const Parser: FC = () => {
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
 
-  const file = useSelector(state => state.file);
-  const { isFileUploading } = file;
+  const {
+    file,
+    isFileUploading,
+    isPricelistLoading
+  } = useSelector(({ file, pricelist }) => ({
+    file,
+    isFileUploading: file.isFileUploading,
+    isPricelistLoading: pricelist.isPricelistLoading
+  }));
 
   const dispatch = useDispatch();
   const { toggleModal } = useModal();
@@ -272,8 +279,7 @@ const Parser: FC = () => {
               Загрузить файл
               <InvisibleInput type="file" accept=".xlsx, .xls" onChange={uploadFile} />
             </Button>
-            {fileDataNav.length > 0 && <ParserSidebar
-              isSidebarVisible={isFileDataExist}
+            {isFileDataExist && <ParserSidebar
               navData={fileDataNav}
               subNavData={comparedItems}
               subNavCounter={tableData ? tableData.rows.length : 0}
@@ -304,66 +310,42 @@ const Parser: FC = () => {
             </Typography>
           </Breadcrumbs>
 
-          <Box
-            sx={{
-              mb: 2,
-              gap: '0 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <Typography sx={{ typography: 'body1' }}>{tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}</Typography>
-            <Box
-              sx={{
-                gap: '0 16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end'
-              }}
-            >
-              {comparedFileData !== null
-                && <>
-                    {/*
-                      // TODO: блокировать кнопки, пока данные обрабатываются сервером
-                      // TODO: возможно, перенести кнопку в сайдбар
-                    */}
-                    <Button
-                      variant="outlined"
-                      startIcon={<Sync />}
-                      onClick={() => setConfirmModalVisible()}
-                    >
-                      {APPLY_TITLE}
-                    </Button>
-                    <Button
-                      color="error"
-                      variant="outlined"
-                      startIcon={<DeleteOutlined />}
-                      onClick={resetFileData}
-                    >
-                      {CLEAR_TITLE}
-                    </Button>
-                  </>
-              }
+          {isFileDataExist && <>
+            <Box sx={{ mb: 2, gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ typography: 'body1' }}>{tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}</Typography>
+              <Box sx={{ gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                {/*
+                  // TODO: блокировать кнопки, пока данные обрабатываются сервером
+                  // TODO: возможно, перенести кнопку в сайдбар
+                */}
+                <Button
+                  variant="outlined"
+                  startIcon={<Sync />}
+                  disabled={isFileUploading || isPricelistLoading}
+                  onClick={() => setConfirmModalVisible()}
+                >
+                  {APPLY_TITLE}
+                </Button>
+                <Button
+                  color="error"
+                  variant="outlined"
+                  startIcon={<DeleteOutlined />}
+                  disabled={isFileUploading || isPricelistLoading}
+                  onClick={resetFileData}
+                >
+                  {CLEAR_TITLE}
+                </Button>
+              </Box>
             </Box>
-          </Box>
-
-          {/* // TODO: настроить сброс данных таблицы после успешного ответа сервера */}
-          {comparedFileData !== null && tableData !== null
-            && <DataGrid
-                sx={{
-                  border: 0,
-                  flexGrow: 1,
-                  height: 'auto',
-                  boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)',
-                  bgcolor: 'background.default',
-                }}
-                columns={tableData ? tableData.cols : []}
-                rows={tableData ? tableData.rows : []}
-                // TODO: необязательная доработка - возможность удалять группы записей
-                onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
-              />
-          }
+            {/* // TODO: настроить сброс данных таблицы comparedFileData после успешного ответа сервера */}
+            {tableData !== null && <DataGrid
+              sx={{ border: 0, flexGrow: 1, height: 'auto', boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)', bgcolor: 'background.default' }}
+              columns={tableData ? tableData.cols : []}
+              rows={tableData ? tableData.rows : []}
+              // TODO: необязательная доработка - возможность удалять группы записей
+              onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
+            />}
+          </>}
         </Grid>
       </Layout>
     </>
