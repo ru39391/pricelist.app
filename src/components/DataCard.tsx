@@ -12,11 +12,14 @@ import { TFormData } from '../services/slices/form-slice';
 
 import { handlePricelistData } from '../services/actions/pricelist';
 
-import type {TComparedFileData,TPricelistExtTypes,
+import type {
+  TActionKeys,
   TCustomData,
+  THandledItemKeys,
   TItemsArr,
   TItemData,
-  TPricelistDataThunk
+  TPricelistDataThunk,
+  TPricelistExtTypes
 } from '../types';
 
 import {
@@ -60,7 +63,7 @@ const DataCard: FC = () => {
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
-  const actionKeys = {
+  const actionKeys: Record<TActionKeys, THandledItemKeys> = {
     [ADD_ACTION_KEY]: CREATED_KEY,
     [EDIT_ACTION_KEY]: UPDATED_KEY,
     [REMOVE_ACTION_KEY]: REMOVED_KEY
@@ -173,7 +176,8 @@ const DataCard: FC = () => {
 
     if(items) {
       for (const key in dataKeys) {
-        const pricelistDataThunks = Object.entries(items[key]).reduce(
+        const handledItemKey = key as THandledItemKeys;
+        const pricelistDataThunks = Object.entries(items[handledItemKey]).reduce(
           (acc, item) => {
             const data = {
               type: item[0] as TPricelistExtTypes,

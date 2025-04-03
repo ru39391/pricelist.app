@@ -151,12 +151,13 @@ const Parser: FC = () => {
 
     if(comparedFileData) {
       for (const key in comparedFileData) {
-        const itemCounters = Object.keys(comparedFileData[key]).reduce(
-          (acc, item, index) => `${acc}${index > 0 ? ', ' : ''}${categoryTypes && categoryTypes[item].toLowerCase()} - ${Object.values(comparedFileData[key as THandledItemKeys])[index].length.toString()}`,
+        const handledItemKey = key as THandledItemKeys;
+        const itemCounters = Object.keys(comparedFileData[handledItemKey]).reduce(
+          (acc, item, index) => `${acc}${index > 0 ? ', ' : ''}${categoryTypes && categoryTypes[item].toLowerCase()} - ${Object.values(comparedFileData[handledItemKey])[index].length.toString()}`,
           ''
         );
 
-        desc = `${desc}${HANDLED_ITEMS_CAPTIONS[key]}: ${itemCounters}. `;
+        desc = `${desc}${HANDLED_ITEMS_CAPTIONS[handledItemKey]}: ${itemCounters}. `;
       }
     }
 
