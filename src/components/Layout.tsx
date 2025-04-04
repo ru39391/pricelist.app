@@ -20,18 +20,7 @@ const Layout: FC<ILayout> = ({ children }) => {
     <>
       <Preloader />
       <AlertError />
-      <Grid
-        container
-        sx={{
-          px: 2,
-          py: 3,
-          height: '100%',
-          minHeight: '100vh',
-          bgcolor: '#F4F5FA'
-        }}
-      >
-        {children}
-      </Grid>
+      <Grid container sx={{ px: 2, py: 3, height: '100%', minHeight: '100vh', bgcolor: '#F4F5FA' }}>{children}</Grid>
       {/* // TODO: унифицировать модальные окна */}
       {formData ? <Modal {...({ fc: formData.isFormHidden ? DataCard : DataForm })} /> : (isFormVisible && <Modal />)}
     </>

@@ -5,18 +5,13 @@ import {
   useMemo,
   useState
 } from 'react';
-import {
-  Box,
-  Button,
-  Grid,
-  Typography
-} from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import { DeleteOutlined, Sync } from '@mui/icons-material';
+import { Grid } from '@mui/material';
+import { GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 
 import Layout from '../components/Layout';
 import ParserNav from '../components/ParserNav';
 import ParserSidebar from '../components/ParserSidebar';
+import ParserTable from '../components/ParserTable';
 import Pathway from '../components/Pathway';
 
 import useModal from '../hooks/useModal';
@@ -36,8 +31,7 @@ import type {
   TFileCategoryData,
   THandledItemKeys,
   TItemData,
-  TPricelistData,
-  TPricelistTypes,
+  TPricelistData
 } from '../types';
 
 import { fetchArray } from '../utils';
@@ -52,8 +46,6 @@ import {
   DEFAULT_DOC_TITLE,
   NO_FILE_ITEMS_TITLE,
   FILE_ITEMS_TITLE,
-  APPLY_TITLE,
-  CLEAR_TITLE,
   ADD_TITLE,
   REMOVE_TITLE,
   EDIT_ITEM_TITLE,
@@ -172,17 +164,8 @@ const Parser: FC = () => {
     }));
   }
 
-  const handleItemData = (
-    {
-      values,
-      currCategory,
-      currSubCategory
-    }: {
-      values: TItemData;
-      currCategory: THandledItemKeys;
-      currSubCategory: TPricelistTypes;
-    }
-  ) => {
+  const handleItemData = ({ values, categoryData }: { values: TItemData; categoryData: TFileCategoryData; }) => {
+    const { category: currCategory, subCategory: currSubCategory } = categoryData;
     const { key, title }: TCustomData<string> = params[currCategory];
     const items = comparedFileData ? comparedFileData[currCategory][currSubCategory] : [];
     const data = items.length ? items.find((item: TItemData) => item[ID_KEY] === values[ID_KEY]) : {};
@@ -264,45 +247,18 @@ const Parser: FC = () => {
             pageTitle={DEFAULT_DOC_TITLE}
             currNavTitle={`${HANDLED_ITEMS_CAPTIONS[currCategory]}, ${categoryTypes && categoryTypes[currSubCategory].toLowerCase()}`}
           />
-
-          {isFileDataExist && <>
-            <Box sx={{ mb: 2, gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography sx={{ typography: 'body1' }}>{tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}</Typography>
-              <Box sx={{ gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                {/*
-                  // TODO: блокировать кнопки, пока данные обрабатываются сервером
-                  // TODO: возможно, перенести кнопку в сайдбар
-                */}
-                <Button
-                  variant="outlined"
-                  startIcon={<Sync />}
-                  disabled={isFileUploading || isPricelistLoading}
-                  onClick={() => setConfirmModalVisible()}
-                >
-                  {APPLY_TITLE}
-                </Button>
-                <Button
-                  color="error"
-                  variant="outlined"
-                  startIcon={<DeleteOutlined />}
-                  disabled={isFileUploading || isPricelistLoading}
-                  onClick={resetFileData}
-                >
-                  {CLEAR_TITLE}
-                </Button>
-              </Box>
-            </Box>
-            {/* // TODO: настроить сброс данных таблицы comparedFileData после успешного ответа сервера */}
-            {tableData !== null
-              && <DataGrid
-                sx={{ border: 0, flexGrow: 1, height: 'auto', boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)', bgcolor: 'background.default' }}
-                columns={tableData ? tableData.cols : []}
-                rows={tableData ? tableData.rows : []}
-                // TODO: необязательная доработка - возможность удалять группы записей
-                onRowClick={({ row }: { row: TItemData }) => handleItemData({ values: row, currCategory, currSubCategory })}
-              />
-            }
-          </>}
+          <ParserTable
+            isBtnDisabled={isFileUploading || isPricelistLoading}
+            isFileDataExist={isFileDataExist}
+            isTableGridVisible={tableData !== null}
+            tableTitle={tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}
+            tableGridCols={tableData ? tableData.cols : [] as GridColDef<GridValidRowModel>[]}
+            tableGridRows={tableData ? tableData.rows : [] as GridValidRowModel[]}
+            categoryData={{ category: currCategory, subCategory: currSubCategory }}
+            handleTableGridRow={handleItemData}
+            handleConfirmBtnClick={setConfirmModalVisible}
+            handleResetBtnClick={resetFileData}
+          />
         </Grid>
       </Layout>
     </>
