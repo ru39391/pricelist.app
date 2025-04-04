@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useCallback } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { DeleteOutlined, Sync } from '@mui/icons-material';
 import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
@@ -6,12 +6,14 @@ import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import useModal from '../hooks/useModal';
 
 import { useDispatch } from '../services/hooks';
+import { resetFileList } from '../services/actions/file';
 import { setFormData } from '../services/slices/form-slice';
 
 import type {
   TFileActionsData,
   TFileCategoryData,
   TComparedFileData,
+  THandledItemKeys,
   TItemData
 } from '../types';
 import {
@@ -27,7 +29,8 @@ import {
   APPLY_TITLE,
   CLEAR_TITLE,
   EDIT_ITEM_TITLE,
-  REMOVE_TITLE
+  REMOVE_TITLE,
+  HANDLED_ITEMS_CAPTIONS
 } from '../utils/constants';
 
 interface IParserTable {
@@ -39,8 +42,6 @@ interface IParserTable {
   tableGridRows: GridValidRowModel[];
   fileData: TComparedFileData | null;
   categoryData: TFileCategoryData;
-  handleConfirmBtnClick: () => void;
-  handleResetBtnClick: () => void;
 }
 
 const ParserTable: FC<IParserTable> = ({
@@ -51,13 +52,51 @@ const ParserTable: FC<IParserTable> = ({
   tableGridCols,
   tableGridRows,
   fileData,
-  categoryData,
-  handleConfirmBtnClick,
-  handleResetBtnClick
+  categoryData
 }) => {
   const dispatch = useDispatch();
   const { toggleModal } = useModal();
-  const handleTableGridRow = ({ values, categoryData }: { values: TItemData; categoryData: TFileCategoryData; }) => {
+
+  /**
+   * Передача данных xls-файла в глобальное хранилище, вызов модального окна для подтверждения сохранения данных документа
+   */
+  const setConfirmModalVisible = () => {
+    let desc = '';
+    const { subCategory: type } = categoryData;
+
+    if(fileData) {
+      for (const key in fileData) {
+        const category = key as THandledItemKeys;
+        const itemCounters = Object.keys(fileData[category]).reduce(
+          (acc, item, index) => `${acc}${index > 0 ? ', ' : ''}${categoryTypes && categoryTypes[item].toLowerCase()} - ${Object.values(fileData[category])[index].length.toString()}`,
+          ''
+        );
+
+        desc = `${desc}${HANDLED_ITEMS_CAPTIONS[category]}: ${itemCounters}. `;
+      }
+    }
+
+    toggleModal({
+      title: `Вы собираетесь ${EDIT_ITEM_TITLE.toLowerCase()}`,
+      desc,
+      isParserData: true
+    });
+    dispatch(setFormData({
+      data: {
+        isFormHidden: true,
+        action: EDIT_ACTION_KEY,
+        type,
+        items: fileData || undefined,
+        data: {}
+      }
+    }));
+  }
+
+  /**
+   * Поиск данных элемента прайслиста по данным таблицы и передача в глобальное хранилище для отображения в модальном окне
+   * @property {TItemData} values - данные строки таблицы, соответствующие полученному при парсинге xls-файла объекту
+   */
+  const handleTableGridRow = (values: TItemData) => {
     const params: TFileActionsData = {
       [CREATED_KEY]: { action: ADD_ACTION_KEY, title: ADD_TITLE },
       [UPDATED_KEY]: { action: EDIT_ACTION_KEY, title: EDIT_ITEM_TITLE },
@@ -80,6 +119,16 @@ const ParserTable: FC<IParserTable> = ({
     }));
   }
 
+  /**
+   * Удаление данных обработанного документа из глобального хранилища
+   */
+  const resetFileData =  useCallback(() => {
+    console.log('resetFileList');
+    dispatch(resetFileList());
+  }, [
+    dispatch
+  ]);
+
   if(!fileData) {
     return '';
   }
@@ -97,7 +146,7 @@ const ParserTable: FC<IParserTable> = ({
             variant="outlined"
             startIcon={<Sync />}
             disabled={isBtnDisabled}
-            onClick={handleConfirmBtnClick}
+            onClick={setConfirmModalVisible}
           >
             {APPLY_TITLE}
           </Button>
@@ -106,7 +155,7 @@ const ParserTable: FC<IParserTable> = ({
             variant="outlined"
             startIcon={<DeleteOutlined />}
             disabled={isBtnDisabled}
-            onClick={handleResetBtnClick}
+            onClick={resetFileData}
           >
             {CLEAR_TITLE}
           </Button>
@@ -118,7 +167,7 @@ const ParserTable: FC<IParserTable> = ({
         columns={tableGridCols}
         rows={tableGridRows}
         // TODO: необязательная доработка - возможность удалять группы записей
-        onRowClick={({ row }: { row: TItemData }) => handleTableGridRow({ values: row, categoryData })}
+        onRowClick={({ row }: { row: TItemData }) => handleTableGridRow(row)}
       />}
     </>
   )

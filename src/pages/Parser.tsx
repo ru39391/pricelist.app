@@ -1,6 +1,5 @@
 import {
   FC,
-  useCallback,
   useEffect,
   useMemo,
   useState
@@ -14,16 +13,13 @@ import ParserSidebar from '../components/ParserSidebar';
 import ParserTable from '../components/ParserTable';
 import Pathway from '../components/Pathway';
 
-import useModal from '../hooks/useModal';
 import useTableData from '../hooks/useTableData';
 import useCategoryItems from '../hooks/useCategoryItems';
 import useFileUploader from '../hooks/useFileUploader';
 import useDataComparer from '../hooks/useDataComparer';
 import useFileDataNav from '../hooks/useFileDataNav';
 
-import { useSelector, useDispatch } from '../services/hooks';
-import { resetFileList } from '../services/actions/file';
-import { setFormData } from '../services/slices/form-slice';
+import { useSelector } from '../services/hooks';
 
 import type {
   TFileCategoryData,
@@ -33,14 +29,12 @@ import type {
 
 import { fetchArray } from '../utils';
 import {
-  EDIT_ACTION_KEY,
   CREATED_KEY,
   UPDATED_KEY,
   HANDLED_ITEMS_CAPTIONS,
   DEFAULT_DOC_TITLE,
   NO_FILE_ITEMS_TITLE,
   FILE_ITEMS_TITLE,
-  EDIT_ITEM_TITLE,
   ID_KEY,
   NAME_KEY,
   TYPES,
@@ -61,8 +55,6 @@ const Parser: FC = () => {
     isPricelistLoading: pricelist.isPricelistLoading
   }));
 
-  const dispatch = useDispatch();
-  const { toggleModal } = useModal();
   const { uploadFile } = useFileUploader();
   const { comparedItems, comparedFileData, compareFileData } = useDataComparer();
   const { currSubCategory, categoryTypes, setCurrSubCategory } = useCategoryItems();
@@ -109,43 +101,6 @@ const Parser: FC = () => {
       setDataItems()
     );
   };
-
-  const setConfirmModalVisible = () => {
-    let desc = '';
-
-    if(comparedFileData) {
-      for (const key in comparedFileData) {
-        const handledItemKey = key as THandledItemKeys;
-        const itemCounters = Object.keys(comparedFileData[handledItemKey]).reduce(
-          (acc, item, index) => `${acc}${index > 0 ? ', ' : ''}${categoryTypes && categoryTypes[item].toLowerCase()} - ${Object.values(comparedFileData[handledItemKey])[index].length.toString()}`,
-          ''
-        );
-
-        desc = `${desc}${HANDLED_ITEMS_CAPTIONS[handledItemKey]}: ${itemCounters}. `;
-      }
-    }
-
-    toggleModal({
-      title: `Вы собираетесь ${EDIT_ITEM_TITLE.toLowerCase()}`,
-      desc,
-      isParserData: true
-    });
-    dispatch(setFormData({
-      data: {
-        isFormHidden: true,
-        action: EDIT_ACTION_KEY,
-        type: currSubCategory,
-        items: comparedFileData || undefined,
-        data: {}
-      }
-    }));
-  }
-
-  const resetFileData =  useCallback(() => {
-    dispatch(resetFileList());
-  }, [
-    dispatch
-  ]);
 
   const isFileDataExist = useMemo(
     () => {
@@ -215,8 +170,6 @@ const Parser: FC = () => {
             tableGridRows={tableData ? tableData.rows : [] as GridValidRowModel[]}
             fileData={comparedFileData}
             categoryData={{ category: currCategory, subCategory: currSubCategory }}
-            handleConfirmBtnClick={setConfirmModalVisible}
-            handleResetBtnClick={resetFileData}
           />
         </Grid>
       </Layout>
