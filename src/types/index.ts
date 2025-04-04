@@ -252,3 +252,5 @@ export type TFileCategoryData = {
   subCategory: TPricelistTypes;
   arr?: TItemsArr;
 };
+
+export type TFileActionsData = Record<THandledItemKeys, { action: TActionKeys; title: string; }>;
