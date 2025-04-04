@@ -1,105 +1,58 @@
-import { FC } from 'react';
-import {
-  Badge,
-  Box,
-  Collapse,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText
-} from '@mui/material';
-import { FolderOpen } from '@mui/icons-material';
+import { FC, ChangeEvent, ReactNode } from 'react';
+import { Box, Button, Grid } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { CloudUpload } from '@mui/icons-material';
 
-import type {
-  TComparedItems,
-  TFileDataNav,
-  TFileCategoryData,
-  THandledItemKeys,
-  TPricelistTypes
-} from '../types';
-
-import {
-  CAPTIONS,
-  TYPES,
-  ITEM_KEY,
-  UPDATED_KEY,
-  NO_GROUP_TITLE,
-} from '../utils/constants';
+const InvisibleInput = styled('input')({
+  overflow: 'hidden',
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: 0,
+  height: 0,
+  opacity: 0
+});
 
 interface IParserSidebar {
-  navData: TFileDataNav;
-  subNavData: TComparedItems;
-  subNavCounter: number;
-  currCategory: THandledItemKeys;
-  currSubCategory: TPricelistTypes;
-  handleClick: (data: TFileCategoryData) => void;
+  isUploadBtnDisabled: boolean;
+  isFileDataExist: boolean;
+  children: ReactNode;
+  handleUploadInput: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const ParserSidebar: FC<IParserSidebar> = ({
-  navData,
-  subNavData,
-  subNavCounter,
-  currCategory,
-  currSubCategory,
-  handleClick
+  isUploadBtnDisabled,
+  isFileDataExist,
+  children,
+  handleUploadInput
 }) => {
-  const navItems = [navData[0], navData[navData.length - 1], navData[1]].map((item) => {
-    const { key, counter } = item.data[item.data.length - 1];
-
-    return {
-      ...item,
-      counter,
-      data: {
-        category: item.key as THandledItemKeys,
-        subCategory: key as TPricelistTypes
-      }
-    };
-  });
-
   return (
-    <>
-      {navItems.map(
-        ({
-          key,
-          caption,
-          counter,
-          data
-        }) =>
-        <ListItemButton
-          key={key}
-          selected={data.category === currCategory && data.subCategory === currSubCategory}
-          sx={{ py: 0.5 }}
-          onClick={() => handleClick(data)}
+    <Grid item xs={3} sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Box
+        sx={{
+          top: 24,
+          height: '100%',
+          maxHeight: '100vh',
+          position: 'sticky',
+          overflow: 'hidden',
+          boxShadow: '4px 0 16px 0 rgba(0,0,0,.045)',
+          bgcolor: 'background.default',
+        }}
+      >
+        <Button
+          sx={{ mb: 2, width: '100%' }}
+          component="label"
+          variant="contained"
+          disabled={isUploadBtnDisabled}
+          startIcon={<CloudUpload />}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
-            <ListItemText primary={caption} sx={{ mr: 3 }} />
-            <Badge badgeContent={counter} color="primary" />
-          </Box>
-        </ListItemButton>
-      )}
-      <Collapse in={true} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          {Object.entries(subNavData).map(
-            ([key, arr]) =>
-            <ListItemButton
-              key={key}
-              selected={currCategory === UPDATED_KEY && currSubCategory === TYPES[ITEM_KEY] && subNavCounter === arr.length && arr.length > 0}
-              sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
-              onClick={() => handleClick({ category: UPDATED_KEY, subCategory: TYPES[ITEM_KEY], arr })}
-            >
-              <ListItemText
-                disableTypography
-                primary={CAPTIONS[key] || NO_GROUP_TITLE}
-                sx={{ m: 0, mr: 2, flexGrow: 0 }}
-              />
-              <Badge badgeContent={arr.length} color="default" showZero />
-            </ListItemButton>
-          )}
-        </List>
-      </Collapse>
-    </>
-  );
+          Загрузить файл
+          <InvisibleInput type="file" accept=".xlsx, .xls" onChange={handleUploadInput} />
+        </Button>
+        {isFileDataExist && children}
+      </Box>
+    </Grid>
+  )
 };
 
 export default ParserSidebar;

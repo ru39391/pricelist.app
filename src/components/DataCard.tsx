@@ -197,7 +197,7 @@ const DataCard: FC = () => {
 
       // TODO: настроить корректное отображение всплывающих сообщений по мере ответа сервера
       pricelistDataThunks.forEach(item => {
-        dispatch(getPricelistLoading());
+        //dispatch(getPricelistLoading());
         dispatch(handlePricelistData(item))
       });
     }
