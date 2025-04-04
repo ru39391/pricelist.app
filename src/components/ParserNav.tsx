@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import {
   Badge,
   Box,
@@ -11,39 +11,51 @@ import {
 import { FolderOpen } from '@mui/icons-material';
 
 import type {
+  TCategoryData,
+  TComparedFileData,
   TComparedItems,
   TFileDataNav,
   TFileCategoryData,
   THandledItemKeys,
+  TPricelistData,
   TPricelistTypes
 } from '../types';
 
+import { fetchArray } from '../utils';
 import {
-  CAPTIONS,
-  TYPES,
+  ID_KEY,
+  NAME_KEY,
+  PRICE_KEY,
   ITEM_KEY,
+  CREATED_KEY,
   UPDATED_KEY,
   NO_GROUP_TITLE,
+  CAPTIONS,
+  TYPES
 } from '../utils/constants';
 
 interface IParserNav {
+  fileData: TComparedFileData | null;
+  currFileData: TPricelistData | null;
   navData: TFileDataNav;
   subNavData: TComparedItems;
   subNavCounter: number;
-  currCategory: THandledItemKeys;
-  currSubCategory: TPricelistTypes;
-  handleClick: (data: TFileCategoryData) => void;
+  categoryData: TFileCategoryData;
+  handleTableData: (data: TCategoryData | null, fileData?: TPricelistData | null) => void;
+  handleCategoryData: (data: TFileCategoryData) => void;
 }
 
 const ParserNav: FC<IParserNav> = ({
+  fileData,
+  currFileData,
   navData,
   subNavData,
   subNavCounter,
-  currCategory,
-  currSubCategory,
-  handleClick
+  categoryData,
+  handleTableData,
+  handleCategoryData
 }) => {
-  const navItems = [navData[0], navData[navData.length - 1], navData[1]].map((item) => {
+  const navItems = navData.map((item) => {
     const { key, counter } = item.data[item.data.length - 1];
 
     return {
@@ -56,15 +68,59 @@ const ParserNav: FC<IParserNav> = ({
     };
   });
 
+  /**
+   * Передаёт значения категории (тип изменения) и подкатегории (тип элементов) для изменения данных навигации,
+   * передаёт массив обработанных данных файла для отрисовки таблицы
+   * @property {THandledItemKeys} category - категория изменений
+   * @property {TPricelistTypes} subCategory - тип элемента прайслиста
+   * @property {TItemsArr | undefined} arr - массив элементов
+   */
+  const selectFileCategory = ({ category, subCategory, arr }: TFileCategoryData) => {
+    if(!fileData) {
+      handleTableData(null);
+      return;
+    }
+
+    const data = category === UPDATED_KEY && subCategory === TYPES[ITEM_KEY]
+      ? {
+          ...fileData[category],
+          [TYPES[ITEM_KEY]]: Array.isArray(arr)
+            ? arr
+            : fetchArray([...subNavData[NAME_KEY], ...subNavData[PRICE_KEY]], ID_KEY)
+        }
+      : fileData[category];
+
+    handleCategoryData({ category, subCategory });
+
+    handleTableData(
+      {
+        data,
+        category: subCategory,
+        params: null
+      },
+      currFileData
+    );
+  };
+
+  useEffect(() => {
+    selectFileCategory({ category: CREATED_KEY, subCategory: TYPES[ITEM_KEY] });
+  }, [
+    fileData
+  ]);
+
+  if(!fileData) {
+    //return '';
+  }
+
   return (
     <>
       {navItems.map(
         ({ key, caption, counter, data }) =>
         <ListItemButton
           key={key}
-          selected={data.category === currCategory && data.subCategory === currSubCategory}
+          selected={data.category === categoryData.category && data.subCategory === categoryData.subCategory}
           sx={{ py: 0.5 }}
-          onClick={() => handleClick(data)}
+          onClick={() => selectFileCategory(data)}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
@@ -73,15 +129,15 @@ const ParserNav: FC<IParserNav> = ({
           </Box>
         </ListItemButton>
       )}
-      <Collapse in={true} timeout="auto" unmountOnExit>
+      {navData.length > 0 && <Collapse in={true} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           {Object.entries(subNavData).map(
             ([key, arr]) =>
             <ListItemButton
               key={key}
-              selected={currCategory === UPDATED_KEY && currSubCategory === TYPES[ITEM_KEY] && subNavCounter === arr.length && arr.length > 0}
+              selected={categoryData.category === UPDATED_KEY && categoryData.subCategory === TYPES[ITEM_KEY] && subNavCounter === arr.length && arr.length > 0}
               sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
-              onClick={() => handleClick({ category: UPDATED_KEY, subCategory: TYPES[ITEM_KEY], arr })}
+              onClick={() => selectFileCategory({ category: UPDATED_KEY, subCategory: TYPES[ITEM_KEY], arr })}
             >
               <ListItemText
                 disableTypography
@@ -92,7 +148,7 @@ const ParserNav: FC<IParserNav> = ({
             </ListItemButton>
           )}
         </List>
-      </Collapse>
+      </Collapse>}
     </>
   )
 };

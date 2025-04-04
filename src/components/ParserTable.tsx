@@ -130,7 +130,8 @@ const ParserTable: FC<IParserTable> = ({
   ]);
 
   if(!fileData) {
-    return '';
+    // TODO: проверить проблему сброса состояния при успешном ответе сервера, если работает корректно, заменить isFileDataExist на !fileData
+    return 'fileData равно null';
   }
 
   return (
@@ -140,7 +141,6 @@ const ParserTable: FC<IParserTable> = ({
         <Box sx={{ gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           {/*
             // TODO: блокировать кнопки, пока данные обрабатываются сервером
-            // TODO: возможно, перенести кнопку в сайдбар
           */}
           <Button
             variant="outlined"

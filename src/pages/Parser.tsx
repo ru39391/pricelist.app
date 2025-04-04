@@ -23,23 +23,18 @@ import { useSelector } from '../services/hooks';
 
 import type {
   TFileCategoryData,
+  TFileDataNav,
   THandledItemKeys,
   TPricelistData
 } from '../types';
 
-import { fetchArray } from '../utils';
 import {
   CREATED_KEY,
-  UPDATED_KEY,
   HANDLED_ITEMS_CAPTIONS,
   DEFAULT_DOC_TITLE,
   NO_FILE_ITEMS_TITLE,
   FILE_ITEMS_TITLE,
-  ID_KEY,
-  NAME_KEY,
   TYPES,
-  ITEM_KEY,
-  PRICE_KEY
 } from '../utils/constants';
 
 const Parser: FC = () => {
@@ -61,64 +56,40 @@ const Parser: FC = () => {
   const { fileDataNav, updateFileDataNav } = useFileDataNav();
   const { tableData, handleTableData } = useTableData();
 
-  const setDataItems = (): TPricelistData | null => {
-    const data:TPricelistData = Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: file[type]}), {});
+  /**
+   * Устанавливает локальное состояние категории (тип изменения) и подкатегории (тип элементов) для навигации по обработанным данным xls-файла
+   */
+  const setCategoryData = ({ category, subCategory }: TFileCategoryData) => {
+    setCurrCategory(category);
+    setCurrSubCategory(subCategory);
+  };
+
+  /**
+   * Объект категоризированных массивов из полученных при парсинге xls-файла элементов:
+   * если все массивы пусты, равен null
+   */
+  const currFileData = useMemo(() => {
+    const data = Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: file[type]}), {} as TPricelistData);
     const dataItems = Object.values(data).filter(item => item.length === 0);
 
     return Object.values(data).length === dataItems.length ? null : data;
-  };
+  }, [file]);
 
-  const selectFileCategory = ({ category, subCategory, arr }: TFileCategoryData): void => {
-    if(!comparedFileData) {
-      handleTableData(null);
-      return;
-    }
-
-    /*
-    if(category === currCategory && subCategory === currSubCategory && !arr) {
-      return;
-    }
-    */
-
-    const data = category === UPDATED_KEY && subCategory === TYPES[ITEM_KEY]
-      ? {
-          ...comparedFileData[category],
-          [TYPES[ITEM_KEY]]: Array.isArray(arr)
-            ? arr
-            : fetchArray([...comparedItems[NAME_KEY], ...comparedItems[PRICE_KEY]], ID_KEY)
-        }
-      : comparedFileData[category];
-
-    setCurrCategory(category);
-    setCurrSubCategory(subCategory);
-
-    handleTableData(
-      {
-        data,
-        category: subCategory,
-        params: null
-      },
-      setDataItems()
-    );
-  };
-
-  const isFileDataExist = useMemo(
-    () => {
-      if(!fileDataNav.length) {
-        return fileDataNav.length > 0;
-      }
-
-      const value = fileDataNav.reduce((acc, { counter }) => acc + counter, 0);
-
-      return value > 0;
-    },
+  /**
+   * Список категорий навигации в сайдбаре
+   */
+  const navData = useMemo(
+    () => fileDataNav.length > 0 ? [fileDataNav[0], fileDataNav[fileDataNav.length - 1], fileDataNav[1]] : [] as TFileDataNav,
     [fileDataNav]
   );
 
+  /**
+   * Истинность существования данных обработанного файла при условии наличия элементов навигации
+   */
+  const isFileDataExist = useMemo(() => navData.length > 0, [navData]);
+
   useEffect(() => {
-    compareFileData(
-      setDataItems()
-    );
+    compareFileData(currFileData);
   }, [
     file
   ]);
@@ -131,10 +102,7 @@ const Parser: FC = () => {
   ]);
 
   useEffect(() => {
-    selectFileCategory({
-      category: currCategory,
-      subCategory: currSubCategory
-    });
+    console.log({fileDataNav});
   }, [
     fileDataNav
   ]);
@@ -144,16 +112,17 @@ const Parser: FC = () => {
       <Layout>
         <ParserSidebar
           isUploadBtnDisabled={isFileUploading || isFileDataExist}
-          isFileDataExist={isFileDataExist}
           handleUploadInput={uploadFile}
         >
           <ParserNav
-            navData={fileDataNav}
+            fileData={comparedFileData}
+            currFileData={currFileData}
+            navData={navData}
             subNavData={comparedItems}
             subNavCounter={tableData ? tableData.rows.length : 0}
-            currCategory={currCategory}
-            currSubCategory={currSubCategory}
-            handleClick={selectFileCategory}
+            categoryData={{ category: currCategory, subCategory: currSubCategory }}
+            handleTableData={handleTableData}
+            handleCategoryData={setCategoryData}
           />
         </ParserSidebar>
         <Grid item xs={9} sx={{ pl: 3, pr: 2, display: 'flex', flexDirection: 'column' }}>

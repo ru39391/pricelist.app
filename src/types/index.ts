@@ -231,6 +231,12 @@ export type TResItemContext = {
 };
 
 // comparedFileData
+export type TCategoryData = {
+  data: TPricelistData;
+  category: string | undefined;
+  params: TCustomData<number | null> | null;
+};
+
 export type TComparedFileData = Record<THandledItemKeys, TPricelistData>;
 
 export type TComparedItemsAction = 'SET_NAME_DATA'

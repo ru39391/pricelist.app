@@ -15,14 +15,12 @@ const InvisibleInput = styled('input')({
 
 interface IParserSidebar {
   isUploadBtnDisabled: boolean;
-  isFileDataExist: boolean;
   children: ReactNode;
   handleUploadInput: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const ParserSidebar: FC<IParserSidebar> = ({
   isUploadBtnDisabled,
-  isFileDataExist,
   children,
   handleUploadInput
 }) => {
@@ -49,7 +47,7 @@ const ParserSidebar: FC<IParserSidebar> = ({
           Загрузить файл
           <InvisibleInput type="file" accept=".xlsx, .xls" onChange={handleUploadInput} />
         </Button>
-        {isFileDataExist && children}
+        {children}
       </Box>
     </Grid>
   )
