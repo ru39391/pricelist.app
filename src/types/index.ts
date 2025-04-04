@@ -60,6 +60,15 @@ export type TPriceList<K extends TPricelistTypes | TPricelistExtTypes, T> = {
 // TODO: разобраться с заменой TPricelistData на TPriceList<TPricelistExtTypes, TItemsArr>;
 export type TPricelistData =  TCustomData<TItemsArr>;
 
+export type TFormData = {
+  action: TActionKeys;
+  type: TPricelistTypes;
+  data: TItemData;
+  values?: TItemData;
+  items?: TComparedFileData;
+  isFormHidden?: boolean;
+};
+
 export type TPricelistDataThunk = {
   action: string; // TODO: типизировать action как TActionKeys
   type: TPricelistExtTypes | null;
@@ -68,7 +77,7 @@ export type TPricelistDataThunk = {
 
 export type TPricelistResponse = {
   action: TActionKeys;
-  type: string;
+  type: string; // TODO: вероятно, должен быть TPricelistTypes
   ids: number[];
 };
 

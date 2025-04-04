@@ -2,9 +2,7 @@ import { FC } from 'react';
 import { IconButton } from '@mui/material';
 import { DeleteOutlined } from '@mui/icons-material';
 
-import { TFormData } from '../services/slices/form-slice';
-
-import type { TItemData, TUrlData, TPricelistTypes } from '../types';
+import type { TFormData, TItemData, TUrlData, TPricelistTypes } from '../types';
 
 import { EDIT_ACTION_KEY, PARSER_KEY } from '../utils/constants';
 

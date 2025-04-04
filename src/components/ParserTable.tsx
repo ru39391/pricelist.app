@@ -10,9 +10,10 @@ import { resetFileList } from '../services/actions/file';
 import { setFormData } from '../services/slices/form-slice';
 
 import type {
+  TComparedFileData,
+  TCustomData,
   TFileActionsData,
   TFileCategoryData,
-  TComparedFileData,
   THandledItemKeys,
   TItemData
 } from '../types';
@@ -42,6 +43,7 @@ interface IParserTable {
   tableGridRows: GridValidRowModel[];
   fileData: TComparedFileData | null;
   categoryData: TFileCategoryData;
+  categoryTypes: TCustomData<string> | null;
 }
 
 const ParserTable: FC<IParserTable> = ({
@@ -52,7 +54,8 @@ const ParserTable: FC<IParserTable> = ({
   tableGridCols,
   tableGridRows,
   fileData,
-  categoryData
+  categoryData,
+  categoryTypes
 }) => {
   const dispatch = useDispatch();
   const { toggleModal } = useModal();

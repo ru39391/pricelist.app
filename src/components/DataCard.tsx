@@ -8,15 +8,13 @@ import useForm from '../hooks/useForm';
 import useTableData from '../hooks/useTableData';
 
 import { useSelector, useDispatch } from '../services/hooks';
-// TODO: перенести TFormData в ../types
-import type { TFormData } from '../services/slices/form-slice';
 
-import { getPricelistLoading } from '../services/slices/pricelist-slice';
 import { handlePricelistData } from '../services/actions/pricelist';
 
 import type {
   TActionKeys,
   TCustomData,
+  TFormData,
   THandledItemKeys,
   TItemsArr,
   TItemData,
@@ -197,7 +195,6 @@ const DataCard: FC = () => {
 
       // TODO: настроить корректное отображение всплывающих сообщений по мере ответа сервера
       pricelistDataThunks.forEach(item => {
-        //dispatch(getPricelistLoading());
         dispatch(handlePricelistData(item))
       });
     }

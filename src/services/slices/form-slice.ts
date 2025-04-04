@@ -1,24 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import type {
-  TActionKeys,
   TComparedFileData,
   TFormController,
+  TFormData,
   TItemsArr,
-  TItemData,
-  TPricelistTypes
+  TItemData
 } from '../../types';
-
-//import { DEPT_KEY, SUBDEPT_KEY, GROUP_KEY } from '../../utils/constants';
-
-export type TFormData = {
-  action: TActionKeys;
-  type: TPricelistTypes;
-  data: TItemData;
-  values?: TItemData;
-  items?: TComparedFileData;
-  isFormHidden?: boolean;
-};
 
 export type TFormAction = {
   payload: {

@@ -124,9 +124,10 @@ const ParserContent: FC = () => {
         />
       </ParserSidebar>
       <Grid item xs={9} sx={{ pl: 3, pr: 2, display: 'flex', flexDirection: 'column' }}>
+        {/* // TODO: пересмотреть типы для categoryTypes */}
         <Pathway
           pageTitle={DEFAULT_DOC_TITLE}
-          currNavTitle={`${HANDLED_ITEMS_CAPTIONS[currCategory]}, ${categoryTypes && categoryTypes[currSubCategory].toLowerCase()}`}
+          currNavTitle={`${HANDLED_ITEMS_CAPTIONS[currCategory]}, ${categoryTypes && categoryTypes[currSubCategory as string].toLowerCase()}`}
         />
         <ParserTable
           isBtnDisabled={isFileUploading || isPricelistLoading}
@@ -137,6 +138,7 @@ const ParserContent: FC = () => {
           tableGridRows={tableData ? tableData.rows : [] as GridValidRowModel[]}
           fileData={comparedFileData}
           categoryData={{ category: currCategory, subCategory: currSubCategory }}
+          categoryTypes={categoryTypes}
         />
       </Grid>
     </>
