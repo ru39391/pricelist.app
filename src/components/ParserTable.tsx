@@ -1,9 +1,10 @@
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useMemo } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { DeleteOutlined, Sync } from '@mui/icons-material';
 import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 
 import useModal from '../hooks/useModal';
+import useFileDataCard from '../hooks/useFileDataCard';
 
 import { useDispatch } from '../services/hooks';
 import { resetFileList } from '../services/actions/file';
@@ -59,6 +60,14 @@ const ParserTable: FC<IParserTable> = ({
 }) => {
   const dispatch = useDispatch();
   const { toggleModal } = useModal();
+  const { immutableNameData } = useFileDataCard();
+
+  /**
+   * Перечень идентификаторов услуг прайслиста с неизменяемыми названиями
+   */
+  const immutableNameItems = useMemo(
+    () => immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[], [immutableNameData]
+  );
 
   /**
    * Передача данных xls-файла в глобальное хранилище, вызов модального окна для подтверждения сохранения данных документа
@@ -166,9 +175,19 @@ const ParserTable: FC<IParserTable> = ({
       </Box>
       {/* // TODO: настроить сброс данных таблицы comparedFileData после успешного ответа сервера */}
       {isTableGridVisible && <DataGrid
-        sx={{ border: 0, flexGrow: 1, height: 'auto', boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)', bgcolor: 'background.default' }}
+        sx={{
+          border: 0,
+          flexGrow: 1,
+          height: 'auto',
+          boxShadow: '0 2px 10px 0 rgba(0,0,0,.045)',
+          bgcolor: 'background.default',
+          '& .MuiDataGrid-row--immutable': {
+            bgcolor: 'grey.200',
+          },
+        }}
         columns={tableGridCols}
         rows={tableGridRows}
+        getRowClassName={({ row }) => immutableNameItems.includes(Number(row[ID_KEY])) ? 'MuiDataGrid-row--immutable' : ''}
         // TODO: необязательная доработка - возможность удалять группы записей
         onRowClick={({ row }: { row: TItemData }) => handleTableGridRow(row)}
       />}

@@ -36,6 +36,7 @@ import {
 interface IFileDataCard {
   fileCardData: TCategoryData | null;
   fileCardDates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string>;
+  immutableNameData: TCustomData<string> | null;
   handleFileCardData: () => void;
   handleFileData: () => void;
 }
@@ -46,6 +47,7 @@ interface IFileDataCard {
  * @returns {IFileDataCard} данные элемента обработанного файла;
  * @property {IFileDataCard['fileCardData']} fileCardData - данные обновляемого элемента для отображения в модальном окне;
  * @property {IFileDataCard['fileCardDates']} fileCardDates - даты сохранения и изменения обновляемого элемента для отображения в модальном окне;
+ * @property {IFileDataCard['immutableNameData']} immutableNameData - объект данных вида {'id': 'name'} для элементов прайслиста с неизменяемыми названиями;
  * @property {function} handleFileCardData - формирует данные карточки элемента обработанного файла и отправляет их на сервер;
  * @property {function} handleFileData - передаёт на сервер данные, полученные после обработки xls-документа, для внесения изменений во все записи прайслиста.
  */
@@ -248,6 +250,7 @@ const useFileDataCard = (): IFileDataCard => {
   return {
     fileCardData,
     fileCardDates,
+    immutableNameData,
     handleFileCardData,
     handleFileData
   }
