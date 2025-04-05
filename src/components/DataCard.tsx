@@ -57,7 +57,7 @@ const DataCard: FC = () => {
   const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
 
   useEffect(() => {
-    console.log(fileCardData);
+    //console.log(fileCardData);
     handleTableData(fileCardData, null);
   }, [
     fileCardData

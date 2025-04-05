@@ -16,6 +16,9 @@ import type {
 
 import {
   ID_KEY,
+  ITEM_KEY,
+  NAME_KEY,
+  IS_NAME_IMMUTABLE_KEY,
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
@@ -50,14 +53,32 @@ const useFileDataCard = (): IFileDataCard => {
   const dispatch = useDispatch();
   const {
     formData,
-    pricelist
-  } = useSelector(({ form, pricelist }) => ({ formData: form.formData, pricelist }));
+    pricelist,
+    immutableNameItems
+  } = useSelector(({ form, pricelist }) => ({
+    formData: form.formData,
+    pricelist,
+    immutableNameItems: pricelist[TYPES[ITEM_KEY]].filter(item => item[IS_NAME_IMMUTABLE_KEY])
+  }));
 
   const actionKeys: Record<TActionKeys, THandledItemKeys> = {
     [ADD_ACTION_KEY]: CREATED_KEY,
     [EDIT_ACTION_KEY]: UPDATED_KEY,
     [REMOVE_ACTION_KEY]: REMOVED_KEY
   };
+
+  /**
+   * Данные услуг с неизменяемыми названиями
+   */
+  const immutableNameData = useMemo(
+    () => immutableNameItems.length > 0
+      ? immutableNameItems.reduce(
+          (acc: TCustomData<string>, item) => ({ ...acc, [item[ID_KEY].toString()]: item[NAME_KEY].toString() }),
+          {} as TCustomData<string>
+        )
+      : null,
+    [immutableNameItems]
+  );
 
   /**
    * Данные обновляемого элемента для отображения в модальном окне,
@@ -130,21 +151,17 @@ const useFileDataCard = (): IFileDataCard => {
       return;
     }
 
-    const { action, data, items, type } = formData;
+    const { action, data: itemData, items, type } = formData;
     const arr: TItemsArr = items && action && items[actionKeys[action]] ? items[actionKeys[action]][type] : [];
+    const data = itemData && immutableNameData?.[itemData[ID_KEY]?.toString()]
+      ? { ...itemData, [NAME_KEY]: immutableNameData[itemData[ID_KEY].toString()] }
+      : itemData;
     const payload = {
       type,
       items: Array.isArray(arr) && arr.length > 0
         ? arr
         : data ? [{...data}] : [] as TItemsArr
     };
-
-    console.log({
-      ...payload,
-      ...(action === REMOVE_ACTION_KEY && { items: payload.items.map(item => ({ [ID_KEY]: item[ID_KEY] })) }),
-      action
-    })
-    return;
 
     dispatch(handlePricelistData({
       ...payload,
