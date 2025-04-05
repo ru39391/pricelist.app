@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useSelector, useDispatch } from '../services/hooks';
 
+import { handlePricelistData } from '../services/actions/pricelist';
+
 import type {
+  TActionKeys,
   TCategoryData,
+  THandledItemKeys,
   TItemData,
   TItemsArr,
   TPricelistData
@@ -11,7 +15,12 @@ import type {
 
 import {
   ID_KEY,
+  ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
+  REMOVE_ACTION_KEY,
+  CREATED_KEY,
+  UPDATED_KEY,
+  REMOVED_KEY,
   CREATEDON_KEY,
   UPDATEDON_KEY,
   NOT_CREATED_KEY,
@@ -22,13 +31,21 @@ import {
 interface IFileDataCard {
   fileCardData: TCategoryData | null;
   fileCardDates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string>;
+  handleFileCardData: () => void;
 }
 
 const useFileDataCard = (): IFileDataCard => {
+  const dispatch = useDispatch();
   const {
     form: { formDesc, formData },
     pricelist
   } = useSelector(({ form, pricelist }) => ({ form, pricelist }));
+
+  const actionKeys: Record<TActionKeys, THandledItemKeys> = {
+    [ADD_ACTION_KEY]: CREATED_KEY,
+    [EDIT_ACTION_KEY]: UPDATED_KEY,
+    [REMOVE_ACTION_KEY]: REMOVED_KEY
+  };
 
   /**
    * Данные обновляемого элемента для отображения в модальном окне,
@@ -93,9 +110,37 @@ const useFileDataCard = (): IFileDataCard => {
     pricelist
   ]);
 
+  /**
+   * Отправить данные для внесения изменений в записи прайслиста
+   */
+  const handleFileCardData = useCallback(() => {
+    if(!formData) {
+      return;
+    }
+
+    const { action, data, items, type } = formData;
+    const arr: TItemsArr = items && action && items[actionKeys[action]] ? items[actionKeys[action]][type] : [];
+    const payload = {
+      type,
+      items: Array.isArray(arr) && arr.length > 0
+        ? arr
+        : data ? [{...data}] : [] as TItemsArr
+    };
+
+    dispatch(handlePricelistData({
+      ...payload,
+      ...(action === REMOVE_ACTION_KEY && { items: payload.items.map(item => ({ [ID_KEY]: item[ID_KEY] })) }),
+      action
+    }));
+  }, [
+    dispatch,
+    formData,
+  ]);
+
   return {
     fileCardData,
-    fileCardDates
+    fileCardDates,
+    handleFileCardData
   }
 }
 

@@ -15,7 +15,6 @@ import { handlePricelistData } from '../services/actions/pricelist';
 import type {
   TActionKeys,
   TCustomData,
-  TFormData,
   THandledItemKeys,
   TItemsArr,
   TItemData,
@@ -51,15 +50,12 @@ import {
 
 const DataCard: FC = () => {
   const dispatch = useDispatch();
-  const {
-    form: { formDesc, formData },
-    pricelist
-  } = useSelector(state => ({
-    form: state.form,
-    pricelist: state.pricelist
+  const { formDesc, formData } = useSelector(({ form }) => ({
+    formDesc: form.formDesc,
+    formData: form.formData
   }));
 
-  const { fileCardData, fileCardDates } = useFileDataCard();
+  const { fileCardData, fileCardDates, handleFileCardData } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
@@ -74,68 +70,8 @@ const DataCard: FC = () => {
   }), [
     formData
   ]);
-  const formHandlerData = useMemo(() => {
-    if(!formData) {
-      return {
-        type: null,
-        items: [] as TItemsArr
-      };
-    }
-
-    const { action, data, items, type } = formData;
-    const arr: TItemsArr = items && action && items[actionKeys[action]] ? items[actionKeys[action]][type] : [];
-
-    return {
-      type,
-      items: Array.isArray(arr) && arr.length > 0
-        ? arr
-        : data ? [{...data}] : []
-    }
-  }, [
-    formData
-  ]);
 
   const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
-
-  const handlersData = {
-    [ADD_ACTION_KEY]: useCallback(() => {
-      if(!formData) {
-        return;
-      }
-
-      dispatch(handlePricelistData({ ...formHandlerData, action: ADD_ACTION_KEY }));
-    }, [
-      dispatch,
-      formData,
-      formHandlerData
-    ]),
-    [EDIT_ACTION_KEY]: useCallback(() => {
-      if(!formData) {
-        return;
-      }
-
-      dispatch(handlePricelistData({ ...formHandlerData, action: EDIT_ACTION_KEY }));
-    }, [
-      dispatch,
-      formData,
-      formHandlerData
-    ]),
-    [REMOVE_ACTION_KEY]: useCallback(() => {
-      if(!formData) {
-        return;
-      }
-
-      dispatch(handlePricelistData({
-        ...formHandlerData,
-        items: formHandlerData.items.map(item => ({ [ID_KEY]: item[ID_KEY] })),
-        action: REMOVE_ACTION_KEY
-      }));
-    }, [
-      dispatch,
-      formData,
-      formHandlerData
-    ]),
-  };
 
   // TODO: не следует ли создать отдельный хук для методов этого компонента?
   const dispatchTableData = useCallback(() => {
@@ -234,7 +170,7 @@ const DataCard: FC = () => {
           color='success'
           disabled={false}
           actionBtnCaption={formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
-          handleClick={handlersData[formData.action]}
+          handleClick={handleFileCardData}
         />
       </>
     );
@@ -254,7 +190,7 @@ const DataCard: FC = () => {
             formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: ${formData && 1}. ${CONFIRM_MSG}`
           }
           disabled={false}
-          handleClick={formData && formData.action === REMOVE_ACTION_KEY ? handlersData[formData.action] : dispatchTableData}
+          handleClick={formData && formData.action === REMOVE_ACTION_KEY ? handleFileCardData : dispatchTableData}
         />
       : ''
   )
