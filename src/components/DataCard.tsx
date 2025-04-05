@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 
 import DataCardRow from './DataCardRow';
@@ -8,22 +8,11 @@ import useFileDataCard from '../hooks/useFileDataCard';
 import useForm from '../hooks/useForm';
 import useTableData from '../hooks/useTableData';
 
-import { useSelector, useDispatch } from '../services/hooks';
+import { useSelector } from '../services/hooks';
 
-import { handlePricelistData } from '../services/actions/pricelist';
-
-import type {
-  TActionKeys,
-  TCustomData,
-  THandledItemKeys,
-  TItemsArr,
-  TItemData,
-  TPricelistDataThunk,
-  TPricelistExtTypes
-} from '../types';
+import type { TCustomData } from '../types';
 
 import {
-  ID_KEY,
   ITEM_KEY,
   INDEX_KEY,
   COMPLEX_KEY,
@@ -34,11 +23,7 @@ import {
   UPDATEDON_KEY,
   ROW_INDEX_KEY,
   ADD_ACTION_KEY,
-  EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
-  CREATED_KEY,
-  UPDATED_KEY,
-  REMOVED_KEY,
   SAVE_TITLE,
   EDIT_TITLE,
   EDIT_ITEM_TITLE,
@@ -49,21 +34,17 @@ import {
 } from '../utils/constants';
 
 const DataCard: FC = () => {
-  const dispatch = useDispatch();
-  const { formDesc, formData } = useSelector(({ form }) => ({
-    formDesc: form.formDesc,
-    formData: form.formData
-  }));
+  const { formDesc, formData } = useSelector(({ form }) => form);
 
-  const { fileCardData, fileCardDates, handleFileCardData } = useFileDataCard();
+  const {
+    fileCardData,
+    fileCardDates,
+    handleFileCardData,
+    handleFileData
+  } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
-  const actionKeys: Record<TActionKeys, THandledItemKeys> = {
-    [ADD_ACTION_KEY]: CREATED_KEY,
-    [EDIT_ACTION_KEY]: UPDATED_KEY,
-    [REMOVE_ACTION_KEY]: REMOVED_KEY
-  };
   const complexKeys: string[] = [IS_VISIBLE_KEY, IS_COMPLEX_ITEM_KEY, IS_COMPLEX_KEY];
   const complexData: TCustomData<string> = useMemo(() => ({
     [COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''
@@ -73,45 +54,7 @@ const DataCard: FC = () => {
 
   const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
 
-  // TODO: не следует ли создать отдельный хук для методов этого компонента?
-  const dispatchTableData = useCallback(() => {
-    if(!formData) {
-      return;
-    }
-
-    const { items } = formData;
-    const dataKeys = Object.entries(actionKeys).reverse().reduce((acc, item) => ({ ...acc,  [item[1]]: item[0] }), {} as Record<string, string>);
-    let pricelistDataThunks: TPricelistDataThunk[] = [];
-
-    if(items) {
-      for (const key in dataKeys) {
-        const handledItemKey = key as THandledItemKeys;
-        // TODO: настроть исключение элементов с неизменяемыми названиями
-        pricelistDataThunks = [...pricelistDataThunks, ...Object.entries(items[handledItemKey]).reduce(
-          (acc, item) => {
-            const payload = {
-              type: item[0] as TPricelistExtTypes,
-              items: dataKeys[key] === REMOVE_ACTION_KEY ? item[1].map(data => ({ [ID_KEY]: data[ID_KEY] } as TItemData)) : item[1] as TItemsArr
-            };
-
-            return payload.items.length > 0 ? [...acc, { ...payload, action: dataKeys[key] }] : acc
-          },
-          [] as TPricelistDataThunk[]
-        )];
-      }
-
-      // TODO: настроить корректное отображение всплывающих сообщений по мере ответа сервера
-      pricelistDataThunks.forEach(item => {
-        dispatch(handlePricelistData(item))
-      });
-    }
-  }, [
-    dispatch,
-    formData
-  ]);
-
   useEffect(() => {
-    //console.log({fileCardData});
     handleTableData(fileCardData, null);
   }, [
     fileCardData
@@ -169,7 +112,7 @@ const DataCard: FC = () => {
         <ModalControllers
           color='success'
           disabled={false}
-          actionBtnCaption={formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
+          actionBtnCaption={formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
           handleClick={handleFileCardData}
         />
       </>
@@ -179,18 +122,18 @@ const DataCard: FC = () => {
   return (
     formData
       ? <ModalControllers
-          icon={formData && formData.action}
-          color={formData && formData.action === REMOVE_ACTION_KEY ? 'error' : 'success'}
+          icon={formData.action}
+          color={formData.action === REMOVE_ACTION_KEY ? 'error' : 'success'}
           actionBtnCaption={
-            formData && formData.action === REMOVE_ACTION_KEY
+            formData.action === REMOVE_ACTION_KEY
               ? REMOVE_TITLE
-              : formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_ITEM_TITLE
+              : formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_ITEM_TITLE
           }
           introText={
-            formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: ${formData && 1}. ${CONFIRM_MSG}`
+            formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: 1. ${CONFIRM_MSG}`
           }
           disabled={false}
-          handleClick={formData && formData.action === REMOVE_ACTION_KEY ? handleFileCardData : dispatchTableData}
+          handleClick={formData.action === REMOVE_ACTION_KEY ? handleFileCardData : handleFileData}
         />
       : ''
   )

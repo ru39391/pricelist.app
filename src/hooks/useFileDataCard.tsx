@@ -1,7 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-
+import { useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from '../services/hooks';
-
 import { handlePricelistData } from '../services/actions/pricelist';
 
 import type {
@@ -10,7 +8,9 @@ import type {
   THandledItemKeys,
   TItemData,
   TItemsArr,
-  TPricelistData
+  TPricelistData,
+  TPricelistDataThunk,
+  TPricelistTypes
 } from '../types';
 
 import {
@@ -28,18 +28,28 @@ import {
   TYPES
 } from '../utils/constants';
 
+// TODO: пересмотреть используемые в хуках типы, опираясь на interface компонента
 interface IFileDataCard {
   fileCardData: TCategoryData | null;
   fileCardDates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string>;
   handleFileCardData: () => void;
+  handleFileData: () => void;
 }
 
+/**
+ * Обработка данных, полученных после парсинга xls-документа, для отображения в модальном окне и отправки на сервер
+ *
+ * @returns {IFileDataCard['fileCardData']} fileCardData - данные обновляемого элемента для отображения в модальном окне;
+ * @returns {IFileDataCard['fileCardDates']} fileCardDates - даты сохранения и изменения обновляемого элемента для отображения в модальном окне;
+ * @returns {function} handleFileCardData - формирует данные карточки элемента обработанного файла и отправляет их на сервер;
+ * @returns {function} handleFileData - передаёт на сервер данные, полученные после обработки xls-документа, для внесения изменений во все записи прайслиста.
+ */
 const useFileDataCard = (): IFileDataCard => {
   const dispatch = useDispatch();
   const {
-    form: { formDesc, formData },
+    formData,
     pricelist
-  } = useSelector(({ form, pricelist }) => ({ form, pricelist }));
+  } = useSelector(({ form, pricelist }) => ({ formData: form.formData, pricelist }));
 
   const actionKeys: Record<TActionKeys, THandledItemKeys> = {
     [ADD_ACTION_KEY]: CREATED_KEY,
@@ -111,7 +121,7 @@ const useFileDataCard = (): IFileDataCard => {
   ]);
 
   /**
-   * Отправить данные для внесения изменений в записи прайслиста
+   * Отправить данные карточки таблицы обработанного документа для внесения изменений в параметры элемента прайслиста
    */
   const handleFileCardData = useCallback(() => {
     if(!formData) {
@@ -137,10 +147,77 @@ const useFileDataCard = (): IFileDataCard => {
     formData,
   ]);
 
+  /**
+   * Отправить данные обработанного документа для внесения всех изменений в записи прайслиста
+   * @returns {Promise<TPricelistDataThunk>}
+   * @property {TPricelistDataThunk} data - данные для передачи на сервер
+   */
+  const dispatchFileData = (data: TPricelistDataThunk): Promise<TPricelistDataThunk> => {
+    dispatch(handlePricelistData(data));
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(data);
+      }, 200);
+    });
+  }
+
+  const fetchFileData = async (arr: TPricelistDataThunk[]) => {
+    try {
+      const res = await Promise.all(arr.map(item => dispatchFileData(item)));
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /**
+   * Обработать изменённые записи прайслиста для сохранения обновлений
+   */
+  const handleFileData = useCallback(() => {
+    if(!formData) {
+      return;
+    }
+
+    const { items } = formData;
+
+    if(!items) {
+      return;
+    }
+
+    let pricelistDataThunks: TPricelistDataThunk[] = [];
+    const dataKeys = Object.entries(actionKeys).reverse().reduce(
+      (acc, [key, value]) => ({ ...acc,  [value]: key }), {} as Record<string, string>
+    );
+
+    for (const key in dataKeys) {
+      const handledItemKey = key as THandledItemKeys;
+
+      // TODO: настроть исключение элементов с неизменяемыми названиями
+      pricelistDataThunks = [...pricelistDataThunks, ...Object.entries(items[handledItemKey]).reduce(
+        (acc, [type, arr]) => {
+          const payload = {
+            type: type as TPricelistTypes,
+            items: dataKeys[key] === REMOVE_ACTION_KEY ? arr.map(data => ({ [ID_KEY]: data[ID_KEY] } as TItemData)) : arr as TItemsArr
+          };
+
+          return payload.items.length > 0 ? [...acc, { ...payload, action: dataKeys[key] }] : acc
+        },
+        [] as TPricelistDataThunk[]
+      )];
+    }
+
+    fetchFileData(pricelistDataThunks);
+  }, [
+    dispatch,
+    formData,
+  ]);
+
   return {
     fileCardData,
     fileCardDates,
-    handleFileCardData
+    handleFileCardData,
+    handleFileData
   }
 }
 
