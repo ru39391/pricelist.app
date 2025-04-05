@@ -219,12 +219,18 @@ const useFileDataCard = (): IFileDataCard => {
     for (const key in dataKeys) {
       const handledItemKey = key as THandledItemKeys;
 
-      // TODO: настроть исключение элементов с неизменяемыми названиями
       pricelistDataThunks = [...pricelistDataThunks, ...Object.entries(items[handledItemKey]).reduce(
         (acc, [type, arr]) => {
           const payload = {
             type: type as TPricelistTypes,
-            items: dataKeys[key] === REMOVE_ACTION_KEY ? arr.map(data => ({ [ID_KEY]: data[ID_KEY] } as TItemData)) : arr as TItemsArr
+            items: dataKeys[key] === REMOVE_ACTION_KEY
+              ? arr.map(data => ({ [ID_KEY]: data[ID_KEY] } as TItemData))
+              : immutableNameData
+                ? arr.map(data => ({
+                  ...data,
+                  ...(immutableNameData[data[ID_KEY].toString()] && { [NAME_KEY]: immutableNameData[data[ID_KEY].toString()] })
+                })) as TItemsArr
+                : arr as TItemsArr
           };
 
           return payload.items.length > 0 ? [...acc, { ...payload, action: dataKeys[key] }] : acc
