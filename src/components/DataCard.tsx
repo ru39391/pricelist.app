@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import DataCardRow from './DataCardRow';
 import ModalControllers from './ModalControllers';
 
+import useFileDataCard from '../hooks/useFileDataCard';
 import useForm from '../hooks/useForm';
 import useTableData from '../hooks/useTableData';
 
@@ -39,8 +40,6 @@ import {
   CREATED_KEY,
   UPDATED_KEY,
   REMOVED_KEY,
-  NOT_CREATED_KEY,
-  NOT_UPDATED_KEY,
   SAVE_TITLE,
   EDIT_TITLE,
   EDIT_ITEM_TITLE,
@@ -60,6 +59,7 @@ const DataCard: FC = () => {
     pricelist: state.pricelist
   }));
 
+  const { fileCardData, fileCardDates } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
@@ -94,36 +94,7 @@ const DataCard: FC = () => {
   }, [
     formData
   ]);
-  const dates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string> = useMemo(() => {
-    const formatDate = (value: TItemData[keyof TItemData], mess: string): string => {
-      if(!value) {
-        return mess;
-      }
 
-      const [date, time] = value.toString().split(' ');
-      const formatedDate: string = date.split('-').reverse().join('.');
-
-      return `${formatedDate} ${time}`;
-    };
-
-    if(!formData) {
-      return {
-        [CREATEDON_KEY]: NOT_CREATED_KEY,
-        [UPDATEDON_KEY]: NOT_UPDATED_KEY,
-      };
-    }
-
-    const { data, type } = formData;
-    const item = pricelist[type].find(item => item[ID_KEY] === data[ID_KEY]);
-
-    return {
-      [CREATEDON_KEY]: item && item[CREATEDON_KEY] ? formatDate(item[CREATEDON_KEY], NOT_CREATED_KEY) : NOT_CREATED_KEY,
-      [UPDATEDON_KEY]: item && item[UPDATEDON_KEY] ? formatDate(item[UPDATEDON_KEY], NOT_UPDATED_KEY) : NOT_UPDATED_KEY,
-    };
-  }, [
-    pricelist,
-    formData
-  ]);
   const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
 
   const handlersData = {
@@ -203,42 +174,11 @@ const DataCard: FC = () => {
     formData
   ]);
 
-  const handleCurrFormData = useCallback((formData: TFormData | null) => {
-    if(!formData) {
-      return;
-    }
-
-    const { action, type, data } = formData;
-    const isDataExist = formData
-      ? Boolean(data)
-      : Boolean(formData);
-
-    if(!isDataExist || action !== EDIT_ACTION_KEY) {
-      return;
-    }
-
-    handleTableData(
-      {
-        data: {
-          ...Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: pricelist[type]}), {}),
-          [type]: data ? [pricelist[type].find((item: TItemData) => item[ID_KEY] === data[ID_KEY])] : []
-        },
-        category: type,
-        params: null
-      },
-      null
-    );
-  }, [
-    pricelist
-  ]);
-
   useEffect(() => {
-    handleCurrFormData(formData);
-    //console.log('formData', formData);
-    //console.log('formFields', formFields);
-    //console.log('selecterFields', selecterFields);
+    //console.log({fileCardData});
+    handleTableData(fileCardData, null);
   }, [
-    formData
+    fileCardData
   ]);
 
   if(formData && isDetailsListVisible) {
@@ -284,8 +224,8 @@ const DataCard: FC = () => {
           }
           {formData.data
             ? [
-                {caption: 'Дата создания:', value: dates[CREATEDON_KEY], isAlertVisible: false},
-                {caption: 'Дата обновления:', value: dates[UPDATEDON_KEY], isAlertVisible: false}
+                {caption: 'Дата создания:', value: fileCardDates[CREATEDON_KEY], isAlertVisible: false},
+                {caption: 'Дата обновления:', value: fileCardDates[UPDATEDON_KEY], isAlertVisible: false}
               ].map((props, index) => <DataCardRow key={index} {...props} />)
             : ''
           }
