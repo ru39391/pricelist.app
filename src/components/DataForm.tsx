@@ -50,6 +50,7 @@ import {
 
 type TVisibilityValues = Record<typeof IS_VISIBLE_KEY | typeof IS_NAME_IMMUTABLE_KEY, number>;
 
+// TODO: вынести вычисления в отдельный хук
 const DataForm: FC = () => {
   const dispatch = useDispatch();
   const { formData, formValues, isParserData } = useSelector(state => state.form);

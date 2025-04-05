@@ -14,11 +14,13 @@ import type { TCustomData } from '../types';
 
 import {
   ITEM_KEY,
+  NAME_KEY,
   INDEX_KEY,
   COMPLEX_KEY,
   IS_VISIBLE_KEY,
   IS_COMPLEX_ITEM_KEY,
   IS_COMPLEX_KEY,
+  IS_NAME_IMMUTABLE_KEY,
   CREATEDON_KEY,
   UPDATEDON_KEY,
   ROW_INDEX_KEY,
@@ -33,15 +35,15 @@ import {
   TYPES,
 } from '../utils/constants';
 
+/**
+ * Блок данных элемента обработанного при парсинге xls-файла для отображения в модальном окне
+ *
+ * @returns {TSX.Element}
+ */
 const DataCard: FC = () => {
   const { formDesc, formData } = useSelector(({ form }) => form);
 
-  const {
-    fileCardData,
-    fileCardDates,
-    handleFileCardData,
-    handleFileData
-  } = useFileDataCard();
+  const { fileCardData, fileCardDates, handleFileCardData, handleFileData } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
@@ -55,6 +57,7 @@ const DataCard: FC = () => {
   const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
 
   useEffect(() => {
+    console.log(fileCardData);
     handleTableData(fileCardData, null);
   }, [
     fileCardData
@@ -71,6 +74,7 @@ const DataCard: FC = () => {
               value={formData.data[key].toString()}
               currValue={tableData ? tableData.rows[0][key] : ''}
               isAlertVisible={Boolean(tableData && formData.data[key] !== tableData.rows[0][key])}
+              {...( tableData && key === NAME_KEY && { [IS_NAME_IMMUTABLE_KEY]: Boolean(tableData.rows[0][IS_NAME_IMMUTABLE_KEY]) } )}
             />)
           }
           {selecterFields[formData.type].map(

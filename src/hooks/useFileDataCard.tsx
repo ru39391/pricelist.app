@@ -5,6 +5,7 @@ import { handlePricelistData } from '../services/actions/pricelist';
 import type {
   TActionKeys,
   TCategoryData,
+  TCustomData,
   THandledItemKeys,
   TItemData,
   TItemsArr,
@@ -39,10 +40,11 @@ interface IFileDataCard {
 /**
  * Обработка данных, полученных после парсинга xls-документа, для отображения в модальном окне и отправки на сервер
  *
- * @returns {IFileDataCard['fileCardData']} fileCardData - данные обновляемого элемента для отображения в модальном окне;
- * @returns {IFileDataCard['fileCardDates']} fileCardDates - даты сохранения и изменения обновляемого элемента для отображения в модальном окне;
- * @returns {function} handleFileCardData - формирует данные карточки элемента обработанного файла и отправляет их на сервер;
- * @returns {function} handleFileData - передаёт на сервер данные, полученные после обработки xls-документа, для внесения изменений во все записи прайслиста.
+ * @returns {IFileDataCard} данные элемента обработанного файла;
+ * @property {IFileDataCard['fileCardData']} fileCardData - данные обновляемого элемента для отображения в модальном окне;
+ * @property {IFileDataCard['fileCardDates']} fileCardDates - даты сохранения и изменения обновляемого элемента для отображения в модальном окне;
+ * @property {function} handleFileCardData - формирует данные карточки элемента обработанного файла и отправляет их на сервер;
+ * @property {function} handleFileData - передаёт на сервер данные, полученные после обработки xls-документа, для внесения изменений во все записи прайслиста.
  */
 const useFileDataCard = (): IFileDataCard => {
   const dispatch = useDispatch();
@@ -137,6 +139,13 @@ const useFileDataCard = (): IFileDataCard => {
         : data ? [{...data}] : [] as TItemsArr
     };
 
+    console.log({
+      ...payload,
+      ...(action === REMOVE_ACTION_KEY && { items: payload.items.map(item => ({ [ID_KEY]: item[ID_KEY] })) }),
+      action
+    })
+    return;
+
     dispatch(handlePricelistData({
       ...payload,
       ...(action === REMOVE_ACTION_KEY && { items: payload.items.map(item => ({ [ID_KEY]: item[ID_KEY] })) }),
@@ -187,7 +196,7 @@ const useFileDataCard = (): IFileDataCard => {
 
     let pricelistDataThunks: TPricelistDataThunk[] = [];
     const dataKeys = Object.entries(actionKeys).reverse().reduce(
-      (acc, [key, value]) => ({ ...acc,  [value]: key }), {} as Record<string, string>
+      (acc, [key, value]) => ({ ...acc,  [value]: key }), {} as TCustomData<string>
     );
 
     for (const key in dataKeys) {
