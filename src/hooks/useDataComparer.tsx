@@ -6,11 +6,11 @@ import type {
   TComparedFileData,
   TComparedItems,
   TComparedItemsAction,
-  TCustomData,
   THandledItemKeys,
-  TItemsArr,
   TItemData,
-  TPricelistData,
+  TItemsArr,
+  TItemsArrData,
+  TPriceListData,
   TPricelistResponse,
   TPricelistTypes
 } from '../types';
@@ -33,29 +33,24 @@ import {
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
   ITEM_KEY,
-  TYPES,
   CAPTIONS
 } from '../utils/constants';
 
-type TFileHandlerData = {
-  keys: string[];
-  items: TItemsArr[];
-  param?: keyof TItemData;
-}
+type TComparedItemIds = Record<THandledItemKeys, { ids: number[]; arr: TItemsArr; }>;
 
 interface IDataComparer {
   comparedItems: TComparedItems,
   comparedFileData: TComparedFileData | null;
-  compareFileData: (data: TPricelistData | null) => void;
+  compareFileData: (data: TPriceListData | null) => void;
 }
 
-const setComparedItems = (
+const setComparedData = (
   state: TComparedItems,
   key: keyof TComparedItems,
   data?: TItemData
 ): TComparedItems => ({
   ...state,
-  ...(data && { [key]: [...state[key], data] })
+  ...(data && { [key]: state[key].find(item => item[ID_KEY] === data[ID_KEY]) ? [...state[key]] : [...state[key], data] })
 });
 
 const comparedItemsReducer = (
@@ -64,16 +59,16 @@ const comparedItemsReducer = (
 ) => {
   switch (action.type) {
     case 'SET_NAME_DATA':
-      return setComparedItems(state, NAME_KEY, action.data);
+      return setComparedData(state, NAME_KEY, action.data);
 
     case 'SET_PRICE_DATA':
-      return setComparedItems(state, PRICE_KEY, action.data);
+      return setComparedData(state, PRICE_KEY, action.data);
 
     case 'SET_VISIBLE_DATA':
-      return setComparedItems(state, IS_VISIBLE_KEY, action.data);
+      return setComparedData(state, IS_VISIBLE_KEY, action.data);
 
     case 'SET_ITEMS_DATA':
-      return setComparedItems(state, ITEM_KEY, action.data);
+      return setComparedData(state, ITEM_KEY, action.data);
 
     default:
       return [NAME_KEY, PRICE_KEY, IS_VISIBLE_KEY, ITEM_KEY].reduce((acc, key) => ({...acc, [key as keyof TComparedItems]: []}), {} as TComparedItems);
@@ -93,36 +88,13 @@ const useDataComparer = (): IDataComparer => {
     response: pricelist.response
   }));
 
-  const setItemIds = (
-    {
-      key,
-      arr
-    }: {
-      key: TPricelistTypes;
-      arr: TItemsArr;
+  const handleComparedItems = (data) => {//item: TItemData, currItem?: TItemData, isCategorySet?: boolean
+    console.log('handleComparedItems', data[UPDATED_KEY]);
+    if(!data) {
+      setComparedItems({});
     }
-  ): TCustomData<{ ids: number[]; arr: TItemsArr; }> => {
-    const currItems: TItemsArr = pricelist[key];
-    const ids = arr.map(item => item[ID_KEY] as number);
-    const currIds = currItems.map((item: TItemData) => item[ID_KEY] as number);
 
-    return {
-      [CREATED_KEY]: {
-        ids: currIds,
-        arr
-      },
-      [UPDATED_KEY]: {
-        ids: ids.filter(id => currIds.includes(id as number)),
-        arr: currItems
-      },
-      [REMOVED_KEY]: {
-        ids,
-        arr: currItems
-      }
-    };
-  };
-
-  const handleComparedItems = (item: TItemData, currItem?: TItemData, isCategorySet?: boolean) => {
+    return;
     if(!isCategorySet || !currItem) {
       return;
     }
@@ -145,27 +117,43 @@ const useDataComparer = (): IDataComparer => {
         setComparedItems({ type: 'SET_ITEMS_DATA', data: item });
       }
     }
-  }
+  };
 
-  const handleUpdatedItems = ({
-    ids,
-    items,
-    currItems,
-    isCategorySet
-  }: {
-    ids: number[];
-    items: TItemsArr;
-    currItems: TItemsArr;
-    isCategorySet?: boolean
-  }) => {
+  /**
+   * Возвращает объект с массивами идентификаторов и элементов для сравнения в зависимости от типа обновления:
+   * - для поиска новых элементов: id всех существующих позиций и массив всех элементов файла;
+   * - для поиска изменённых элементов: id позиций файла, которые совпадают с id существующих записей, и массив всех существующих элементов;
+   * - для поиска удалённых элементов: id всех позиций файла и массив всех существующих элементов.
+   * @returns {TComparedItemIds} - объект с массивами для сравнения элементов
+   * @property {number[]} type - категория элементов ('depts' | 'subdepts' | 'groups' | 'pricelist')
+   * @property {TItemsArr} items - массив элементов обработанного xls-файла
+   */
+  const setComparedItemIds = ({ type, items: arr }: TItemsArrData): TComparedItemIds => {
+    const currItems: TItemsArr = pricelist[type];
+    const ids = arr.map(item => item[ID_KEY] as number);
+    const currIds = currItems.map((item: TItemData) => item[ID_KEY] as number);
+
+    return {
+      [CREATED_KEY]: { ids: currIds, arr },
+      [UPDATED_KEY]: { ids: ids.filter(id => currIds.includes(id as number)), arr: currItems },
+      [REMOVED_KEY]: { ids, arr: currItems }
+    };
+  };
+
+  /**
+   * Сравнивает существующие на сайте записи прайслиста с такими же записями xls-файла,
+   * возвращает результат сравнения в виде массива изменённых элементов
+   * @returns {TItemsArr} - массив изменённых элементов
+   * @property {number[]} ids - id позиций файла, которые совпадают с id существующих записей
+   * @property {TItemsArr} items - массив элементов обработанного xls-файла
+   * @property {TItemsArr} currItems - массив существующих элементов
+   */
+  const handleUpdatedItems = ({ ids, items, currItems }: {ids: number[], items: TItemsArr, currItems: TItemsArr}): TItemsArr => {
     const fileItems = items.filter(item => ids.includes(item[ID_KEY] as number));
 
-    const handledFileItems = fileItems.reduce((acc: TItemsArr, item) => {
+    return fileItems.reduce((acc, item) => {
       const currItem = currItems.find(data => {
-        const {
-          itemId,
-          currItemId,
-        } = {
+        const { itemId, currItemId } = {
           itemId: item[ID_KEY] as number,
           currItemId: data[ID_KEY] as number
         };
@@ -173,61 +161,55 @@ const useDataComparer = (): IDataComparer => {
         return itemId === currItemId;
       });
 
-      handleComparedItems(item, currItem, isCategorySet);
-
       return currItem && Object.keys(item).every(key => item[key] === currItem[key]) ? acc : [...acc, item];
-    }, []);
-
-    return handledFileItems;
+    }, [] as TItemsArr);
   };
 
-  const handleItems = (
+  /**
+   * Возвращает результат сравнения данных обработанного xls-файла с текущими элементами прайслиста
+   * @returns {TPriceListData} - объект с массивами изменённых записей
+   * @property {THandledItemKeys} key - тип обновления (создание, изменение или удаление)
+   * @property {TPricelistTypes[]} keys - массив категорий элементов ('depts' | 'subdepts' | 'groups' | 'pricelist')
+   * @property {TItemsArr[]} items - массивы элементов, соответствующих категории
+   */
+  const handleFileData = (
     {
       key,
       keys,
-      items,
-      isCategorySet
+      items
     }: {
       key: THandledItemKeys;
-      keys: string[];
+      keys: TPricelistTypes[];
       items: TItemsArr[];
-      isCategorySet?: boolean;
     }
-  ): TPricelistData => keys.reduce((acc, item, index) => {
-    const { ids, arr } = setItemIds({ key: item as TPricelistTypes, arr: items[index] })[key];
+  ): TPriceListData => keys.reduce((acc, type, index) => {
+    const { ids, arr } = setComparedItemIds({ type, items: items[index] })[key];
 
     return {
       ...acc,
-      [item]: key === UPDATED_KEY
-        ? handleUpdatedItems({
-            ids,
-            items: items[index],
-            currItems: arr,
-            ...( item === TYPES[ITEM_KEY] && isCategorySet && { isCategorySet } )
-          })
+      [type]: key === UPDATED_KEY
+        ? handleUpdatedItems({ ids, items: items[index], currItems: arr })
         : arr.filter(data => !ids.includes(data[ID_KEY] as number))
     };
-  }, {});
+  }, {} as TPriceListData);
 
-  const handlers = {
-    [CREATED_KEY]: ({keys, items}: TFileHandlerData) => handleItems({key: CREATED_KEY, keys, items}),
-    [UPDATED_KEY]: ({keys, items}: TFileHandlerData) => handleItems({key: UPDATED_KEY, keys, items, isCategorySet: true}),
-    [REMOVED_KEY]: ({keys, items}: TFileHandlerData) => handleItems({key: REMOVED_KEY, keys, items})
-  };
-
-  const compareFileData = (data: TPricelistData | null): void => {
-    if(!data) {
+  /**
+   * Помещает в локальное хранилище изменённые данные из обработанного xls-документа
+   * @property {TPriceListData} fileData - данные обработанного xls-файла
+   */
+  const compareFileData = (fileData: TPriceListData | null): void => {
+    if(!fileData) {
       setComparedFileData(null);
       return;
     }
 
-    const [keys, items] = [Object.keys(data), Object.values(data)];
+    const [keys, items] = [Object.keys(fileData), Object.values(fileData)] as [TPricelistTypes[], TItemsArr[]];
 
-    setComparedFileData(
-      Object.keys(handlers).reduce((acc, key, index) => (
-        { ...acc, [key]: Object.values(handlers)[index]({keys, items}) }
-      ), {} as TComparedFileData)
+    const data = [...[CREATED_KEY, UPDATED_KEY, REMOVED_KEY] as THandledItemKeys[]].reduce(
+      (acc, key) => ({ ...acc, [key]: handleFileData({key, keys, items}) }), {} as TComparedFileData
     );
+
+    setComparedFileData(data);
   };
 
   const updateComparedFileData = (data: TPricelistState['response']) => {
@@ -264,9 +246,7 @@ const useDataComparer = (): IDataComparer => {
   ]);
 
   useEffect(() => {
-    if(!comparedFileData) {
-      setComparedItems({});
-    }
+    //handleComparedItems(comparedFileData);
   }, [
     comparedFileData
   ]);

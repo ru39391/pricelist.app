@@ -7,7 +7,7 @@ import {
   resetList
 } from '../slices/file-slice';
 import { setFormHidden } from '../slices/form-slice';
-import type { TPricelistData, TParserData, TItemsArr } from '../../types';
+import type { TPricelistData, TItemsArrData, TItemsArr } from '../../types';
 import type { TAppThunk, TAppDispatch } from '../../services/store';
 
 const validateFileData = (data: TPricelistData): Promise<{ isSucceed: boolean; }> => {
@@ -48,7 +48,7 @@ const handleFile = (data: TPricelistData): TAppThunk<void> => async (dispatch: T
   }
 };
 
-const removeFileItems = ({ type, items }: TParserData): TAppThunk<void> => async (dispatch: TAppDispatch) => {
+const removeFileItems = ({ type, items }: TItemsArrData): TAppThunk<void> => async (dispatch: TAppDispatch) => {
   dispatch(getFileUploading({ isLoading: true }));
 
   try {

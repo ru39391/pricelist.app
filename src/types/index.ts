@@ -53,12 +53,19 @@ export type TItemData = TCustomData<string | number>;
 
 export type TItemsArr = TItemData[];
 
-export type TPriceList<K extends TPricelistTypes | TPricelistExtTypes, T> = {
-  [key in K]: T;
+export type TItemsArrData = {
+  type: TPricelistTypes;
+  items: TItemsArr;
+};
+
+export type TPriceList<K extends TPricelistTypes | TPricelistExtTypes> = {
+  [key in K]: TItemsArr;
 };
 
 // TODO: разобраться с заменой TPricelistData на TPriceList<TPricelistExtTypes, TItemsArr>;
 export type TPricelistData =  TCustomData<TItemsArr>;
+
+export type TPriceListData =  TPriceList<TPricelistTypes>;
 
 export type TFormData = {
   action: TActionKeys;
@@ -183,11 +190,6 @@ export type TLinkedResData = {
 export type TUrlData = {
   type: TPricelistTypes | string;
   id: number | null;
-};
-
-export type TParserData = {
-  type: TPricelistTypes;
-  items: TItemsArr;
 };
 
 export type TFilterData = Partial<{

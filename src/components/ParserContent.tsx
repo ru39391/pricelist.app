@@ -24,7 +24,7 @@ import type {
   TFileCategoryData,
   TFileDataNav,
   THandledItemKeys,
-  TPricelistData
+  TPriceListData
 } from '../types';
 
 import {
@@ -68,7 +68,7 @@ const ParserContent: FC = () => {
    * если все массивы пусты, равен null
    */
   const currFileData = useMemo(() => {
-    const data = Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: file[type]}), {} as TPricelistData);
+    const data = Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: file[type]}), {} as TPriceListData);
     const dataItems = Object.values(data).filter(item => item.length === 0);
 
     return Object.values(data).length === dataItems.length ? null : data;
