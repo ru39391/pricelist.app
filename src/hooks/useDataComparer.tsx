@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { useSelector } from '../services/hooks';
 
 import type {
@@ -43,6 +43,7 @@ interface IDataComparer {
   comparedItems: TComparedItems,
   comparedFileData: TComparedFileData | null;
   fileItemsCounter: number;
+  isFileDataFetching: boolean;
   compareFileData: (data: TPriceListData | null) => void;
 }
 
@@ -89,6 +90,8 @@ const comparedItemsReducer = (
 const useDataComparer = (): IDataComparer => {
   const [comparedFileData, setComparedFileData] = useState<IDataComparer['comparedFileData']>(null);
   const [fileItemsCounter, setFileItemsCounter] = useState<IDataComparer['fileItemsCounter']>(0);
+  const [fileDataResponse, setFileDataResponse] = useState<TPricelistResponse[]>([]);
+  const [isFileDataFetching, setFileDataFetching] = useState<IDataComparer['isFileDataFetching']>(false);
   // TODO: настроить корректный сброс comparedItems при обновлении навигации
   const [comparedItems, setComparedItems] = useReducer(
     comparedItemsReducer,
@@ -289,8 +292,22 @@ const useDataComparer = (): IDataComparer => {
       }
     });
 
+    setFileDataResponse([...fileDataResponse, data]);
     setComparedFileData(fileData);
-  }
+  };
+
+  // TODO: добавить описание метода, избавиться от лишних комментов
+  const handleFileDataResponse = (counter: number, arr: TPricelistResponse[]) => {
+    const respCounter = arr.reduce((acc, { ids }) => acc + ids.length, 0);
+    console.log({ counter, respCounter });
+
+    setFileDataFetching(arr.length > 0 && counter > respCounter);
+
+    if(counter === 0 && respCounter > 0) {
+      // TODO: настроить вызов реального диспатчера
+      console.log('resetFileList');
+    }
+  };
 
   useEffect(() => {
     updateComparedFileData(response);
@@ -304,10 +321,18 @@ const useDataComparer = (): IDataComparer => {
     comparedFileData
   ]);
 
+  useEffect(() => {
+    handleFileDataResponse(fileItemsCounter, fileDataResponse);
+  }, [
+    fileItemsCounter,
+    fileDataResponse
+  ]);
+
   return {
     comparedItems,
     comparedFileData,
     fileItemsCounter,
+    isFileDataFetching,
     compareFileData
   }
 }

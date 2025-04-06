@@ -54,8 +54,8 @@ const ParserContent: FC = () => {
   }));
 
   const { currSubCategory, categoryTypes, setCurrSubCategory } = useCategoryItems();
-  const { comparedItems, comparedFileData, fileItemsCounter, compareFileData } = useDataComparer();
-  const { immutableNameData, isFileDataFetching, setFileDataCounter } = useFileDataCard();
+  const { comparedItems, comparedFileData, fileItemsCounter, isFileDataFetching, compareFileData } = useDataComparer();
+  const { immutableNameData } = useFileDataCard();
   const { fileDataNav, updateFileDataNav } = useFileDataNav();
   const { uploadFile } = useFileUploader();
   const { tableData, handleTableData } = useTableData();
@@ -132,7 +132,6 @@ const ParserContent: FC = () => {
 
   useEffect(() => {
     console.log('ParserContent', {comparedFileData});
-    setFileDataCounter(fileItemsCounter);
     updateFileDataNav(comparedFileData);
   }, [
     comparedFileData
