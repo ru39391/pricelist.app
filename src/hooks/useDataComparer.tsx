@@ -42,6 +42,7 @@ type TComparedItemIds = Record<THandledItemKeys, { ids: number[]; arr: TItemsArr
 interface IDataComparer {
   comparedItems: TComparedItems,
   comparedFileData: TComparedFileData | null;
+  fileItemsCounter: number;
   compareFileData: (data: TPriceListData | null) => void;
 }
 
@@ -82,10 +83,12 @@ const comparedItemsReducer = (
  * @returns {IDataComparer} данные, полученные поле сравнения записей на сайте с элементами xls-файла;
  * @property {IDataComparer['comparedItems']} comparedItems - массив категоризированных по типу изменямого параметра элементов;
  * @property {IDataComparer['comparedFileData']} comparedFileData - объект данных обработанного xls-файла, категоризированных по типу обновления;
+ * @property {IDataComparer['fileItemsCounter']} fileItemsCounter - количество элементов, которые будут сохранены;
  * @property {function} compareFileData - получает результат сравнения записей и помещает в локальное хранилище изменённые данные xls-документа.
  */
 const useDataComparer = (): IDataComparer => {
-  const [comparedFileData, setComparedFileData] = useState<TComparedFileData | null>(null);
+  const [comparedFileData, setComparedFileData] = useState<IDataComparer['comparedFileData']>(null);
+  const [fileItemsCounter, setFileItemsCounter] = useState<IDataComparer['fileItemsCounter']>(0);
   // TODO: настроить корректный сброс comparedItems при обновлении навигации
   const [comparedItems, setComparedItems] = useReducer(
     comparedItemsReducer,
@@ -101,7 +104,7 @@ const useDataComparer = (): IDataComparer => {
    * Формирует данные дочерних элементов навигации по категориям изменённых записей прайслиста
    * @property {TComparedFileData | null} data - данные обработанного xls-файла
    */
-  const handleComparedItems = (data: TComparedFileData | null) => {
+  const handleComparedItems = (data: IDataComparer['comparedFileData']) => {
     setComparedItems({});
 
     if(!data) {
@@ -216,6 +219,27 @@ const useDataComparer = (): IDataComparer => {
   }, {} as TPriceListData);
 
   /**
+   * Возвращает данные обработанного xls-файла или null в случае, когда массивы данных пусты
+   * @returns {TComparedFileData | null} - данные обработанного xls-файла
+   * @property {TComparedFileData} data - данные обработанного xls-файла, категоризированные по типу изменения
+   */
+  const setExistableFileData = (data: TComparedFileData): IDataComparer['comparedFileData'] => {
+    let counterValues: number[] = [];
+
+    for (const key in data) {
+      const arr = Object.entries(data[key]) as [TPricelistTypes, TItemsArr][];
+
+      counterValues = [...counterValues, arr.reduce((acc, item) => acc + item[1].length, 0)];
+    }
+
+    const counter = counterValues.reduce((acc, item) => acc + item, 0);
+
+    setFileItemsCounter(counter);
+
+    return counter > 0 ? data : null;
+  };
+
+  /**
    * Помещает в локальное хранилище изменённые данные из обработанного xls-документа
    * @property {TPriceListData} fileData - данные обработанного xls-файла
    */
@@ -227,8 +251,10 @@ const useDataComparer = (): IDataComparer => {
 
     const [keys, items] = [Object.keys(fileData), Object.values(fileData)] as [TPricelistTypes[], TItemsArr[]];
 
-    const data = [...[CREATED_KEY, UPDATED_KEY, REMOVED_KEY] as THandledItemKeys[]].reduce(
-      (acc, key) => ({ ...acc, [key]: handleFileData({key, keys, items}) }), {} as TComparedFileData
+    const data = setExistableFileData(
+      [...[CREATED_KEY, UPDATED_KEY, REMOVED_KEY] as THandledItemKeys[]].reduce(
+        (acc, key) => ({ ...acc, [key]: handleFileData({key, keys, items}) }), {} as TComparedFileData
+      )
     );
 
     setComparedFileData(data);
@@ -255,14 +281,15 @@ const useDataComparer = (): IDataComparer => {
     };
     const itemsData = comparedFileData[keys[action]];
     const items = itemsData[type].filter(item => !ids.includes(item[ID_KEY] as number));
-
-    setComparedFileData({
+    const fileData = setExistableFileData({
       ...comparedFileData,
       [keys[action]]: {
         ...itemsData,
         [type]: [...items]
       }
     });
+
+    setComparedFileData(fileData);
   }
 
   useEffect(() => {
@@ -281,6 +308,7 @@ const useDataComparer = (): IDataComparer => {
   return {
     comparedItems,
     comparedFileData,
+    fileItemsCounter,
     compareFileData
   }
 }

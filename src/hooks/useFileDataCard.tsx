@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from '../services/hooks';
+
+import { resetFileList } from '../services/actions/file';
 import { handlePricelistData } from '../services/actions/pricelist';
+
+import { getPricelistLoading } from '../services/slices/pricelist-slice';
 
 import type {
   TActionKeys,
@@ -191,9 +195,15 @@ const useFileDataCard = (): IFileDataCard => {
   }
 
   const fetchFileData = async (arr: TPricelistDataThunk[]) => {
+    dispatch(getPricelistLoading());
+
     try {
       const res = await Promise.all(arr.map(item => dispatchFileData(item)));
       console.log(res);
+
+      if(res.length === arr.length) {
+        dispatch(resetFileList());
+      }
     } catch (error) {
       console.log(error);
     }

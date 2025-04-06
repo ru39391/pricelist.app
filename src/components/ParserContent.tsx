@@ -12,11 +12,12 @@ import ParserSidebar from '../components/ParserSidebar';
 import ParserTable from '../components/ParserTable';
 import Pathway from '../components/Pathway';
 
-import useTableData from '../hooks/useTableData';
 import useCategoryItems from '../hooks/useCategoryItems';
-import useFileUploader from '../hooks/useFileUploader';
 import useDataComparer from '../hooks/useDataComparer';
+import useFileDataCard from '../hooks/useFileDataCard';
 import useFileDataNav from '../hooks/useFileDataNav';
+import useFileUploader from '../hooks/useFileUploader';
+import useTableData from '../hooks/useTableData';
 
 import { useSelector } from '../services/hooks';
 
@@ -49,19 +50,24 @@ const ParserContent: FC = () => {
     isPricelistLoading: pricelist.isPricelistLoading
   }));
 
-  const { uploadFile } = useFileUploader();
-  const { comparedItems, comparedFileData, compareFileData } = useDataComparer();
   const { currSubCategory, categoryTypes, setCurrSubCategory } = useCategoryItems();
+  const { comparedItems, comparedFileData, fileItemsCounter, compareFileData } = useDataComparer();
+  const { immutableNameData } = useFileDataCard();
   const { fileDataNav, updateFileDataNav } = useFileDataNav();
+  const { uploadFile } = useFileUploader();
   const { tableData, handleTableData } = useTableData();
 
   /**
-   * Устанавливает локальное состояние категории (тип изменения) и подкатегории (тип элементов) для навигации по обработанным данным xls-файла
+   * Перечень идентификаторов услуг прайслиста с неизменяемыми названиями
    */
-  const setCategoryData = ({ category, subCategory }: TFileCategoryData) => {
-    setCurrCategory(category);
-    setCurrSubCategory(subCategory);
-  };
+  const immutableNameItems = useMemo(
+    () => immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[], [immutableNameData]
+  );
+
+  /**
+   * Истинно, если количество элементов с неизменямыми названиями совпадает с найденным после парсинга количеством изменённых позиций
+   */
+  const isFetchBtnDisabled = useMemo(() => immutableNameItems.length === fileItemsCounter, [fileItemsCounter, immutableNameItems]);
 
   /**
    * Объект категоризированных массивов из полученных при парсинге xls-файла элементов:
@@ -86,6 +92,14 @@ const ParserContent: FC = () => {
    * Истинность существования данных обработанного файла при условии наличия элементов навигации
    */
   const isFileDataExist = useMemo(() => navData.length > 0, [navData]);
+
+  /**
+   * Устанавливает локальное состояние категории (тип изменения) и подкатегории (тип элементов) для навигации по обработанным данным xls-файла
+   */
+  const setCategoryData = ({ category, subCategory }: TFileCategoryData) => {
+    setCurrCategory(category);
+    setCurrSubCategory(subCategory);
+  };
 
   useEffect(() => {
     compareFileData(currFileData);
@@ -131,6 +145,7 @@ const ParserContent: FC = () => {
         />
         <ParserTable
           isBtnDisabled={isFileUploading || isPricelistLoading}
+          isFetchBtnDisabled={isFetchBtnDisabled}
           isFileDataExist={isFileDataExist}
           isTableGridVisible={tableData !== null}
           tableTitle={tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}
@@ -139,6 +154,7 @@ const ParserContent: FC = () => {
           fileData={comparedFileData}
           categoryData={{ category: currCategory, subCategory: currSubCategory }}
           categoryTypes={categoryTypes}
+          immutableNameItems={immutableNameItems}
         />
       </Grid>
     </>

@@ -1,10 +1,9 @@
-import { FC, useCallback, useMemo } from 'react';
+import { FC, useCallback } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { DeleteOutlined, Sync } from '@mui/icons-material';
 import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 
 import useModal from '../hooks/useModal';
-import useFileDataCard from '../hooks/useFileDataCard';
 
 import { useDispatch } from '../services/hooks';
 import { resetFileList } from '../services/actions/file';
@@ -37,6 +36,7 @@ import {
 
 interface IParserTable {
   isBtnDisabled: boolean;
+  isFetchBtnDisabled: boolean;
   isFileDataExist: boolean;
   isTableGridVisible: boolean;
   tableTitle: string;
@@ -45,10 +45,12 @@ interface IParserTable {
   fileData: TComparedFileData | null;
   categoryData: TFileCategoryData;
   categoryTypes: TCustomData<string> | null;
+  immutableNameItems: number[];
 }
 
 const ParserTable: FC<IParserTable> = ({
   isBtnDisabled,
+  isFetchBtnDisabled,
   isFileDataExist,
   isTableGridVisible,
   tableTitle,
@@ -56,18 +58,11 @@ const ParserTable: FC<IParserTable> = ({
   tableGridRows,
   fileData,
   categoryData,
-  categoryTypes
+  categoryTypes,
+  immutableNameItems
 }) => {
   const dispatch = useDispatch();
   const { toggleModal } = useModal();
-  const { immutableNameData } = useFileDataCard();
-
-  /**
-   * Перечень идентификаторов услуг прайслиста с неизменяемыми названиями
-   */
-  const immutableNameItems = useMemo(
-    () => immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[], [immutableNameData]
-  );
 
   /**
    * Передача данных xls-файла в глобальное хранилище, вызов модального окна для подтверждения сохранения данных документа
@@ -119,7 +114,7 @@ const ParserTable: FC<IParserTable> = ({
     const items = fileData ? fileData[category][type] : [];
     const data = items.length ? items.find((item: TItemData) => item[ID_KEY] === values[ID_KEY]) : {};
 
-    toggleModal({ title: `${title} «${values[NAME_KEY]}»` });
+    toggleModal({ title: `${title} «${values[NAME_KEY]}»`, isParserData: true });
     dispatch(setFormData({
       data: {
         isFormHidden: true,
@@ -157,7 +152,7 @@ const ParserTable: FC<IParserTable> = ({
           <Button
             variant="outlined"
             startIcon={<Sync />}
-            disabled={isBtnDisabled}
+            disabled={isBtnDisabled || isFetchBtnDisabled}
             onClick={setConfirmModalVisible}
           >
             {APPLY_TITLE}

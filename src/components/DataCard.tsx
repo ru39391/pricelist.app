@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import DataCardRow from './DataCardRow';
 import ModalControllers from './ModalControllers';
 
+import useDataComparer from '../hooks/useDataComparer';
 import useFileDataCard from '../hooks/useFileDataCard';
 import useForm from '../hooks/useForm';
 import useTableData from '../hooks/useTableData';
@@ -38,26 +39,43 @@ import {
 /**
  * Блок данных элемента обработанного при парсинге xls-файла для отображения в модальном окне
  *
- * @returns {TSX.Element}
  */
 const DataCard: FC = () => {
   const { formDesc, formData } = useSelector(({ form }) => form);
 
-  const { fileCardData, fileCardDates, handleFileCardData, handleFileData } = useFileDataCard();
+  const { fileItemsCounter } = useDataComparer();
+  const { fileCardData, fileCardDates, immutableNameData, handleFileCardData, handleFileData } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
   const complexKeys: string[] = [IS_VISIBLE_KEY, IS_COMPLEX_ITEM_KEY, IS_COMPLEX_KEY];
-  const complexData: TCustomData<string> = useMemo(() => ({
-    [COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''
-  }), [
-    formData
-  ]);
 
+  /**
+   * Перечень дочерних позиций для комплексной услуги
+   */
+  const complexData: TCustomData<string> = useMemo(
+    () => ({[COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''}),
+    [formData]
+  );
+
+  /**
+   * Истинно, если количество элементов с неизменямыми названиями совпадает с найденным после парсинга количеством изменённых позиций
+   */
+  const isFetchBtnDisabled = useMemo(
+    () => {
+      const immutableNameItems = immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[];
+
+      return immutableNameItems.length === fileItemsCounter;
+    },
+    [fileItemsCounter, immutableNameData]
+  );
+
+  /**
+   * Если глобальное хранилище содержит данные формы и тип действия не является удалением, в модальном окне отображаются данные обновляемого элемента
+   */
   const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
 
   useEffect(() => {
-    //console.log(fileCardData);
     handleTableData(fileCardData, null);
   }, [
     fileCardData
@@ -115,7 +133,7 @@ const DataCard: FC = () => {
         </Box>
         <ModalControllers
           color='success'
-          disabled={false}
+          disabled={isFetchBtnDisabled}
           actionBtnCaption={formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
           handleClick={handleFileCardData}
         />
