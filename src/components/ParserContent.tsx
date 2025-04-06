@@ -25,10 +25,13 @@ import type {
   TFileCategoryData,
   TFileDataNav,
   THandledItemKeys,
+  TItemsArr,
   TPriceListData
 } from '../types';
 
 import {
+  ID_KEY,
+  ITEM_KEY,
   CREATED_KEY,
   HANDLED_ITEMS_CAPTIONS,
   DEFAULT_DOC_TITLE,
@@ -52,22 +55,10 @@ const ParserContent: FC = () => {
 
   const { currSubCategory, categoryTypes, setCurrSubCategory } = useCategoryItems();
   const { comparedItems, comparedFileData, fileItemsCounter, compareFileData } = useDataComparer();
-  const { immutableNameData } = useFileDataCard();
+  const { immutableNameData, isFileDataFetching, setFileDataCounter } = useFileDataCard();
   const { fileDataNav, updateFileDataNav } = useFileDataNav();
   const { uploadFile } = useFileUploader();
   const { tableData, handleTableData } = useTableData();
-
-  /**
-   * Перечень идентификаторов услуг прайслиста с неизменяемыми названиями
-   */
-  const immutableNameItems = useMemo(
-    () => immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[], [immutableNameData]
-  );
-
-  /**
-   * Истинно, если количество элементов с неизменямыми названиями совпадает с найденным после парсинга количеством изменённых позиций
-   */
-  const isFetchBtnDisabled = useMemo(() => immutableNameItems.length === fileItemsCounter, [fileItemsCounter, immutableNameItems]);
 
   /**
    * Объект категоризированных массивов из полученных при парсинге xls-файла элементов:
@@ -81,6 +72,37 @@ const ParserContent: FC = () => {
   }, [file]);
 
   /**
+   * Перечень идентификаторов услуг прайслиста с неизменяемыми названиями
+   */
+  const immutableNameItems = useMemo(
+    () => immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[], [immutableNameData]
+  );
+
+  /**
+   * Истинно, если количество элементов с неизменямыми названиями совпадает с найденным после парсинга количеством изменённых позиций
+   * или изменённые позиции являются подмножеством записей с неизменяемым названием
+   */
+  const isFetchBtnDisabled = useMemo(() => {
+    if(!comparedFileData) {
+      return true;
+    }
+
+    let arr: TItemsArr = [];
+
+    for (const key in comparedFileData) {
+      arr = [...arr, ...comparedFileData[key as THandledItemKeys][TYPES[ITEM_KEY]]];
+    }
+
+    if(immutableNameItems.length === fileItemsCounter) {
+      return true;
+    } else {
+      return fileItemsCounter > immutableNameItems.length
+        ? false
+        : arr.reduce((acc, item) => acc && immutableNameItems.includes(item[ID_KEY] as number), true);
+    }
+  }, [comparedFileData, fileItemsCounter, immutableNameItems]);
+
+  /**
    * Список категорий навигации в сайдбаре
    */
   const navData = useMemo(
@@ -91,7 +113,7 @@ const ParserContent: FC = () => {
   /**
    * Истинность существования данных обработанного файла при условии наличия элементов навигации
    */
-  const isFileDataExist = useMemo(() => navData.length > 0, [navData]);
+  //const isFileDataExist = useMemo(() => navData.length > 0, [navData]);
 
   /**
    * Устанавливает локальное состояние категории (тип изменения) и подкатегории (тип элементов) для навигации по обработанным данным xls-файла
@@ -102,6 +124,7 @@ const ParserContent: FC = () => {
   };
 
   useEffect(() => {
+    console.log({file});
     compareFileData(currFileData);
   }, [
     file
@@ -109,6 +132,7 @@ const ParserContent: FC = () => {
 
   useEffect(() => {
     console.log('ParserContent', {comparedFileData});
+    setFileDataCounter(fileItemsCounter);
     updateFileDataNav(comparedFileData);
   }, [
     comparedFileData
@@ -120,15 +144,22 @@ const ParserContent: FC = () => {
     fileDataNav
   ]);
 
+  useEffect(() => {
+    console.log({isFileDataFetching});
+  }, [
+    isFileDataFetching
+  ]);
+
   return (
     <>
       <ParserSidebar
-        isUploadBtnDisabled={isFileUploading || isFileDataExist}
+        isUploadBtnDisabled={isFileUploading || isPricelistLoading || Boolean(comparedFileData)}
         handleUploadInput={uploadFile}
       >
         <ParserNav
           fileData={comparedFileData}
           currFileData={currFileData}
+          isBtnDisabled={isFileUploading || isPricelistLoading || isFileDataFetching}
           navData={navData}
           subNavData={comparedItems}
           subNavCounter={tableData ? tableData.rows.length : 0}
@@ -144,9 +175,8 @@ const ParserContent: FC = () => {
           currNavTitle={`${HANDLED_ITEMS_CAPTIONS[currCategory]}, ${categoryTypes && categoryTypes[currSubCategory as string].toLowerCase()}`}
         />
         <ParserTable
-          isBtnDisabled={isFileUploading || isPricelistLoading}
+          isBtnDisabled={isFileUploading || isFileDataFetching}
           isFetchBtnDisabled={isFetchBtnDisabled}
-          isFileDataExist={isFileDataExist}
           isTableGridVisible={tableData !== null}
           tableTitle={tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}
           tableGridCols={tableData ? tableData.cols : [] as GridColDef<GridValidRowModel>[]}

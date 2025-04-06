@@ -227,7 +227,7 @@ const useDataComparer = (): IDataComparer => {
     let counterValues: number[] = [];
 
     for (const key in data) {
-      const arr = Object.entries(data[key]) as [TPricelistTypes, TItemsArr][];
+      const arr = Object.entries(data[key as THandledItemKeys]) as [TPricelistTypes, TItemsArr][];
 
       counterValues = [...counterValues, arr.reduce((acc, item) => acc + item[1].length, 0)];
     }
@@ -299,7 +299,6 @@ const useDataComparer = (): IDataComparer => {
   ]);
 
   useEffect(() => {
-    console.log('useDataComparer', {comparedFileData});
     handleComparedItems(comparedFileData);
   }, [
     comparedFileData

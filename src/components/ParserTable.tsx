@@ -1,5 +1,6 @@
 import { FC, useCallback } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import { Box, Typography } from '@mui/material';
 import { DeleteOutlined, Sync } from '@mui/icons-material';
 import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 
@@ -37,7 +38,7 @@ import {
 interface IParserTable {
   isBtnDisabled: boolean;
   isFetchBtnDisabled: boolean;
-  isFileDataExist: boolean;
+  //isFileDataExist: boolean;
   isTableGridVisible: boolean;
   tableTitle: string;
   tableGridCols: GridColDef<GridValidRowModel>[];
@@ -51,7 +52,7 @@ interface IParserTable {
 const ParserTable: FC<IParserTable> = ({
   isBtnDisabled,
   isFetchBtnDisabled,
-  isFileDataExist,
+  //isFileDataExist,
   isTableGridVisible,
   tableTitle,
   tableGridCols,
@@ -130,42 +131,47 @@ const ParserTable: FC<IParserTable> = ({
    * Удаление данных обработанного документа из глобального хранилища
    */
   const resetFileData =  useCallback(() => {
-    console.log('resetFileList');
     dispatch(resetFileList());
   }, [
     dispatch
   ]);
 
+  /*
   if(!fileData) {
     // TODO: проверить проблему сброса состояния при успешном ответе сервера, если работает корректно, заменить isFileDataExist на !fileData
     return 'fileData равно null';
   }
+  */
 
   return (
-    isFileDataExist && <>
+    fileData && <>
       <Box sx={{ mb: 2, gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography sx={{ typography: 'body1' }}>{tableTitle}</Typography>
         <Box sx={{ gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           {/*
             // TODO: блокировать кнопки, пока данные обрабатываются сервером
           */}
-          <Button
+          <LoadingButton
             variant="outlined"
+            loadingPosition="start"
             startIcon={<Sync />}
+            loading={isBtnDisabled}
             disabled={isBtnDisabled || isFetchBtnDisabled}
             onClick={setConfirmModalVisible}
           >
             {APPLY_TITLE}
-          </Button>
-          <Button
+          </LoadingButton>
+          <LoadingButton
             color="error"
             variant="outlined"
+            loadingPosition="start"
             startIcon={<DeleteOutlined />}
+            loading={isBtnDisabled}
             disabled={isBtnDisabled}
             onClick={resetFileData}
           >
             {CLEAR_TITLE}
-          </Button>
+          </LoadingButton>
         </Box>
       </Box>
       {/* // TODO: настроить сброс данных таблицы comparedFileData после успешного ответа сервера */}
@@ -180,6 +186,7 @@ const ParserTable: FC<IParserTable> = ({
             bgcolor: 'grey.200',
           },
         }}
+        loading={isBtnDisabled}
         columns={tableGridCols}
         rows={tableGridRows}
         getRowClassName={({ row }) => immutableNameItems.includes(Number(row[ID_KEY])) ? 'MuiDataGrid-row--immutable' : ''}

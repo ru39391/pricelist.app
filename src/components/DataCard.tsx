@@ -4,7 +4,6 @@ import { Box } from '@mui/material';
 import DataCardRow from './DataCardRow';
 import ModalControllers from './ModalControllers';
 
-import useDataComparer from '../hooks/useDataComparer';
 import useFileDataCard from '../hooks/useFileDataCard';
 import useForm from '../hooks/useForm';
 import useTableData from '../hooks/useTableData';
@@ -14,6 +13,7 @@ import { useSelector } from '../services/hooks';
 import type { TCustomData } from '../types';
 
 import {
+  ID_KEY,
   ITEM_KEY,
   NAME_KEY,
   INDEX_KEY,
@@ -43,7 +43,6 @@ import {
 const DataCard: FC = () => {
   const { formDesc, formData } = useSelector(({ form }) => form);
 
-  const { fileItemsCounter } = useDataComparer();
   const { fileCardData, fileCardDates, immutableNameData, handleFileCardData, handleFileData } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
@@ -59,15 +58,19 @@ const DataCard: FC = () => {
   );
 
   /**
-   * Истинно, если количество элементов с неизменямыми названиями совпадает с найденным после парсинга количеством изменённых позиций
+   * Истинно, если id текущего элемента совпадает с id элемента из списка услуг с неизменяемым названием
    */
   const isFetchBtnDisabled = useMemo(
     () => {
+      if(!tableData) {
+        return false;
+      }
+
       const immutableNameItems = immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[];
 
-      return immutableNameItems.length === fileItemsCounter;
+      return immutableNameItems.includes(tableData.rows[0]?.[ID_KEY]);
     },
-    [fileItemsCounter, immutableNameData]
+    [immutableNameData, tableData]
   );
 
   /**
@@ -155,7 +158,7 @@ const DataCard: FC = () => {
             formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: 1. ${CONFIRM_MSG}`
           }
           disabled={false}
-          handleClick={formData.action === REMOVE_ACTION_KEY ? handleFileCardData : handleFileData}
+          handleClick={formData.action === REMOVE_ACTION_KEY ? () => handleFileCardData : handleFileData}
         />
       : ''
   )

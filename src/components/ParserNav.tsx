@@ -37,6 +37,7 @@ import {
 interface IParserNav {
   fileData: TComparedFileData | null;
   currFileData: TPricelistData | null;
+  isBtnDisabled: boolean;
   navData: TFileDataNav;
   subNavData: TComparedItems;
   subNavCounter: number;
@@ -48,6 +49,7 @@ interface IParserNav {
 const ParserNav: FC<IParserNav> = ({
   fileData,
   currFileData,
+  isBtnDisabled,
   navData,
   subNavData,
   subNavCounter,
@@ -108,16 +110,19 @@ const ParserNav: FC<IParserNav> = ({
     fileData
   ]);
 
+  /*
   if(!fileData) {
     //return '';
   }
+  */
 
   return (
-    <>
+    fileData && <>
       {navItems.map(
         ({ key, caption, counter, data }) =>
         <ListItemButton
           key={key}
+          disabled={isBtnDisabled}
           selected={data.category === categoryData.category && data.subCategory === categoryData.subCategory}
           sx={{ py: 0.5 }}
           onClick={() => selectFileCategory(data)}
@@ -135,6 +140,7 @@ const ParserNav: FC<IParserNav> = ({
             ([key, arr]) =>
             <ListItemButton
               key={key}
+              disabled={isBtnDisabled}
               selected={categoryData.category === UPDATED_KEY && categoryData.subCategory === TYPES[ITEM_KEY] && subNavCounter === arr.length && arr.length > 0}
               sx={{ pl: 6, color: 'grey.600', fontSize: 14 }}
               onClick={() => selectFileCategory({ category: UPDATED_KEY, subCategory: TYPES[ITEM_KEY], arr })}

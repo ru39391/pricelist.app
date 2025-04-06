@@ -1,10 +1,8 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from '../services/hooks';
 
-import { resetFileList } from '../services/actions/file';
+//import { resetFileList } from '../services/actions/file';
 import { handlePricelistData } from '../services/actions/pricelist';
-
-import { getPricelistLoading } from '../services/slices/pricelist-slice';
 
 import type {
   TActionKeys,
@@ -15,6 +13,7 @@ import type {
   TItemsArr,
   TPricelistData,
   TPricelistDataThunk,
+  TPricelistResponse,
   TPricelistTypes
 } from '../types';
 
@@ -36,14 +35,43 @@ import {
   TYPES
 } from '../utils/constants';
 
+//type TFetchedFileDataAction = 'SET_PAYLOAD_DATA' | 'SET_RESPONSE_DATA';
+
+//type TFetchedFileData = { payload: TPricelistDataThunk[]; response: TPricelistResponse[]; };
+
 // TODO: пересмотреть используемые в хуках типы, опираясь на interface компонента
 interface IFileDataCard {
   fileCardData: TCategoryData | null;
   fileCardDates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string>;
+  isFileDataFetching: boolean;
   immutableNameData: TCustomData<string> | null;
   handleFileCardData: () => void;
   handleFileData: () => void;
+  setFileDataCounter: (value: number) => void;
 }
+/*
+const fetchedFileDataReducer = (
+  state: TFetchedFileData,
+  action: { type?: TFetchedFileDataAction, data?: TPricelistDataThunk | TPricelistResponse | null }
+) => {
+  switch (action.type) {
+    case 'SET_PAYLOAD_DATA':
+      return {
+        ...state,
+        ...(action.data && { payload: [...state.payload, action.data as TPricelistDataThunk] })
+      };
+
+    case 'SET_RESPONSE_DATA':
+      return {
+        ...state,
+        ...(action.data && { response: [...state.response, action.data as TPricelistResponse] })
+      };
+
+    default:
+      return { payload: [], response: [] };
+  }
+};
+*/
 
 /**
  * Обработка данных, полученных после парсинга xls-документа, для отображения в модальном окне и отправки на сервер
@@ -56,14 +84,26 @@ interface IFileDataCard {
  * @property {function} handleFileData - передаёт на сервер данные, полученные после обработки xls-документа, для внесения изменений во все записи прайслиста.
  */
 const useFileDataCard = (): IFileDataCard => {
+  const [isFileDataFetching, setFileDataFetching] = useState<boolean>(false);
+  const [fileDataPayload, setFileDataPayload] = useState<number>(0);
+  const [fileDataResponse, setFileDataResponse] = useState<TPricelistResponse[]>([]);
+  /*
+  const [fetchedFileData, setFetchedFileData] = useReducer(
+    fetchedFileDataReducer,
+    { payload: [], response: [] }
+  );
+  */
+
   const dispatch = useDispatch();
   const {
     formData,
     pricelist,
+    response,
     immutableNameItems
   } = useSelector(({ form, pricelist }) => ({
     formData: form.formData,
     pricelist,
+    response: pricelist.response,
     immutableNameItems: pricelist[TYPES[ITEM_KEY]].filter(item => item[IS_NAME_IMMUTABLE_KEY])
   }));
 
@@ -195,15 +235,10 @@ const useFileDataCard = (): IFileDataCard => {
   }
 
   const fetchFileData = async (arr: TPricelistDataThunk[]) => {
-    dispatch(getPricelistLoading());
-
     try {
-      const res = await Promise.all(arr.map(item => dispatchFileData(item)));
-      console.log(res);
+      await Promise.all(arr.map(item => dispatchFileData(item)));
 
-      if(res.length === arr.length) {
-        dispatch(resetFileList());
-      }
+      //res.forEach(data => console.log({data}));
     } catch (error) {
       console.log(error);
     }
@@ -251,17 +286,72 @@ const useFileDataCard = (): IFileDataCard => {
       )];
     }
 
+    //setFileDataPayload(pricelistDataThunks);
     fetchFileData(pricelistDataThunks);
   }, [
     dispatch,
     formData,
   ]);
 
+  const handleFetchedData = () => {//data: TFetchedFileData) => {
+    const [payload, response] = [fileDataPayload, fileDataResponse];
+    console.log({ payload, response });
+    return;
+
+    setFileDataFetching(true);
+    /*
+
+    if(payload.length + response.length > 0 && payload.length === response.length) {
+      const payloadCounter = payload.reduce((acc, { items }) => acc + items.length, 0);
+      const responseCounter = response.reduce((acc, { ids }) => acc + ids.length, 0);
+      const isFetchingSucceed = payload.reduce((acc, item) => {
+        const respItem = response.find(
+          ({ type, action, ids }) => type == item.type && action == item.action && ids.length === item.items.length
+        );
+
+        return acc && Boolean(respItem);
+      }, true);
+
+      console.log({isFetchingSucceed, payloadCounter, responseCounter})
+      setFileDataFetching(!(isFetchingSucceed && payloadCounter === responseCounter));
+    } else {
+      setFileDataFetching(Boolean(payload.length + response.length));
+    }
+      */
+  };
+
+  const setFileDataCounter = (value: number) => {
+    console.log({value});
+    setFileDataPayload(value);
+  };
+
+  useEffect(() => {
+    //setFetchedFileData({ type: 'SET_RESPONSE_DATA', data: response });
+    setFileDataResponse(response ? [...fileDataResponse, response] : [...fileDataResponse]);
+  }, [
+    response
+  ]);
+
+  useEffect(() => {
+    handleFetchedData();
+  }, [
+    //fileDataPayload,
+    fileDataResponse
+  ]);
+
+  useEffect(() => {
+    console.log({fileDataPayload});
+  }, [
+    fileDataPayload
+  ]);
+
   return {
     fileCardData,
     fileCardDates,
+    isFileDataFetching,
     immutableNameData,
     handleFileCardData,
+    setFileDataCounter,
     handleFileData
   }
 }
