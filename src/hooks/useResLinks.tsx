@@ -43,8 +43,8 @@ import {
 } from '../utils/constants';
 
 interface IResLinks {
-  existableList: TPriceList<TPricelistTypes, TItemsArr>;
-  linkedList: TPriceList<TPricelistTypes, TItemsArr>;
+  existableList: TPriceList<TPricelistTypes>;
+  linkedList: TPriceList<TPricelistTypes>;
   linkedListConfig: TLinkedListConfig;
   handleLinkedListConfig: TResItemContext['handleLinkedListConfig'];
   handleListOptions: TResItemContext['handleListOptions'];
@@ -52,7 +52,7 @@ interface IResLinks {
 }
 
 const createListReducer = (
-  state: TPriceList<TPricelistTypes, TItemsArr>,
+  state: TPriceList<TPricelistTypes>,
   action: TListReducerOptions
 ) => {
   switch (action.type) {
@@ -108,8 +108,8 @@ const listConfigReducer = (
       return action.data || (!state ? state : null);
   }
 };
-const existableListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
-const linkedListReducer = (state: TPriceList<TPricelistTypes, TItemsArr>, action: TListReducerOptions) => createListReducer(state, action);
+const existableListReducer = (state: TPriceList<TPricelistTypes>, action: TListReducerOptions) => createListReducer(state, action);
+const linkedListReducer = (state: TPriceList<TPricelistTypes>, action: TListReducerOptions) => createListReducer(state, action);
 
 /**
  * Формирование структуры элементов прайслиста, доступных для привязки к ресурсу
@@ -132,7 +132,7 @@ const useResLinks = (): IResLinks => {
 
   const pricelist = useSelector(
     ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce(
-      (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as TPriceList<TPricelistExtTypes, TItemsArr>
+      (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as TPriceList<TPricelistExtTypes>
   ));
 
   /**
@@ -292,9 +292,9 @@ const useResLinks = (): IResLinks => {
 
   /**
    * Автоматическая установка параметра конфигурации "Комплексный выбор", если список доступных для выбора групп пуст
-   * @property {TPriceList<TPricelistTypes, TItemsArr>} data - список доступных для выбора элементов прайслиста
+   * @property {TPriceList<TPricelistTypes>} data - список доступных для выбора элементов прайслиста
    */
-  const updateListConfig = (data: TPriceList<TPricelistTypes, TItemsArr>) => {
+  const updateListConfig = (data: TPriceList<TPricelistTypes>) => {
     const { groupsList, itemsList } = {
       groupsList: data[TYPES[GROUP_KEY]],
       itemsList: data[TYPES[ITEM_KEY]]
