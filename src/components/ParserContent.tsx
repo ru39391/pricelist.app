@@ -94,7 +94,7 @@ const ParserContent: FC = () => {
   ]);
 
   useEffect(() => {
-    console.log({comparedFileData});
+    console.log('ParserContent', {comparedFileData});
     updateFileDataNav(comparedFileData);
   }, [
     comparedFileData

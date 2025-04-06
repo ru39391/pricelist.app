@@ -19,6 +19,7 @@ import type { TPricelistState } from '../services/slices/pricelist-slice';
 import {
   ROW_INDEX_KEY,
   ID_KEY,
+  ITEM_KEY,
   NAME_KEY,
   PRICE_KEY,
   IS_VISIBLE_KEY,
@@ -32,8 +33,8 @@ import {
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
-  ITEM_KEY,
-  CAPTIONS
+  CAPTIONS,
+  TYPES
 } from '../utils/constants';
 
 type TComparedItemIds = Record<THandledItemKeys, { ids: number[]; arr: TItemsArr; }>;
@@ -50,7 +51,7 @@ const setComparedData = (
   data?: TItemData
 ): TComparedItems => ({
   ...state,
-  ...(data && { [key]: state[key].find(item => item[ID_KEY] === data[ID_KEY]) ? [...state[key]] : [...state[key], data] })
+  ...(data && { [key]: [...state[key], data] })
 });
 
 const comparedItemsReducer = (
@@ -75,6 +76,14 @@ const comparedItemsReducer = (
   }
 };
 
+/**
+ * Сравнение данных, полученных после парсинга xls-документа, с текущими позициями прайслиста
+ *
+ * @returns {IDataComparer} данные, полученные поле сравнения записей на сайте с элементами xls-файла;
+ * @property {IDataComparer['comparedItems']} comparedItems - массив категоризированных по типу изменямого параметра элементов;
+ * @property {IDataComparer['comparedFileData']} comparedFileData - объект данных обработанного xls-файла, категоризированных по типу обновления;
+ * @property {function} compareFileData - получает результат сравнения записей и помещает в локальное хранилище изменённые данные xls-документа.
+ */
 const useDataComparer = (): IDataComparer => {
   const [comparedFileData, setComparedFileData] = useState<TComparedFileData | null>(null);
   // TODO: настроить корректный сброс comparedItems при обновлении навигации
@@ -88,16 +97,21 @@ const useDataComparer = (): IDataComparer => {
     response: pricelist.response
   }));
 
-  const handleComparedItems = (data) => {//item: TItemData, currItem?: TItemData, isCategorySet?: boolean
-    console.log('handleComparedItems', data[UPDATED_KEY]);
-    if(!data) {
-      setComparedItems({});
-    }
+  /**
+   * Формирует данные дочерних элементов навигации по категориям изменённых записей прайслиста
+   * @property {TComparedFileData | null} data - данные обработанного xls-файла
+   */
+  const handleComparedItems = (data: TComparedFileData | null) => {
+    setComparedItems({});
 
-    return;
-    if(!isCategorySet || !currItem) {
+    if(!data) {
       return;
     }
+
+    const items = data[UPDATED_KEY][TYPES[ITEM_KEY]];
+    const currItems = pricelist[TYPES[ITEM_KEY]].filter(
+      data => items.map(item => item[ID_KEY] as number).includes(Number(data[ID_KEY]))
+    );
 
     const excludedKeys = [ROW_INDEX_KEY, ID_KEY, NAME_KEY, PRICE_KEY, IS_VISIBLE_KEY, IS_NAME_IMMUTABLE_KEY, CREATEDON_KEY, UPDATEDON_KEY, QUANTITY_KEY];
     const actions: Record<string, TComparedItemsAction> = {
@@ -106,17 +120,25 @@ const useDataComparer = (): IDataComparer => {
       [IS_VISIBLE_KEY]: 'SET_VISIBLE_DATA'
     };
 
-    for (const key in actions) {
-      if(item[key] !== currItem[key]) {
-        setComparedItems({ type: actions[key as keyof TComparedItems], data: item });
-      }
-    }
+    currItems.forEach(currItem => {
+      const item = items.find(data => data[ID_KEY] === currItem[ID_KEY]);
 
-    for(const key in CAPTIONS) {
-      if(!excludedKeys.includes(key) && item[key] !== currItem[key]) {
-        setComparedItems({ type: 'SET_ITEMS_DATA', data: item });
+      if(!item) {
+        return;
       }
-    }
+
+      for (const key in actions) {
+        if(item[key] !== currItem[key]) {
+          setComparedItems({ type: actions[key as keyof TComparedItems], data: item });
+        }
+      }
+
+      for(const key in CAPTIONS) {
+        if(!excludedKeys.includes(key) && item[key] !== currItem[key]) {
+          setComparedItems({ type: 'SET_ITEMS_DATA', data: item });
+        }
+      }
+    });
   };
 
   /**
@@ -212,6 +234,10 @@ const useDataComparer = (): IDataComparer => {
     setComparedFileData(data);
   };
 
+  /**
+   * Обновляет список записей обработанного xls-файла после успешного ответа сервера
+   * @property {TPricelistState['response']} data - успешно обновлённые данные: action - тип обновления ('create' | 'update' | 'remove'), type - категория элементов ('depts' | 'subdepts' | 'groups' | 'pricelist'), ids - массив идентификаторов обновлённых элементов
+   */
   const updateComparedFileData = (data: TPricelistState['response']) => {
     if(!data || !comparedFileData) {
       return;
@@ -246,7 +272,8 @@ const useDataComparer = (): IDataComparer => {
   ]);
 
   useEffect(() => {
-    //handleComparedItems(comparedFileData);
+    console.log('useDataComparer', {comparedFileData});
+    handleComparedItems(comparedFileData);
   }, [
     comparedFileData
   ]);

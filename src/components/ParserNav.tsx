@@ -55,6 +55,8 @@ const ParserNav: FC<IParserNav> = ({
   handleTableData,
   handleCategoryData
 }) => {
+  const updatedItemsArr = fetchArray([...subNavData[NAME_KEY], ...subNavData[PRICE_KEY]], ID_KEY);
+
   const navItems = navData.map((item) => {
     const { key, counter } = item.data[item.data.length - 1];
 
@@ -84,9 +86,7 @@ const ParserNav: FC<IParserNav> = ({
     const data = category === UPDATED_KEY && subCategory === TYPES[ITEM_KEY]
       ? {
           ...fileData[category],
-          [TYPES[ITEM_KEY]]: Array.isArray(arr)
-            ? arr
-            : fetchArray([...subNavData[NAME_KEY], ...subNavData[PRICE_KEY]], ID_KEY)
+          [TYPES[ITEM_KEY]]: Array.isArray(arr) ? arr : updatedItemsArr
         }
       : fileData[category];
 
@@ -125,7 +125,7 @@ const ParserNav: FC<IParserNav> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ListItemIcon><FolderOpen fontSize="small" sx={{ color: 'info.light' }} /></ListItemIcon>
             <ListItemText primary={caption} sx={{ mr: 3 }} />
-            <Badge badgeContent={counter} color="primary" />
+            <Badge badgeContent={data.category === UPDATED_KEY && data.subCategory === TYPES[ITEM_KEY] ? updatedItemsArr.length : counter} color="primary" />
           </Box>
         </ListItemButton>
       )}
