@@ -1,178 +1,87 @@
-import { FC, useCallback, useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 
 import DataCardRow from './DataCardRow';
 import ModalControllers from './ModalControllers';
 
+import useFileDataCard from '../hooks/useFileDataCard';
 import useForm from '../hooks/useForm';
 import useTableData from '../hooks/useTableData';
 
-import { useSelector, useDispatch } from '../services/hooks';
-import { TFormData } from '../services/slices/form-slice';
+import { useSelector } from '../services/hooks';
 
-import { handlePricelistData } from '../services/actions/pricelist';
-
-import type { TCustomData, TItemData } from '../types';
+import type { TCustomData } from '../types';
 
 import {
   ID_KEY,
   ITEM_KEY,
+  NAME_KEY,
   INDEX_KEY,
   COMPLEX_KEY,
   IS_VISIBLE_KEY,
   IS_COMPLEX_ITEM_KEY,
   IS_COMPLEX_KEY,
+  IS_NAME_IMMUTABLE_KEY,
   CREATEDON_KEY,
   UPDATEDON_KEY,
   ROW_INDEX_KEY,
   ADD_ACTION_KEY,
-  EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
-  NOT_CREATED_KEY,
-  NOT_UPDATED_KEY,
   SAVE_TITLE,
   EDIT_TITLE,
+  EDIT_ITEM_TITLE,
   REMOVE_TITLE,
   CAPTIONS,
   CONFIRM_MSG,
-  TYPES
+  TYPES,
 } from '../utils/constants';
 
+/**
+ * Блок данных позиции обработанного при парсинге xls-файла для отображения в модальном окне
+ *
+ */
 const DataCard: FC = () => {
-  const dispatch = useDispatch();
-  const {
-    form: { formDesc, formData },
-    pricelist
-  } = useSelector(state => ({
-    form: state.form,
-    pricelist: state.pricelist
-  }));
+  const { formDesc, formData } = useSelector(({ form }) => form);
 
+  const { fileCardData, fileCardDates, immutableNameData, handleFileCardData, handleFileData } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
   const complexKeys: string[] = [IS_VISIBLE_KEY, IS_COMPLEX_ITEM_KEY, IS_COMPLEX_KEY];
-  const complexData: TCustomData<string> = useMemo(() => ({
-    [COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''
-  }), [
-    formData
-  ]);
-  const formHandlerData = useMemo(() => ({
-    type: formData ? formData.type : null,
-    items: formData && formData.items
-      ? formData.items
-      : formData && formData.data ? [{...formData.data}] : []
-  }), [
-    formData
-  ]);
-  const dates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string> = useMemo(() => {
-    const formatDate = (value: TItemData[keyof TItemData], mess: string): string => {
-      if(!value) {
-        return mess;
+
+  /**
+   * Перечень дочерних позиций для комплексной услуги
+   */
+  const complexData: TCustomData<string> = useMemo(
+    () => ({[COMPLEX_KEY]: formData && formData.values ? formData.values[COMPLEX_KEY] as string : ''}),
+    [formData]
+  );
+
+  /**
+   * Истинно, если id текущего элемента совпадает с id элемента из списка услуг с неизменяемым названием
+   */
+  const isFetchBtnDisabled = useMemo(
+    () => {
+      if(!tableData) {
+        return false;
       }
 
-      const [date, time] = value.toString().split(' ');
-      const formatedDate: string = date.split('-').reverse().join('.');
+      const immutableNameItems = immutableNameData ? Object.keys(immutableNameData).map(item => Number(item)) : [] as number[];
 
-      return `${formatedDate} ${time}`;
-    };
+      return immutableNameItems.includes(tableData.rows[0]?.[ID_KEY]);
+    },
+    [immutableNameData, tableData]
+  );
 
-    if(!formData) {
-      return {
-        [CREATEDON_KEY]: NOT_CREATED_KEY,
-        [UPDATEDON_KEY]: NOT_UPDATED_KEY,
-      };
-    }
-
-    const { data, type } = formData;
-    const item = pricelist[type].find(item => item[ID_KEY] === data[ID_KEY]);
-
-    return {
-      [CREATEDON_KEY]: item && item[CREATEDON_KEY] ? formatDate(item[CREATEDON_KEY], NOT_CREATED_KEY) : NOT_CREATED_KEY,
-      [UPDATEDON_KEY]: item && item[UPDATEDON_KEY] ? formatDate(item[UPDATEDON_KEY], NOT_UPDATED_KEY) : NOT_UPDATED_KEY,
-    };
-  }, [
-    pricelist,
-    formData
-  ]);
+  /**
+   * Если глобальное хранилище содержит данные формы и тип действия не является удалением, в модальном окне отображаются данные обновляемого элемента
+   */
   const isDetailsListVisible = useMemo(() => formData && formData.values && formData.action !== REMOVE_ACTION_KEY, [formData]);
 
-  const handlersData = {
-    [ADD_ACTION_KEY]: useCallback(() => {
-      if(!formData) {
-        return;
-      }
-
-      dispatch(handlePricelistData({ ...formHandlerData, action: ADD_ACTION_KEY }));
-    }, [
-      dispatch,
-      formData,
-      formHandlerData
-    ]),
-    [EDIT_ACTION_KEY]: useCallback(() => {
-      if(!formData) {
-        return;
-      }
-
-      dispatch(handlePricelistData({ ...formHandlerData, action: EDIT_ACTION_KEY }));
-    }, [
-      dispatch,
-      formData,
-      formHandlerData
-    ]),
-    [REMOVE_ACTION_KEY]: useCallback(() => {
-      if(!formData) {
-        return;
-      }
-
-      dispatch(handlePricelistData({
-        ...formHandlerData,
-        items: formHandlerData.items.map(item => ({ [ID_KEY]: item[ID_KEY] })),
-        action: REMOVE_ACTION_KEY
-      }));
-    }, [
-      dispatch,
-      formData,
-      formHandlerData
-    ]),
-  };
-
-  const handleCurrFormData = useCallback((formData: TFormData | null) => {
-    if(!formData) {
-      return;
-    }
-
-    const { action, type, data } = formData;
-    const isDataExist = formData
-      ? Boolean(data)
-      : Boolean(formData);
-
-    if(!isDataExist || action !== EDIT_ACTION_KEY) {
-      return;
-    }
-
-    handleTableData(
-      {
-        data: {
-          ...Object.values(TYPES).reduce((acc, type) => ({...acc, [type]: pricelist[type]}), {}),
-          [type]: data ? [pricelist[type].find((item: TItemData) => item[ID_KEY] === data[ID_KEY])] : []
-        },
-        category: type,
-        params: null
-      },
-      null
-    );
-  }, [
-    pricelist
-  ]);
-
   useEffect(() => {
-    handleCurrFormData(formData);
-    //console.log('formData', formData);
-    //console.log('formFields', formFields);
-    //console.log('selecterFields', selecterFields);
+    handleTableData(fileCardData, null);
   }, [
-    formData
+    fileCardData
   ]);
 
   if(formData && isDetailsListVisible) {
@@ -186,6 +95,7 @@ const DataCard: FC = () => {
               value={formData.data[key].toString()}
               currValue={tableData ? tableData.rows[0][key] : ''}
               isAlertVisible={Boolean(tableData && formData.data[key] !== tableData.rows[0][key])}
+              {...( tableData && key === NAME_KEY && { [IS_NAME_IMMUTABLE_KEY]: Boolean(tableData.rows[0][IS_NAME_IMMUTABLE_KEY]) } )}
             />)
           }
           {selecterFields[formData.type].map(
@@ -218,17 +128,17 @@ const DataCard: FC = () => {
           }
           {formData.data
             ? [
-                {caption: 'Дата создания:', value: dates[CREATEDON_KEY], isAlertVisible: false},
-                {caption: 'Дата обновления:', value: dates[UPDATEDON_KEY], isAlertVisible: false}
+                {caption: 'Дата создания:', value: fileCardDates[CREATEDON_KEY], isAlertVisible: false},
+                {caption: 'Дата обновления:', value: fileCardDates[UPDATEDON_KEY], isAlertVisible: false}
               ].map((props, index) => <DataCardRow key={index} {...props} />)
             : ''
           }
         </Box>
         <ModalControllers
           color='success'
-          disabled={false}
-          actionBtnCaption={formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
-          actionHandler={handlersData[formData.action]}
+          disabled={isFetchBtnDisabled}
+          actionBtnCaption={formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE}
+          handleClick={handleFileCardData}
         />
       </>
     );
@@ -237,18 +147,18 @@ const DataCard: FC = () => {
   return (
     formData
       ? <ModalControllers
-          icon={formData && formData.action}
-          color={formData && formData.action === REMOVE_ACTION_KEY ? 'error' : 'success'}
+          icon={formData.action}
+          color={formData.action === REMOVE_ACTION_KEY ? 'error' : 'success'}
           actionBtnCaption={
-            formData && formData.action === REMOVE_ACTION_KEY
+            formData.action === REMOVE_ACTION_KEY
               ? REMOVE_TITLE
-              : formData && formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_TITLE
+              : formData.action === ADD_ACTION_KEY ? SAVE_TITLE : EDIT_ITEM_TITLE
           }
           introText={
-            formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: ${formData && 1}. ${CONFIRM_MSG}`
+            formDesc ? CONFIRM_MSG : `Вы собираетесь ${REMOVE_TITLE.toLowerCase()} позиции прайс-листа. Общее количество удаляемых записей: 1. ${CONFIRM_MSG}`
           }
           disabled={false}
-          actionHandler={handlersData[formData.action]}
+          handleClick={formData.action === REMOVE_ACTION_KEY ? () => handleFileCardData : handleFileData}
         />
       : ''
   )

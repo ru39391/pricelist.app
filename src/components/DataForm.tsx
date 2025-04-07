@@ -31,6 +31,7 @@ import {
   PRICE_KEY,
   INDEX_KEY,
   IS_VISIBLE_KEY,
+  IS_NAME_IMMUTABLE_KEY,
   ADD_ACTION_KEY,
   EDIT_ACTION_KEY,
   REMOVE_ACTION_KEY,
@@ -47,6 +48,9 @@ import {
   TYPES
 } from '../utils/constants';
 
+type TVisibilityValues = Record<typeof IS_VISIBLE_KEY | typeof IS_NAME_IMMUTABLE_KEY, number>;
+
+// TODO: вынести вычисления в отдельный хук
 const DataForm: FC = () => {
   const dispatch = useDispatch();
   const { formData, formValues, isParserData } = useSelector(state => state.form);
@@ -170,16 +174,18 @@ const DataForm: FC = () => {
     }
   };
 
-  const changeVisibility = (value: number) => {
+  const changeVisibility = (data: TVisibilityValues) => {
     if(!formData || formData.action === REMOVE_ACTION_KEY || formData.type !== TYPES[ITEM_KEY]) {
       return;
     }
+
+    const [key, value] = Object.entries(data)[0];
 
     dispatch(
       setFormValues({
         values: {
           ...formValues,
-          [IS_VISIBLE_KEY]: value
+          [key]: value
         }
       })
     )
@@ -252,9 +258,13 @@ const DataForm: FC = () => {
         })
     });
 
-    if(formData && formValues[IS_VISIBLE_KEY] === undefined) {
-      changeVisibility(formData.action === EDIT_ACTION_KEY ? formData.data[IS_VISIBLE_KEY] as number : 1);
-    }
+    [IS_VISIBLE_KEY, IS_NAME_IMMUTABLE_KEY].forEach((key) => {
+      if(formData && formValues[key] === undefined) {
+        changeVisibility(
+          { [key]: formData.action === EDIT_ACTION_KEY ? formData.data[key] as number : 1 } as TVisibilityValues
+        );
+      }
+    });
 
     [...complexKeys].forEach(key => {
       if(formData && formValues[key] === undefined) {
@@ -276,7 +286,7 @@ const DataForm: FC = () => {
       actionBtnCaption={REMOVE_TITLE}
       introText={subCategoryCounter ? `${NOT_EMPTY_CATEGORY}${subCategoryCounter}` : CONFIRM_MSG}
       isParserData={isParserData}
-      actionHandler={isParserData ? removeFileData : handlersData[formData.action]}
+      handleClick={isParserData ? removeFileData : handlersData[formData.action]}
     />;
   }
 
@@ -312,15 +322,18 @@ const DataForm: FC = () => {
             {formData.type === TYPES[ITEM_KEY] && (
               <>
                 <FormGroup>
-                  <FormControlLabel
-                    label={CAPTIONS[IS_VISIBLE_KEY]}
-                    control={
-                      <Checkbox
-                        checked={Boolean(formValues[IS_VISIBLE_KEY])}
-                        onChange={() => changeVisibility(Number(!formValues[IS_VISIBLE_KEY]))}
-                      />
-                    }
-                  />
+                  {[IS_NAME_IMMUTABLE_KEY, IS_VISIBLE_KEY].map(
+                    (key, index) => <FormControlLabel
+                      key={index}
+                      label={CAPTIONS[key]}
+                      control={
+                        <Checkbox
+                          checked={Boolean(formValues[key])}
+                          onChange={() => changeVisibility({ [key]: Number(!formValues[key]) } as TVisibilityValues)}
+                        />
+                      }
+                    />
+                  )}
                   {complexKeys.map(
                     (key) =>
                       <FormControlLabel
@@ -349,7 +362,7 @@ const DataForm: FC = () => {
           <ModalControllers
             disabled={isDisabled}
             actionBtnCaption={SAVE_TITLE}
-            actionHandler={handlersData[formData.action]}
+            handleClick={handlersData[formData.action]}
           />
         </>
       }

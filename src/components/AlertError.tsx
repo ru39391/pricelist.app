@@ -43,7 +43,7 @@ const AlertError: FC = () => {
         horizontal: 'right'
       }}
       open
-      autoHideDuration={2000}
+      autoHideDuration={3000}
       message={alertMsg}
       onClose={closeAlert}
       key={alertType || 'info'}

@@ -1,24 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import type {
-  TCustomData,
-  TItemData,
+  TComparedFileData,
+  TFormController,
+  TFormData,
   TItemsArr,
-  TActionKeys,
-  TPricelistTypes,
-  TFormController
+  TItemData
 } from '../../types';
-
-import { DEPT_KEY, SUBDEPT_KEY, GROUP_KEY } from '../../utils/constants';
-
-export type TFormData = {
-  action: TActionKeys;
-  type: TPricelistTypes;
-  data: TItemData;
-  values?: TItemData;
-  items?: TItemsArr;
-  isFormHidden?: boolean;
-};
 
 export type TFormAction = {
   payload: {
@@ -26,7 +14,7 @@ export type TFormAction = {
     desc?: string;
     data?: TFormData | null;
     values?: TItemData | null;
-    items?: TCustomData<TItemsArr>;
+    items?: TComparedFileData;
     isParserData?: boolean;
     formController?: TFormController;
   };
@@ -87,25 +75,7 @@ const formSlice = createSlice({
     setFormValues: (state, action: TFormAction) => ({
       ...state,
       formValues: action.payload.values || {}
-    }),
-    setSelectedItems(state, action: TFormAction) {
-      const keys: TCustomData<string> = {
-        [DEPT_KEY]: 'currDeptsList',
-        [SUBDEPT_KEY]: 'currSubdeptsList',
-        [GROUP_KEY]: 'currGroupsList'
-      };
-      const { arr, type } = action.payload.items
-        ? {
-          arr: Object.values(action.payload.items)[0],
-          type: keys[Object.keys(action.payload.items)[0]],
-        }
-        : { arr: [], type: '' };
-
-      return {
-        ...state,
-        ...( type && { [type]: arr } )
-      }
-    },
+    })
   }
 });
 
@@ -118,5 +88,4 @@ export const {
   setFormHidden,
   setFormData,
   setFormValues,
-  setSelectedItems
 } = formSlice.actions;

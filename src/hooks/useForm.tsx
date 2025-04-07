@@ -23,6 +23,7 @@ import {
   GROUP_KEY,
   COMPLEX_KEY,
   IS_VISIBLE_KEY,
+  IS_NAME_IMMUTABLE_KEY,
   IS_COMPLEX_ITEM_KEY,
   IS_COMPLEX_KEY,
   ITEM_KEY,
@@ -62,7 +63,7 @@ const useForm = (): IForm => {
     [TYPES[DEPT_KEY]]: [],
     [TYPES[SUBDEPT_KEY]]: [],
     [TYPES[GROUP_KEY]]: [],
-    [TYPES[ITEM_KEY]]: [IS_VISIBLE_KEY, IS_COMPLEX_ITEM_KEY, IS_COMPLEX_KEY]
+    [TYPES[ITEM_KEY]]: [IS_NAME_IMMUTABLE_KEY, IS_VISIBLE_KEY, IS_COMPLEX_ITEM_KEY, IS_COMPLEX_KEY]
   };
   const requiredFormFields = [NAME_KEY, PRICE_KEY];
 
@@ -120,9 +121,9 @@ const useForm = (): IForm => {
     const isActionAdd: boolean = action === ADD_ACTION_KEY && Boolean(undefinedRequiredValues.length);
 
     /*
-    console.log({editedValues});
-    console.log({undefinedRequiredValues, isActionAdd});
-    console.log({invalidRequiredValues});
+    //console.log({editedValues});
+    //console.log({undefinedRequiredValues, isActionAdd});
+    //console.log({invalidRequiredValues});
     */
     setDisabled(isValuesEdited || Boolean(invalidRequiredValues.length) || isActionAdd);
   }

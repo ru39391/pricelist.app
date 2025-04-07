@@ -63,6 +63,7 @@ const IS_COMPLEX_ITEM_KEY = 'isComplexItem';
 const IS_COMPLEX_KEY = 'isComplex';
 const COMPLEX_KEY = 'complex';
 const IS_VISIBLE_KEY = 'isVisible';
+const IS_NAME_IMMUTABLE_KEY = 'isNameImmutable';
 
 const CREATEDON_KEY = 'createdon';
 const UPDATEDON_KEY = 'updatedon';
@@ -120,6 +121,7 @@ const CAPTIONS: TCustomData<string> = {
   [IS_COMPLEX_KEY]: 'Комплекс услуг',
   [COMPLEX_KEY]: 'Услуги в комплексе',
   [IS_VISIBLE_KEY]: 'Показывать на сайте',
+  [IS_NAME_IMMUTABLE_KEY]: 'Игнорировать изменение названия при обновлении',
   [CREATEDON_KEY]: 'Дата создания',
   [UPDATEDON_KEY]: 'Дата обновления',
   [QUANTITY_KEY]: 'Количество',
@@ -222,6 +224,7 @@ export {
   IS_COMPLEX_KEY,
   COMPLEX_KEY,
   IS_VISIBLE_KEY,
+  IS_NAME_IMMUTABLE_KEY,
   CREATEDON_KEY,
   UPDATEDON_KEY,
   QUANTITY_KEY,

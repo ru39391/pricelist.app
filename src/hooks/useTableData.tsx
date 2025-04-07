@@ -19,17 +19,12 @@ import {
 } from '../utils/constants';
 
 import type {
+  TCategoryData,
   TCustomData,
   TItemData,
   TItemsArr,
   TPricelistData
 } from '../types';
-
-type TCategoryData = {
-  data: TPricelistData;
-  category: string | undefined;
-  params: TCustomData<number | null> | null;
-};
 
 type TTableData = {
   cols: GridColDef<GridValidRowModel>[];

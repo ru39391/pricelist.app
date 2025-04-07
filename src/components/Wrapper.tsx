@@ -13,16 +13,7 @@ const Wrapper: FC<IWrapper> = ({ children }) => {
   return (
     <Layout>
       <Grid item xs={3} sx={{ display: 'flex', flexDirection: 'column' }}><Nav /></Grid>
-      <Grid
-        item
-        xs={9}
-        sx={{
-          pl: 3,
-          pr: 2,
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
+      <Grid item xs={9} sx={{ pl: 3, pr: 2, display: 'flex', flexDirection: 'column' }}>
         <Header />
         {children}
       </Grid>

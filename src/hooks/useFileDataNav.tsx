@@ -1,35 +1,35 @@
 import { useState } from 'react';
 
 import type {
-  TPricelistData,
-  TCustomData,
-  TItemsArr,
-  THandledItemKeys
+  TComparedFileData,
+  TFileDataNav,
+  THandledItemKeys,
+  TPriceListData
 } from '../types';
 
 import { HANDLED_ITEMS_CAPTIONS } from '../utils/constants';
 
-type TFileDataNav = {
-  key: string;
-  caption: string;
-  counter: number;
-  data: TItemsArr
-}[];
-
 interface IFileDataNav {
   fileDataNav: TFileDataNav;
-  updateFileDataNav: (data: TCustomData<TPricelistData> | null) => void;
+  updateFileDataNav: (data: TComparedFileData | null) => void;
 }
 
 const useFileDataNav = (): IFileDataNav => {
   const [fileDataNav, setFileDataNav] = useState<TFileDataNav>([]);
 
-  const updateFileDataNav = (data: TCustomData<TPricelistData> | null): void => {
-    const [keys, items] = data ? [Object.keys(data) as THandledItemKeys[], Object.values(data)] : [[], []];
+  const updateFileDataNav = (data: TComparedFileData | null): void => {
+    if(!data) {
+      setFileDataNav([]);
+    }
+
+    const [keys, items] = [
+      data ? Object.keys(data) : [],
+      data ? Object.values(data) : []
+    ] as [THandledItemKeys[], TPriceListData[]];
 
     setFileDataNav(
       keys.reduce(
-        (acc: TFileDataNav, key: THandledItemKeys, index) => [
+        (acc, key, index) => [
           ...acc,
           {
             key,
@@ -43,7 +43,7 @@ const useFileDataNav = (): IFileDataNav => {
               )
               : []
           }
-        ], []
+        ], [] as TFileDataNav
       )
     );
 

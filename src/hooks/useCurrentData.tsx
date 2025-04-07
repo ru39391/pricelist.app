@@ -28,6 +28,7 @@ import {
 } from '../utils/constants';
 import { sortArrValues } from '../utils';
 
+// TODO: пересмотреть используемые в хуках типы, опираясь на interface компонента
 interface ICurrentData {
   pageTitle: string;
   currentCategory: TItemData | TResourceData;
@@ -38,6 +39,7 @@ interface ICurrentData {
 // TODO: проверить использование returns и property в других случаях
 /**
  * Формирование данных текущей категории
+ *
  * @returns {object} данные категории
  * @property {string} pageTitle - заголовок категории для отображения на странице, например "Аллергология-иммунология"
  * @property {object} currentCategory - данные текущей категории для отображения в форме редактирования
