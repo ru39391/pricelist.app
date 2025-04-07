@@ -40,6 +40,10 @@ import {
   TYPES,
 } from '../utils/constants';
 
+/**
+ * Управление обработанными данными xls-файла
+ *
+ */
 const ParserContent: FC = () => {
   const [currCategory, setCurrCategory] = useState<THandledItemKeys>(CREATED_KEY);
 
@@ -111,11 +115,6 @@ const ParserContent: FC = () => {
   );
 
   /**
-   * Истинность существования данных обработанного файла при условии наличия элементов навигации
-   */
-  //const isFileDataExist = useMemo(() => navData.length > 0, [navData]);
-
-  /**
    * Устанавливает локальное состояние категории (тип изменения) и подкатегории (тип элементов) для навигации по обработанным данным xls-файла
    */
   const setCategoryData = ({ category, subCategory }: TFileCategoryData) => {
@@ -124,29 +123,15 @@ const ParserContent: FC = () => {
   };
 
   useEffect(() => {
-    console.log({file});
     compareFileData(currFileData);
   }, [
     file
   ]);
 
   useEffect(() => {
-    console.log('ParserContent', {comparedFileData});
     updateFileDataNav(comparedFileData);
   }, [
     comparedFileData
-  ]);
-
-  useEffect(() => {
-    console.log({fileDataNav});
-  }, [
-    fileDataNav
-  ]);
-
-  useEffect(() => {
-    console.log({isFileDataFetching});
-  }, [
-    isFileDataFetching
   ]);
 
   return (
@@ -161,14 +146,13 @@ const ParserContent: FC = () => {
           isBtnDisabled={isFileUploading || isPricelistLoading || isFileDataFetching}
           navData={navData}
           subNavData={comparedItems}
-          subNavCounter={tableData ? tableData.rows.length : 0}
+          subNavCounter={tableData?.rows?.length || 0}
           categoryData={{ category: currCategory, subCategory: currSubCategory }}
           handleTableData={handleTableData}
           handleCategoryData={setCategoryData}
         />
       </ParserSidebar>
       <Grid item xs={9} sx={{ pl: 3, pr: 2, display: 'flex', flexDirection: 'column' }}>
-        {/* // TODO: пересмотреть типы для categoryTypes */}
         <Pathway
           pageTitle={DEFAULT_DOC_TITLE}
           currNavTitle={`${HANDLED_ITEMS_CAPTIONS[currCategory]}, ${categoryTypes && categoryTypes[currSubCategory as string].toLowerCase()}`}
@@ -178,8 +162,8 @@ const ParserContent: FC = () => {
           isFetchBtnDisabled={isFetchBtnDisabled}
           isTableGridVisible={tableData !== null}
           tableTitle={tableData !== null ? `${FILE_ITEMS_TITLE} ${tableData.rows.length}` : NO_FILE_ITEMS_TITLE}
-          tableGridCols={tableData ? tableData.cols : [] as GridColDef<GridValidRowModel>[]}
-          tableGridRows={tableData ? tableData.rows : [] as GridValidRowModel[]}
+          tableGridCols={tableData?.cols || [] as GridColDef<GridValidRowModel>[]}
+          tableGridRows={tableData?.rows || [] as GridValidRowModel[]}
           fileData={comparedFileData}
           categoryData={{ category: currCategory, subCategory: currSubCategory }}
           categoryTypes={categoryTypes}

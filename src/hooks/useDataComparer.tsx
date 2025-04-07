@@ -1,5 +1,7 @@
 import { useEffect, useReducer, useState } from 'react';
-import { useSelector } from '../services/hooks';
+
+import { useDispatch, useSelector } from '../services/hooks';
+import { resetFileList } from '../services/actions/file';
 
 import type {
   TActionKeys,
@@ -85,6 +87,7 @@ const comparedItemsReducer = (
  * @property {IDataComparer['comparedItems']} comparedItems - массив категоризированных по типу изменямого параметра элементов;
  * @property {IDataComparer['comparedFileData']} comparedFileData - объект данных обработанного xls-файла, категоризированных по типу обновления;
  * @property {IDataComparer['fileItemsCounter']} fileItemsCounter - количество элементов, которые будут сохранены;
+ * @property {IDataComparer['isFileDataFetching']} isFileDataFetching - инстинно, если количество обработанных на сервере элементов не совпадает с количеством подлежащих обработке элементов;
  * @property {function} compareFileData - получает результат сравнения записей и помещает в локальное хранилище изменённые данные xls-документа.
  */
 const useDataComparer = (): IDataComparer => {
@@ -92,12 +95,12 @@ const useDataComparer = (): IDataComparer => {
   const [fileItemsCounter, setFileItemsCounter] = useState<IDataComparer['fileItemsCounter']>(0);
   const [fileDataResponse, setFileDataResponse] = useState<TPricelistResponse[]>([]);
   const [isFileDataFetching, setFileDataFetching] = useState<IDataComparer['isFileDataFetching']>(false);
-  // TODO: настроить корректный сброс comparedItems при обновлении навигации
   const [comparedItems, setComparedItems] = useReducer(
     comparedItemsReducer,
     { [NAME_KEY]: [], [PRICE_KEY]: [], [IS_VISIBLE_KEY]: [], [ITEM_KEY]: [] }
   );
 
+  const dispatch = useDispatch();
   const { pricelist, response } = useSelector(({ pricelist }) => ({
     pricelist,
     response: pricelist.response
@@ -296,16 +299,25 @@ const useDataComparer = (): IDataComparer => {
     setComparedFileData(fileData);
   };
 
-  // TODO: добавить описание метода, избавиться от лишних комментов
+  /**
+   * Обрабатывет ответы сервера, возвращает данные xls-файла в глобальном хранилище к значениям по умолчанию,
+   * если количество обработанных на сервере элементов совпадает с количеством элементов в хранилище
+   * @property {number} counter - текущее количество элементов, предназначенных для сохранения/изменения/удаления
+   * @property {TPricelistResponse[]} arr - локальное состояние с ответами сервера
+   */
   const handleFileDataResponse = (counter: number, arr: TPricelistResponse[]) => {
     const respCounter = arr.reduce((acc, { ids }) => acc + ids.length, 0);
-    console.log({ counter, respCounter });
 
     setFileDataFetching(arr.length > 0 && counter > respCounter);
 
+    if(arr.length === 1 && respCounter === 1 && counter > respCounter) {
+      setFileDataFetching(false);
+      setFileDataResponse([]);
+    }
+
     if(counter === 0 && respCounter > 0) {
-      // TODO: настроить вызов реального диспатчера
-      console.log('resetFileList');
+      dispatch(resetFileList());
+      setFileDataResponse([]);
     }
   };
 

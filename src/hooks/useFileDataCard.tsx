@@ -32,7 +32,6 @@ import {
   TYPES
 } from '../utils/constants';
 
-// TODO: пересмотреть используемые в хуках типы, опираясь на interface компонента
 interface IFileDataCard {
   fileCardData: TCategoryData | null;
   fileCardDates: Record<typeof CREATEDON_KEY | typeof UPDATEDON_KEY, string>;

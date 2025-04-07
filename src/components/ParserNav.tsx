@@ -46,6 +46,10 @@ interface IParserNav {
   handleCategoryData: (data: TFileCategoryData) => void;
 }
 
+/**
+ * Навигация по записям, полученным при парсинге xls-файла
+ *
+ */
 const ParserNav: FC<IParserNav> = ({
   fileData,
   currFileData,
@@ -109,12 +113,6 @@ const ParserNav: FC<IParserNav> = ({
   }, [
     fileData
   ]);
-
-  /*
-  if(!fileData) {
-    //return '';
-  }
-  */
 
   return (
     fileData && <>

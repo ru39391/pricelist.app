@@ -121,9 +121,9 @@ const useForm = (): IForm => {
     const isActionAdd: boolean = action === ADD_ACTION_KEY && Boolean(undefinedRequiredValues.length);
 
     /*
-    console.log({editedValues});
-    console.log({undefinedRequiredValues, isActionAdd});
-    console.log({invalidRequiredValues});
+    //console.log({editedValues});
+    //console.log({undefinedRequiredValues, isActionAdd});
+    //console.log({invalidRequiredValues});
     */
     setDisabled(isValuesEdited || Boolean(invalidRequiredValues.length) || isActionAdd);
   }

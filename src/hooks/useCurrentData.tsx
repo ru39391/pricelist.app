@@ -28,6 +28,7 @@ import {
 } from '../utils/constants';
 import { sortArrValues } from '../utils';
 
+// TODO: пересмотреть используемые в хуках типы, опираясь на interface компонента
 interface ICurrentData {
   pageTitle: string;
   currentCategory: TItemData | TResourceData;

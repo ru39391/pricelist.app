@@ -15,7 +15,7 @@ import {
 interface ICategoryItems {
   currSubCategory: TPricelistTypes;
   subCategoryItems: TCustomData<string>[];
-  categoryTypes: TCustomData<string> | null;
+  categoryTypes: TCustomData<string> | null; // TODO: пересмотреть типы для categoryTypes
   categoryParams: TCustomData<number | null> | null;
   setCurrSubCategory: (value: TPricelistTypes) => void
 }

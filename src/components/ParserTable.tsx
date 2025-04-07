@@ -38,7 +38,6 @@ import {
 interface IParserTable {
   isBtnDisabled: boolean;
   isFetchBtnDisabled: boolean;
-  //isFileDataExist: boolean;
   isTableGridVisible: boolean;
   tableTitle: string;
   tableGridCols: GridColDef<GridValidRowModel>[];
@@ -49,10 +48,13 @@ interface IParserTable {
   immutableNameItems: number[];
 }
 
+/**
+ * Таблица записей, полученных при парсинге xls-файла
+ *
+ */
 const ParserTable: FC<IParserTable> = ({
   isBtnDisabled,
   isFetchBtnDisabled,
-  //isFileDataExist,
   isTableGridVisible,
   tableTitle,
   tableGridCols,
@@ -101,7 +103,7 @@ const ParserTable: FC<IParserTable> = ({
   }
 
   /**
-   * Поиск данных элемента прайслиста по данным таблицы и передача в глобальное хранилище для отображения в модальном окне
+   * Поиск данных элемента прайслиста среди данных таблицы и передача в глобальное хранилище для отображения в модальном окне
    * @property {TItemData} values - данные строки таблицы, соответствующие полученному при парсинге xls-файла объекту
    */
   const handleTableGridRow = (values: TItemData) => {
@@ -136,21 +138,11 @@ const ParserTable: FC<IParserTable> = ({
     dispatch
   ]);
 
-  /*
-  if(!fileData) {
-    // TODO: проверить проблему сброса состояния при успешном ответе сервера, если работает корректно, заменить isFileDataExist на !fileData
-    return 'fileData равно null';
-  }
-  */
-
   return (
     fileData && <>
       <Box sx={{ mb: 2, gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography sx={{ typography: 'body1' }}>{tableTitle}</Typography>
         <Box sx={{ gap: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          {/*
-            // TODO: блокировать кнопки, пока данные обрабатываются сервером
-          */}
           <LoadingButton
             variant="outlined"
             loadingPosition="start"
@@ -174,7 +166,6 @@ const ParserTable: FC<IParserTable> = ({
           </LoadingButton>
         </Box>
       </Box>
-      {/* // TODO: настроить сброс данных таблицы comparedFileData после успешного ответа сервера */}
       {isTableGridVisible && <DataGrid
         sx={{
           border: 0,

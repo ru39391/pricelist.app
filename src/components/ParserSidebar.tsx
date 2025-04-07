@@ -19,6 +19,10 @@ interface IParserSidebar {
   handleUploadInput: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
+/**
+ * Боковая панель компонента управления записями xls-файла
+ *
+ */
 const ParserSidebar: FC<IParserSidebar> = ({
   isUploadBtnDisabled,
   children,

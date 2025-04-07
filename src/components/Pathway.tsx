@@ -7,6 +7,11 @@ interface IPathway {
   currNavTitle: string;
 }
 
+// TODO: стандартизировать хлебные крошки для всех компонентов
+/**
+ * Хлебные крошки компонента управления записями xls-файла
+ *
+ */
 const Pathway: FC<IPathway> = ({
   pageTitle,
   currNavTitle
