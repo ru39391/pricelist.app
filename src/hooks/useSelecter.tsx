@@ -38,6 +38,7 @@ interface ISelecter {
 }
 
 const useSelecter = (): ISelecter => {
+  // TODO: рассмотреть возможность формирования списков при помощи useReducer
   const [deptsList, setDeptsList] = useState<TItemsArr>([]);
   const [subdeptsList, setSubdeptsList] = useState<TItemsArr>([]);
   const [groupsList, setGroupsList] = useState<TItemsArr>([]);
@@ -57,12 +58,13 @@ const useSelecter = (): ISelecter => {
     form: state.form,
   }));
 
+  // TODO: изменить аргумент - возможно, стоит передавать массив групп текущей специализации
   const setDefaultGroupData = (data: TItemData): TItemData => ({
     ...pricelist[TYPES[GROUP_KEY]][0],
     ...data,
     [ID_KEY]: 0,
     [GROUP_KEY]: 0,
-    [RES_ID_KEY]: 10000,
+    [RES_ID_KEY]: 99999,
     [NAME_KEY]: NO_GROUP_TITLE
   });
 
@@ -196,7 +198,7 @@ const useSelecter = (): ISelecter => {
 
   useEffect(() => {
     setSelectedGroup(
-      selectedData[GROUP_KEY] || groupsList[0]
+      selectedData[GROUP_KEY] || setDefaultGroupData(groupsList[0])
     );
   }, [
     groupsList
