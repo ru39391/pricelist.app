@@ -37,6 +37,7 @@ import type {
   TLinkedDeptKeys,
   TLinkedSubdeptKeys,
   TLinkedGroupKeys,
+  TPriceList,
   TPricelistKeys
 } from '../types';
 
@@ -119,10 +120,15 @@ const useResLinkedItems = (): IResLinkedItems => {
 
   const { id: resId } = useParams();
 
-  const { response } = useSelector(state => state.pricelist);
-  const pricelist: TCustomData<TItemsArr>  = useSelector(
-    ({ pricelist }) => [...Object.values(TYPES), RESLINKS_KEY].reduce((acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {}
-  ));
+  const {
+    response,
+    pricelist
+  } = useSelector(({ pricelist }) => ({
+    response: pricelist.response,
+    pricelist: [...Object.values(TYPES), RESLINKS_KEY].reduce(
+      (acc, key) => ({ ...acc, [key]: pricelist[key as TPricelistExtTypes] }), {} as  TPriceList<TPricelistExtTypes>
+    )
+  }));
 
   /**
    * Сравнивает текущие данные привязки ресурса с обновлёнными
@@ -337,19 +343,19 @@ const useResLinkedItems = (): IResLinkedItems => {
   };
 
   /**
-   * Формирует массив привязанных к ресурсу позиций в конфигурации от конфигурации групп
+   * Формирует массив привязанных к ресурсу позиций в зависимости от конфигурации групп
    * @property {object[]} items - массив выбранных для ресурса позиций
    * @property {object[]} groups - массив выбранных для ресурса групп
    * @property {object} config - параметры конфигурации групп
    * @returns {object} - массив привязанных к ресурсу позиций
    */
   const setGroupedLinkedItems = ({ items, groups, config }: TGroupedItemsData): TItemsArr => {
-      const groupedLinkedItems = items.filter((item) => item[GROUP_KEY] !== 0);
-      const ungroupedLinkedItems = items.filter((item) => item[GROUP_KEY] === 0);
-      const linkedItemsList = config[IS_GROUP_IGNORED_KEY] ? items : ungroupedLinkedItems;
-      const complexLinkedItems = groups.length > 0 ? items : linkedItemsList
+    const groupedLinkedItems = items.filter((item) => item[GROUP_KEY] !== 0);
+    const ungroupedLinkedItems = items.filter((item) => item[GROUP_KEY] === 0);
+    const linkedItemsList = config[IS_GROUP_IGNORED_KEY] ? items : ungroupedLinkedItems;
+    const complexLinkedItems = groups.length > 0 ? items : linkedItemsList
 
-      return config[IS_COMPLEX_DATA_KEY] ? complexLinkedItems : groupedLinkedItems;
+    return config[IS_COMPLEX_DATA_KEY] ? complexLinkedItems : groupedLinkedItems;
   };
 
   /**

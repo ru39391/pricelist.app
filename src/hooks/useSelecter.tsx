@@ -36,7 +36,7 @@ interface ISelecter {
   selectedGroup: TItemData;
   selectOption: (data: TSelectedItem) => void;
 }
-
+// TODO: поправить назначение id группы для услуги, вложенной непосредственно в родительскую специализацию
 const useSelecter = (): ISelecter => {
   const [deptsList, setDeptsList] = useState<TItemsArr>([]);
   const [subdeptsList, setSubdeptsList] = useState<TItemsArr>([]);

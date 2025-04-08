@@ -82,8 +82,8 @@ const setListConfig = (values: boolean[], value: boolean = false): Record<TResLi
 }
 
 const listConfigReducer = (
-  state: TLinkedListConfig,
-  action: { type?: TLinkedListConfigAction, data?: TLinkedListConfig}
+  state: IResLinks['linkedListConfig'],
+  action: { type?: TLinkedListConfigAction, data?: IResLinks['linkedListConfig']}
 ) => {
   switch (action.type) {
     case 'SET_COMPLEX_DATA':
@@ -108,14 +108,24 @@ const listConfigReducer = (
       return action.data || (!state ? state : null);
   }
 };
-const existableListReducer = (state: TPriceList<TPricelistTypes>, action: TListReducerOptions) => createListReducer(state, action);
-const linkedListReducer = (state: TPriceList<TPricelistTypes>, action: TListReducerOptions) => createListReducer(state, action);
+const existableListReducer = (state: IResLinks['existableList'], action: TListReducerOptions) => createListReducer(state, action);
+const linkedListReducer = (state: IResLinks['linkedList'], action: TListReducerOptions) => createListReducer(state, action);
 
 /**
  * Формирование структуры элементов прайслиста, доступных для привязки к ресурсу
  *
  * Используемые состояния:
- * TODO: составить список
+ * - existableList: объект массивов доступных для выбора элементов прайслиста;
+ * - linkedList: объект массивов выбранных элементов прайслиста;
+ * - linkedListConfig: конфигурация списка назначенных услуг прайслиста, влияет на категоризацию.
+ *
+ * @returns {IResLinks} данные привязанных к ресурсу услуг, сформированные после выбора пользователя или обработки ответа сервера;
+ * @property {IResLinks['existableList']} existableList
+ * @property {IResLinks['linkedList']} linkedList
+ * @property {IResLinks['linkedListConfig']} linkedListConfig
+ * @property {function} handleLinkedListConfig - устанавливает параметры конфигурации отображения прикреплённых к ресурсу позиций прайслиста;
+ * @property {function} handleListOptions - обрабатывет списки выбранных элементов прайслиста;
+ * @property {function} toggleLinkedItems - обновляет список привязанных групп и услуг.
  */
 const useResLinks = (): IResLinks => {
   const [linkedListConfig, setLinkedListConfig] = useReducer(listConfigReducer, null);
@@ -190,11 +200,10 @@ const useResLinks = (): IResLinks => {
   /**
    * Устанавливает списки выбранных элементов прайслиста
    * @property {TItemsArr} array - массив элементов
-   * @property {TPricelistKeys} key - тип элементов
+   * @property {TPricelistKeys} key - категория элементов
    * @property {AutocompleteChangeReason} action - тип взаимодействия с выпадающим списком
    */
   const handleListOptions = ({ action, key, arr }: TListHandlerOptions): void => {
-    //console.log({ action, key, arr });
     if(action == CLEAR_OPTION_KEY) {
       setLinkedList({ type: REMOVE_ACTION_KEY, key, arr: [] });
       return;
@@ -285,7 +294,7 @@ const useResLinks = (): IResLinks => {
    * @property {TLinkedListConfigAction} type - тип действия
    * @property {TLinkedListConfig} data - объект значений параметров конфигурации
    */
-  const handleLinkedListConfig = (type: TLinkedListConfigAction, data: TLinkedListConfig = null) => {
+  const handleLinkedListConfig = (type: TLinkedListConfigAction, data: IResLinks['linkedListConfig'] = null) => {
     //console.log({ type, data });
     setLinkedListConfig({ type, data });
   };
@@ -294,7 +303,7 @@ const useResLinks = (): IResLinks => {
    * Автоматическая установка параметра конфигурации "Комплексный выбор", если список доступных для выбора групп пуст
    * @property {TPriceList<TPricelistTypes>} data - список доступных для выбора элементов прайслиста
    */
-  const updateListConfig = (data: TPriceList<TPricelistTypes>) => {
+  const updateListConfig = (data: IResLinks['existableList']) => {
     const { groupsList, itemsList } = {
       groupsList: data[TYPES[GROUP_KEY]],
       itemsList: data[TYPES[ITEM_KEY]]
@@ -317,7 +326,7 @@ const useResLinks = (): IResLinks => {
     }
 
     const keys: TPricelistKeys[] = [DEPT_KEY, SUBDEPT_KEY, GROUP_KEY, ITEM_KEY];
-    const params: TLinkedListConfig = JSON.parse(data.config.toString());
+    const params: IResLinks['linkedListConfig'] = JSON.parse(data.config.toString());
     const { config, isConfigSet }: {
       config: Record<TResLinkParams, boolean>;
       isConfigSet: boolean;
@@ -331,8 +340,12 @@ const useResLinks = (): IResLinks => {
     }
 
     keys.forEach((key) => {
-      const arr = JSON.parse(data[TYPES[key]].toString()).map(
-        (value: number) => pricelist[TYPES[key]].find(item => item[ID_KEY] === value)
+      const arr: TItemsArr = JSON.parse(data[TYPES[key]].toString()).reduce(
+        (acc: TItemsArr, value: number) => {
+          const data = pricelist[TYPES[key]].find(item => item[ID_KEY] === value);
+
+          return data ? [...acc, data] : acc;
+        }, []
       );
 
       setLinkedList({ key, type: ADD_ACTION_KEY, arr });

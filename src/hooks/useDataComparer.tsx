@@ -83,11 +83,18 @@ const comparedItemsReducer = (
 /**
  * Сравнение данных, полученных после парсинга xls-документа, с текущими позициями прайслиста
  *
- * @returns {IDataComparer} данные, полученные поле сравнения записей на сайте с элементами xls-файла;
- * @property {IDataComparer['comparedItems']} comparedItems - массив категоризированных по типу изменямого параметра элементов;
- * @property {IDataComparer['comparedFileData']} comparedFileData - объект данных обработанного xls-файла, категоризированных по типу обновления;
- * @property {IDataComparer['fileItemsCounter']} fileItemsCounter - количество элементов, которые будут сохранены;
- * @property {IDataComparer['isFileDataFetching']} isFileDataFetching - инстинно, если количество обработанных на сервере элементов не совпадает с количеством подлежащих обработке элементов;
+ * Используемые состояния:
+ * - comparedItems: массив категоризированных по типу изменямого параметра элементов;
+ * - comparedFileData: объект данных обработанного xls-файла, категоризированных по типу обновления;
+ * - fileItemsCounter: количество элементов, которые будут сохранены;
+ * - isFileDataFetching: инстинно, если количество обработанных на сервере элементов не совпадает с количеством подлежащих обработке элементов;
+ * - fileDataResponse: массив ответов сервера для сравнения количества подлежащих обработке элеметов прайслиста с количеством уже обработанных.
+ *
+ * @returns {IDataComparer} данные, полученные после сравнения записей на сайте с элементами xls-файла;
+ * @property {IDataComparer['comparedItems']} comparedItems
+ * @property {IDataComparer['comparedFileData']} comparedFileData
+ * @property {IDataComparer['fileItemsCounter']} fileItemsCounter
+ * @property {IDataComparer['isFileDataFetching']} isFileDataFetching
  * @property {function} compareFileData - получает результат сравнения записей и помещает в локальное хранилище изменённые данные xls-документа.
  */
 const useDataComparer = (): IDataComparer => {
