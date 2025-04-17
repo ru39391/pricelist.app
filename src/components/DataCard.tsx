@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo } from 'react';
-import { Box } from '@mui/material';
+import { Box, Checkbox, FormControlLabel } from '@mui/material';
 
 import DataCardRow from './DataCardRow';
 import ModalControllers from './ModalControllers';
@@ -34,6 +34,7 @@ import {
   CAPTIONS,
   CONFIRM_MSG,
   TYPES,
+  EDIT_ACTION_KEY,
 } from '../utils/constants';
 
 /**
@@ -43,7 +44,7 @@ import {
 const DataCard: FC = () => {
   const { formDesc, formData } = useSelector(({ form }) => form);
 
-  const { fileCardData, fileCardDates, immutableNameData, handleFileCardData, handleFileData } = useFileDataCard();
+  const { fileCardData, fileCardDates, immutableNameData, handleFileCardData, handleFileData, setNameImmutable } = useFileDataCard();
   const { formFields, selecterFields } = useForm();
   const { tableData, handleTableData } = useTableData();
 
@@ -87,6 +88,15 @@ const DataCard: FC = () => {
   if(formData && isDetailsListVisible) {
     return (
       <>
+        {formData.action === EDIT_ACTION_KEY && <FormControlLabel
+          label={CAPTIONS[IS_NAME_IMMUTABLE_KEY]}
+          control={
+            <Checkbox
+              checked={Boolean(formData.data[IS_NAME_IMMUTABLE_KEY])}
+              onChange={() => setNameImmutable()}
+            />
+          }
+        />}
         <Box sx={{ mb: 4 }}>
           {formFields[formData.type].map(
             (key) => <DataCardRow
@@ -95,7 +105,7 @@ const DataCard: FC = () => {
               value={formData.data[key].toString()}
               currValue={tableData ? tableData.rows[0][key] : ''}
               isAlertVisible={Boolean(tableData && formData.data[key] !== tableData.rows[0][key])}
-              {...( tableData && key === NAME_KEY && { [IS_NAME_IMMUTABLE_KEY]: Boolean(tableData.rows[0][IS_NAME_IMMUTABLE_KEY]) } )}
+              {...( tableData && key === NAME_KEY && { [IS_NAME_IMMUTABLE_KEY]: Boolean(formData.data[IS_NAME_IMMUTABLE_KEY]) } )}
             />)
           }
           {selecterFields[formData.type].map(

@@ -2,6 +2,8 @@ import { useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from '../services/hooks';
 import { handlePricelistData } from '../services/actions/pricelist';
 
+import { setFormData } from '../services/slices/form-slice';
+
 import type {
   TActionKeys,
   TCategoryData,
@@ -38,6 +40,7 @@ interface IFileDataCard {
   immutableNameData: TCustomData<string> | null;
   handleFileCardData: () => void;
   handleFileData: () => void;
+  setNameImmutable: () => void;
 }
 
 /**
@@ -153,15 +156,17 @@ const useFileDataCard = (): IFileDataCard => {
     }
 
     const { action, data: itemData, items, type } = formData;
+    const currData = pricelist[type].find(item => item[ID_KEY] === itemData[ID_KEY]);
     const arr: TItemsArr = items && action && items[actionKeys[action]] ? items[actionKeys[action]][type] : [];
     const data = itemData && immutableNameData?.[itemData[ID_KEY]?.toString()]
       ? { ...itemData, [NAME_KEY]: immutableNameData[itemData[ID_KEY].toString()] }
       : itemData;
+    const currName = currData && itemData[IS_NAME_IMMUTABLE_KEY] ? currData[NAME_KEY] : itemData[NAME_KEY];
     const payload = {
       type,
       items: Array.isArray(arr) && arr.length > 0
         ? arr
-        : data ? [{...data}] : [] as TItemsArr
+        : data ? [{...data, ...( itemData[IS_NAME_IMMUTABLE_KEY] && { [NAME_KEY]: currName } )}] : [] as TItemsArr
     };
 
     dispatch(handlePricelistData({
@@ -245,12 +250,37 @@ const useFileDataCard = (): IFileDataCard => {
     formData,
   ]);
 
+  /**
+   * Установить прежнее название услуги при сохранении изменённой записи
+   */
+  const setNameImmutable = useCallback(() => {
+    if(!formData) {
+      return;
+    }
+
+    const { data } = formData;
+
+    dispatch(setFormData({
+      data: {
+        ...formData,
+        data: {
+          ...data,
+          [IS_NAME_IMMUTABLE_KEY]: Number(!data[IS_NAME_IMMUTABLE_KEY])
+        }
+      }
+    }));
+  }, [
+    dispatch,
+    formData,
+  ]);
+
   return {
     fileCardData,
     fileCardDates,
     immutableNameData,
     handleFileCardData,
-    handleFileData
+    handleFileData,
+    setNameImmutable
   }
 }
 
