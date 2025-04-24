@@ -86,6 +86,12 @@ const ResItem: FC = () => {
     isLinkedDataExist
   ]);
 
+  const {groupedLinkedItems, ungroupedLinkedItems} = useMemo(() => ({
+    groupedLinkedItems: linkedItems.filter(item => item[GROUP_KEY] !== 0),
+    ungroupedLinkedItems: linkedItems.filter(item => item[GROUP_KEY] === 0)
+  }), [linkedItems]);
+  const ungroupedExistableItems = useMemo(() => existableItems.filter(item => item[GROUP_KEY] === 0), [existableItems]);
+
   const isDeptTogglerVisible = useMemo(
     () => linkedDepts.length === 1 && linkedSubdepts.length === 0,
     [linkedDepts, linkedSubdepts]
@@ -161,7 +167,7 @@ const ResItem: FC = () => {
         sx: { mb: 2.5, backgroundColor: '#fff' },
         linkedList: linkedSubdepts,
         existableList: existableSubdepts
-      }].map((props) => <ResItemCategoryList key={props.category} handleChange={handleListOptions} isTogglerActive={isLinkedItemActive} {...props} />)}
+      }].map((props, index) => <ResItemCategoryList key={index.toString()} handleChange={handleListOptions} isTogglerActive={isLinkedItemActive} {...props} />)}
 
       {isDeptTogglerVisible
         ? <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -181,6 +187,9 @@ const ResItem: FC = () => {
           <ResItemControllers
             linkedList={linkedGroups}
             existableList={existableGroups}
+            groupedLinkedItems={groupedLinkedItems}
+            ungroupedLinkedItems={ungroupedLinkedItems}
+            existableItems={ungroupedExistableItems}
             handleClick={handleListOptions}
             handleConfig={handleLinkedListConfig}
             isConfigParamExist={isLinkedDataExist}

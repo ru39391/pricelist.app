@@ -144,9 +144,17 @@ const TYPES = {
 const LINKED_RES_PARAMS: TCustomData<string> = {
   [IS_COMPLEX_DATA_KEY]: 'Комплексный выбор',
   [IS_GROUP_IGNORED_KEY]: 'Игнорировать группы',
-  [IS_GROUP_USED_KEY]: 'Сохранить группировку',
+  [IS_GROUP_USED_KEY]: 'Сохранить группировку'
+}
+
+const LINKED_GROUPS_PARAMS: TCustomData<string> = {
   [ADD_ACTION_KEY]: 'Выбрать все группы',
   [REMOVE_ACTION_KEY]: 'Отменить выбор групп'
+}
+
+const LINKED_ITEMS_PARAMS: TCustomData<string> = {
+  [ADD_ACTION_KEY]: 'Выбрать все услуги',
+  [REMOVE_ACTION_KEY]: 'Отменить выбор услуг'
 }
 
 const ROOT_PATH = import.meta.env.VITE_ROOT_PATH;
@@ -245,5 +253,7 @@ export {
   IS_COMPLEX_DATA_KEY,
   IS_GROUP_IGNORED_KEY,
   IS_GROUP_USED_KEY,
-  LINKED_RES_PARAMS
+  LINKED_RES_PARAMS,
+  LINKED_GROUPS_PARAMS,
+  LINKED_ITEMS_PARAMS
 };
